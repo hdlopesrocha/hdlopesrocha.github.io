@@ -18,3 +18,22 @@ export const CONTACT_LIMITS = {
   messageMax: 1000,
   cooldownMs: 5 * 60 * 1000
 }
+
+// Chat (replaces the one-shot form): persistent visitor identity in
+// localStorage, live NIP-04 thread with the site owner.
+// Sends go wide (owner reads anywhere); reads use relays proven to allow
+// unauthenticated kind-4 subscriptions (damus/nostr.wine gate them behind a
+// broken/absent NIP-42 setup).
+export const NOSTR_SEND_RELAYS = [
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+  'wss://relay.snort.social',
+  'wss://relay.nostr.band'
+]
+export const NOSTR_READ_RELAYS = ['wss://nos.lol', 'wss://relay.snort.social', 'wss://relay.primal.net']
+
+export const CHAT_SECRET_KEY = 'nostr-chat-secret'
+export const CHAT_HISTORY_KEY = 'nostr-chat-history'
+export const CHAT_LASTSEEN_KEY = 'nostr-chat-lastseen'
+export const CHAT_SEND_COOLDOWN_MS = 20 * 1000
+export const CHAT_MESSAGE_MAX = 1000
