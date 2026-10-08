@@ -2,7 +2,7 @@
   <section id="projects" class="section" aria-labelledby="projects-title">
     <div class="wrap">
       <div class="section-head">
-        <p class="eyebrow mono">~/projects — 10 repos</p>
+        <p class="eyebrow mono">~/projects — 11 repos</p>
         <h2 id="projects-title">Experiments in graphics, AI &amp; beyond</h2>
         <p>
           Each card links to the live repository. Live star / language data loads

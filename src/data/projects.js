@@ -126,6 +126,19 @@ export const projects = [
     timeline: 'parallel'
   },
   {
+    name: 'ist168621',
+    repo: 'ist168621',
+    url: 'https://github.com/hdlopesrocha/ist168621',
+    description:
+      'IST student-number archive: thesis drafts, WebRTC experiments, presentations and project documents from the university years.',
+    category: 'experimental',
+    technologies: ['WebRTC', 'JavaScript', 'Academic', 'Archive'],
+    featured: false,
+    visual: 'rings',
+    timeline: 'parallel',
+    year: '2015'
+  },
+  {
     name: 'spring-campus-2019',
     repo: 'spring-campus-2019',
     url: 'https://github.com/hdlopesrocha/spring-campus-2019',

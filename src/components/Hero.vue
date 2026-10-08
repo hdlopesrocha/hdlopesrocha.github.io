@@ -34,7 +34,7 @@
       <dl class="hero-meta mono">
         <div><dt>focus</dt><dd>vulkan · sdf · ray-marching · compute</dd></div>
         <div><dt>also</dt><dd>ai agents · vr · web · procedural audio</dd></div>
-        <div><dt>repos</dt><dd>10 curated experiments ↓</dd></div>
+        <div><dt>repos</dt><dd>11 curated experiments ↓</dd></div>
       </dl>
     </div>
   </section>

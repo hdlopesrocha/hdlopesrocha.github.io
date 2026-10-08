@@ -32,7 +32,7 @@
 
 <script setup>
 import { evolutionChain, projectByRepo } from '../data/projects.js'
-const parallelRepos = ['vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk']
+const parallelRepos = ['vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk', 'ist168621']
 </script>
 
 <style scoped>
