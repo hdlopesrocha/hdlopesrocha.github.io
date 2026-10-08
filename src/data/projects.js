@@ -71,9 +71,9 @@ export const projects = [
     repo: 'opencode-talk',
     url: 'https://github.com/hdlopesrocha/opencode-talk',
     description:
-      'Voice-oriented interface for interacting with OpenCode / AI coding agents.',
+      'Two-way voice for OpenCode: talk to the agent (speech-to-text) and let it talk back (text-to-speech) — plus remote session control from Telegram and Nostr.',
     category: 'ai',
-    technologies: ['OpenCode', 'AI Agents', 'Voice UI'],
+    technologies: ['OpenCode Plugin', 'Two-way Voice', 'Whisper STT', 'Neural TTS', 'TypeScript', 'Telegram', 'Nostr DMs', 'Session API'],
     featured: true,
     visual: 'terminal-wave',
     timeline: 'parallel'
