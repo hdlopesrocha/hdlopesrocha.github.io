@@ -1,7 +1,7 @@
 <template>
   <header class="nav" :class="{ scrolled }">
     <div class="wrap nav-inner">
-      <a href="#home" class="brand" aria-label="Hugo Lopes Rocha — home">
+      <a href="#home" class="brand" aria-label="Henrique Lopes Rocha — home">
         <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
           <rect width="64" height="64" rx="12" fill="#0b1220" />
           <circle cx="32" cy="32" r="15.5" fill="none" stroke="#155e63" stroke-width="2" />

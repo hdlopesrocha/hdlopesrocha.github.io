@@ -15,7 +15,7 @@
     </div>
     <div class="wrap base mono">
       <span>// built with vue + vite · no backend · base: '/'</span>
-      <span>© {{ year }} Hugo Lopes Rocha</span>
+      <span>© {{ year }} Henrique Lopes Rocha</span>
     </div>
   </footer>
 </template>

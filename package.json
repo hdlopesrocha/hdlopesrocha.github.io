@@ -2,7 +2,7 @@
   "name": "hdlopesrocha-portfolio",
   "private": true,
   "version": "1.0.0",
-  "description": "Hugo Lopes Rocha — Graphics, Vulkan, AI & VR portfolio",
+  "description": "Henrique Lopes Rocha — Graphics, Vulkan, AI & VR portfolio",
   "type": "module",
   "scripts": {
     "dev": "vite",
