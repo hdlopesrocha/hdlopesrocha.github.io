@@ -1,5 +1,5 @@
 <template>
-  <div class="glass donate">
+  <div id="donate" class="glass donate">
     <div class="donate-info">
       <p class="eyebrow mono">~/donate — lightning</p>
       <h3>Tip some sats</h3>
@@ -167,6 +167,7 @@ async function generate() {
 <style scoped>
 .donate {
   margin-top: 2rem;
+  scroll-margin-top: 84px;
   padding: 1.6rem;
   display: grid;
   grid-template-columns: 1fr 1fr;

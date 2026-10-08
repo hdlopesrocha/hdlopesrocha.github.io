@@ -17,6 +17,7 @@
         <a href="#timeline">Evolution</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
+        <a href="#donate" class="tip-link" aria-label="Tip some sats over Lightning">⚡ Tip</a>
         <a
           href="https://github.com/hdlopesrocha"
           target="_blank"
@@ -46,6 +47,7 @@
       <a href="#timeline" @click="open = false">Evolution</a>
       <a href="#about" @click="open = false">About</a>
       <a href="#contact" @click="open = false">Contact</a>
+      <a href="#donate" @click="open = false">⚡ Tip sats</a>
       <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer" @click="open = false">GitHub ↗</a>
     </div>
   </header>
@@ -98,6 +100,14 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   padding: 0.4rem 0.8rem; border-radius: 7px;
   color: var(--text) !important;
 }
+.tip-link {
+  border: 1px solid rgba(251,191,36,0.5);
+  padding: 0.4rem 0.8rem; border-radius: 7px;
+  color: #fde68a !important;
+  background: rgba(251,191,36,0.08);
+  text-decoration: none;
+}
+.tip-link:hover { background: rgba(251,191,36,0.16); }
 .menu-btn {
   display: none;
   flex-direction: column;
