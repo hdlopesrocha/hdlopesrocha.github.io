@@ -55,11 +55,15 @@
         <p class="status mono" role="status" aria-live="polite" :class="statusKind">{{ status }}</p>
       </form>
     </div>
+    <div class="wrap donate-wrap">
+      <Donate />
+    </div>
   </section>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import Donate from './Donate.vue'
 import {
   NOSTR_RECIPIENT_HEX,
   NOSTR_RECIPIENT_NPUB,
