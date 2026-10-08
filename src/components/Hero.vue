@@ -16,7 +16,7 @@
           GitHub
         </a>
         <a class="btn" href="#projects">View projects</a>
-        <a class="btn ghost" href="#about">Contact</a>
+        <a class="btn ghost" href="#contact">Contact</a>
       </div>
       <dl class="hero-meta mono">
         <div><dt>focus</dt><dd>vulkan · sdf · ray-marching · compute</dd></div>

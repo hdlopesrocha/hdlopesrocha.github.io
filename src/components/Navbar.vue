@@ -16,6 +16,7 @@
         <a href="#projects">Projects</a>
         <a href="#timeline">Evolution</a>
         <a href="#about">About</a>
+        <a href="#contact">Contact</a>
         <a
           href="https://github.com/hdlopesrocha"
           target="_blank"
@@ -44,6 +45,7 @@
       <a href="#projects" @click="open = false">Projects</a>
       <a href="#timeline" @click="open = false">Evolution</a>
       <a href="#about" @click="open = false">About</a>
+      <a href="#contact" @click="open = false">Contact</a>
       <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer" @click="open = false">GitHub ↗</a>
     </div>
   </header>
