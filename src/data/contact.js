@@ -31,6 +31,7 @@ export const NOSTR_SEND_RELAYS = [
   'wss://relay.nostr.band'
 ]
 export const NOSTR_READ_RELAYS = ['wss://nos.lol', 'wss://relay.snort.social', 'wss://relay.primal.net']
+export const NOSTR_READ_KINDS = [4, 1059] // NIP-04 DMs + NIP-17 gift wraps
 
 export const CHAT_SECRET_KEY = 'nostr-chat-secret'
 export const CHAT_HISTORY_KEY = 'nostr-chat-history'

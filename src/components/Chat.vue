@@ -17,6 +17,9 @@
         No messages yet — say hello below. Replies from the site owner appear here automatically while this tab is open.
       </div>
       <div v-for="m in messages" :key="m.id" class="msg" :class="m.dir">
+        <p v-if="m.dir === 'in' && m.from" class="mono sender" :class="{ owner: m.from === NOSTR_RECIPIENT_HEX }">
+          {{ m.from === NOSTR_RECIPIENT_HEX ? 'owner ✓' : shortNpub(m.from) }}
+        </p>
         <p>{{ m.text }}</p>
         <time class="mono" :dateTime="new Date(m.at * 1000).toISOString()">{{ fmtTime(m.at) }}</time>
       </div>
@@ -46,6 +49,7 @@ import {
   NOSTR_RECIPIENT_HEX,
   NOSTR_SEND_RELAYS,
   NOSTR_READ_RELAYS,
+  NOSTR_READ_KINDS,
   CHAT_SECRET_KEY,
   CHAT_HISTORY_KEY,
   CHAT_LASTSEEN_KEY,
@@ -77,6 +81,14 @@ const liveCount = ref(0)
 function shortId(npub) {
   return npub ? npub.slice(0, 12) + '…' + npub.slice(-6) : '…'
 }
+function shortNpub(hex) {
+  try {
+    const n = nostr.npubEncode(hex)
+    return n.slice(0, 12) + '…' + n.slice(-6)
+  } catch {
+    return String(hex).slice(0, 12) + '…'
+  }
+}
 function fmtTime(ts) {
   return new Date(ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
@@ -99,7 +111,7 @@ function setLastSeen(ts) {
   } catch {}
 }
 function updateStatus() {
-  status.value = `// listening on ${liveCount.value}/${NOSTR_READ_RELAYS.length} relays — only the site owner can reply here`
+  status.value = `// listening on ${liveCount.value}/${NOSTR_READ_RELAYS.length} relays (dm + gift-wrap)`
 }
 
 async function copyMine() {
@@ -144,15 +156,29 @@ function publishToRelay(url, event, timeoutMs = 9000) {
 }
 
 function handleIncoming(url, ev) {
-  if (ev.pubkey !== NOSTR_RECIPIENT_HEX) return // owner-only chat
   if (messages.value.some((m) => m.id === ev.id)) return
-  let text
+  // Accept replies from any sender (owner may reply from another identity),
+  // badged in the UI. NIP-04 DMs + NIP-17 gift wraps supported.
+  let sender = ''
+  let text = ''
   try {
-    text = nostr.decrypt(hexToBytes(meHex), NOSTR_RECIPIENT_HEX, ev.content)
+    if (ev.kind === 4) {
+      sender = ev.pubkey
+      text = nostr.decrypt(hexToBytes(meHex), sender, ev.content)
+    } else if (ev.kind === 1059) {
+      const rumor = nostr.unwrapEvent(ev, hexToBytes(meHex))
+      if (!rumor || rumor.kind !== 14) return
+      if (!rumor.tags.some((t) => t[0] === 'p' && t[1] === mePub)) return
+      sender = rumor.pubkey
+      text = rumor.content
+    } else {
+      return
+    }
   } catch {
     return
   }
-  messages.value.push({ id: ev.id, dir: 'in', text, at: ev.created_at })
+  if (!text) return
+  messages.value.push({ id: ev.id, dir: 'in', text, at: ev.created_at, from: sender })
   messages.value.sort((a, b) => a.at - b.at)
   persist()
   if (ev.created_at > getLastSeen()) setLastSeen(ev.created_at)
@@ -174,7 +200,7 @@ function connect(url) {
   entry.ws = ws
   ws.onopen = () => {
     if (!mounted) return ws.close()
-    ws.send(JSON.stringify(['REQ', subId, { kinds: [4], '#p': [mePub], since: getLastSeen() }]))
+    ws.send(JSON.stringify(['REQ', subId, { kinds: NOSTR_READ_KINDS, '#p': [mePub], since: getLastSeen() }]))
   }
   ws.onmessage = (m) => {
     let d
@@ -183,7 +209,7 @@ function connect(url) {
     } catch {
       return
     }
-    if (d[0] === 'EVENT' && d[1] === subId && d[2] && d[2].kind === 4) handleIncoming(url, d[2])
+    if (d[0] === 'EVENT' && d[1] === subId && d[2] && NOSTR_READ_KINDS.includes(d[2].kind)) handleIncoming(url, d[2])
     else if (d[0] === 'EOSE' && d[1] === subId && !entry.live) {
       entry.live = true
       liveCount.value++
@@ -262,7 +288,7 @@ async function send() {
     const results = await Promise.all(NOSTR_SEND_RELAYS.map((r) => publishToRelay(r, event)))
     const ok = results.filter(Boolean).length
     if (ok > 0) {
-      messages.value.push({ id: event.id, dir: 'out', text: text.slice(0, CHAT_MESSAGE_MAX), at: event.created_at })
+      messages.value.push({ id: event.id, dir: 'out', text: text.slice(0, CHAT_MESSAGE_MAX), at: event.created_at, from: mePub })
       persist()
       draft.value = ''
       scrollDown()
@@ -323,10 +349,11 @@ function initIdentity() {
 
 onMounted(async () => {
   mounted = true
-  const [pure, nip04, nip19] = await Promise.all([
+  const [pure, nip04, nip19, nip59] = await Promise.all([
     import('nostr-tools/pure'),
     import('nostr-tools/nip04'),
-    import('nostr-tools/nip19')
+    import('nostr-tools/nip19'),
+    import('nostr-tools/nip59')
   ])
   nostr = {
     generateSecretKey: pure.generateSecretKey,
@@ -334,9 +361,9 @@ onMounted(async () => {
     finalizeEvent: pure.finalizeEvent,
     encrypt: nip04.encrypt,
     decrypt: nip04.decrypt,
-    npubEncode: nip19.npubEncode
+    npubEncode: nip19.npubEncode,
+    unwrapEvent: nip59.unwrapEvent
   }
-  void nostr.generateSecretKey
   initIdentity()
   status.value = '// connecting to relays…'
   NOSTR_READ_RELAYS.forEach(connect)
@@ -376,6 +403,8 @@ onBeforeUnmount(() => {
 .empty { color: var(--dim); font-size: 0.88rem; text-align: center; padding: 1.5rem 1rem; }
 .msg { max-width: 82%; padding: 0.55rem 0.8rem; border-radius: 10px; }
 .msg p { margin: 0; font-size: 0.92rem; overflow-wrap: anywhere; }
+.sender { font-size: 0.68rem !important; opacity: 0.65; margin-bottom: 0.15rem !important; }
+.sender.owner { color: var(--accent); opacity: 1; }
 .msg time { font-size: 0.68rem; opacity: 0.6; }
 .msg.out { align-self: flex-end; background: linear-gradient(135deg, #14b8a6, #0ea5e9); color: #03181a; }
 .msg.out time { opacity: 0.7; }
