@@ -8,7 +8,6 @@
       <div class="head-actions">
         <button class="btn small ghost" type="button" @click="copyMine">{{ mineCopied ? 'Copied ✓' : 'Copy my npub' }}</button>
         <button class="btn small ghost" type="button" @click="refresh" :disabled="refreshing">↻ {{ refreshing ? '…' : 'Check' }}</button>
-        <button class="btn small ghost danger" type="button" @click="newIdentity" title="Forget this identity and start fresh">New identity</button>
       </div>
     </div>
 
@@ -200,7 +199,17 @@ function connect(url) {
   entry.ws = ws
   ws.onopen = () => {
     if (!mounted) return ws.close()
-    ws.send(JSON.stringify(['REQ', subId, { kinds: NOSTR_READ_KINDS, '#p': [mePub], since: getLastSeen() }]))
+    // NOTE: kind-4 uses since:lastSeen, but gift wraps (1059) carry NIP-59
+    // randomized timestamps (±2 days), so they must be fetched WITHOUT since
+    // or recent wraps get excluded by the time filter. Dedupe by id covers overlap.
+    ws.send(
+      JSON.stringify([
+        'REQ',
+        subId,
+        { kinds: [4], '#p': [mePub], since: getLastSeen(), limit: 50 },
+        { kinds: [1059], '#p': [mePub], limit: 50 }
+      ])
+    )
   }
   ws.onmessage = (m) => {
     let d
@@ -235,7 +244,12 @@ function connect(url) {
 
 function scheduleRetry(url) {
   if (!mounted || sockets.has(url)) return
-  const t = setTimeout(() => connect(url), 25000)
+  // Delete the placeholder BEFORE reconnecting: connect() refuses when the
+  // url is already in the map, otherwise the retry silently never runs.
+  const t = setTimeout(() => {
+    sockets.delete(url)
+    connect(url)
+  }, 25000)
   sockets.set(url, { ws: null, live: false, retryTimer: t })
 }
 
@@ -309,22 +323,6 @@ async function send() {
   }
 }
 
-function newIdentity() {
-  disconnectAll()
-  try {
-    localStorage.removeItem(CHAT_SECRET_KEY)
-    localStorage.removeItem(CHAT_HISTORY_KEY)
-    localStorage.removeItem(CHAT_LASTSEEN_KEY)
-    localStorage.removeItem('nostr-chat-lastsent')
-  } catch {}
-  initIdentity()
-  messages.value = []
-  status.value = '// fresh identity — previous conversation forgotten'
-  statusKind.value = ''
-  NOSTR_READ_RELAYS.forEach(connect)
-  updateStatus()
-}
-
 function initIdentity() {
   let hex = ''
   try {
@@ -388,7 +386,6 @@ onBeforeUnmount(() => {
 .dim { color: var(--dim); }
 .me { font-size: 0.82rem; color: var(--text); }
 .head-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.danger:hover { border-color: #f87171; }
 .msgs {
   display: flex;
   flex-direction: column;
