@@ -6,6 +6,7 @@
     <Projects />
     <Timeline />
     <About />
+    <Resume />
     <Contact />
   </main>
   <Footer />
@@ -17,6 +18,7 @@ import Hero from './components/Hero.vue'
 import Projects from './components/Projects.vue'
 import Timeline from './components/Timeline.vue'
 import About from './components/About.vue'
+import Resume from './components/Resume.vue'
 import Contact from './components/Contact.vue'
 import Footer from './components/Footer.vue'
 </script>

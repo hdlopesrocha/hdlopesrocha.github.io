@@ -16,6 +16,7 @@
         <a href="#projects">Projects</a>
         <a href="#timeline">Evolution</a>
         <a href="#about">About</a>
+        <a href="#resume">CV</a>
         <a href="#contact" class="chat-link" aria-label="Chat over Nostr">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3.5A1.5 1.5 0 0 1 3.5 2h9A1.5 1.5 0 0 1 14 3.5v6a1.5 1.5 0 0 1-1.5 1.5H8l-3.2 3v-3H3.5A1.5 1.5 0 0 1 2 9.5v-6Z"/><circle cx="5.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="8" cy="6.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
           Chat
@@ -49,6 +50,7 @@
       <a href="#projects" @click="open = false">Projects</a>
       <a href="#timeline" @click="open = false">Evolution</a>
       <a href="#about" @click="open = false">About</a>
+      <a href="#resume" @click="open = false">CV</a>
       <a href="#contact" @click="open = false">💬 Chat</a>
       <a href="#donate" @click="open = false">⚡ Tip sats</a>
       <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer" @click="open = false">GitHub ↗</a>

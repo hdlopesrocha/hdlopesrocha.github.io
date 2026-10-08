@@ -10,6 +10,7 @@
         <a href="#projects">Projects</a>
         <a href="#timeline">Evolution</a>
         <a href="#about">About</a>
+        <a href="#resume">CV</a>
         <a href="#contact">Contact</a>
         <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       </nav>

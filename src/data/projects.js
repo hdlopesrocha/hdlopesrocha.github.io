@@ -129,6 +129,7 @@ export const projects = [
     name: 'spring-campus-2019',
     repo: 'spring-campus-2019',
     url: 'https://github.com/hdlopesrocha/spring-campus-2019',
+    pages: 'https://hdlopesrocha.github.io/spring-campus-2019/dist/spring/',
     pages: 'https://hdlopesrocha.github.io/spring-campus-2019/',
     description: 'Older project from the Spring Campus 2019 period.',
     category: 'experimental',

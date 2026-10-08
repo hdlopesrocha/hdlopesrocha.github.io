@@ -17,7 +17,7 @@
         />
         <h1 id="hero-title">Henrique Lopes Rocha</h1>
       </div>
-      <p class="subtitle">Graphics Programmer · Vulkan · AI · VR · Creative Computing</p>
+      <p class="subtitle">Telecommunications &amp; Informatics Engineer · ex-CERN · Vulkan · AI · VR</p>
       <p class="lede">
         A collection of projects exploring real-time graphics, GPU programming, signed
         distance fields, procedural generation, AI, virtual reality and experimental software.
@@ -28,6 +28,7 @@
           GitHub
         </a>
         <a class="btn" href="#projects">View projects</a>
+        <a class="btn ghost" href="https://github.com/hdlopesrocha/cv/blob/master/cv.pdf" target="_blank" rel="noopener noreferrer">CV (PDF)</a>
         <a class="btn ghost" href="#contact">Contact</a>
       </div>
       <dl class="hero-meta mono">
