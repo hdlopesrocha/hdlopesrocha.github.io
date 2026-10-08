@@ -44,18 +44,6 @@ export const projects = [
     timeline: 'parallel'
   },
   {
-    name: 'lithos-engine',
-    repo: 'lithos-engine',
-    url: 'https://github.com/hdlopesrocha/lithos-engine',
-    description:
-      'Earlier graphics-engine project and predecessor to the Vulkan engine; procedural / SDF origins.',
-    category: 'graphics',
-    technologies: ['Real-time Graphics', 'Procedural', 'SDF', 'Engine'],
-    featured: false,
-    visual: 'terrain',
-    timeline: 'main'
-  },
-  {
     name: 'hydrogen-vulkan',
     repo: 'hydrogen-vulkan',
     url: 'https://github.com/hdlopesrocha/hydrogen-vulkan',
@@ -64,6 +52,18 @@ export const projects = [
     technologies: ['Vulkan', 'GPU', 'Real-time'],
     featured: false,
     visual: 'grid',
+    timeline: 'main'
+  },
+  {
+    name: 'lithos-engine',
+    repo: 'lithos-engine',
+    url: 'https://github.com/hdlopesrocha/lithos-engine',
+    description:
+      'Earlier OpenGL engine project and predecessor to the Vulkan engine; procedural / SDF origins.',
+    category: 'graphics',
+    technologies: ['OpenGL', 'Real-time Graphics', 'Procedural', 'SDF', 'Engine'],
+    featured: false,
+    visual: 'terrain',
     timeline: 'main'
   },
   {
@@ -157,9 +157,9 @@ export const projects = [
 // Evolution chain shown in the timeline section.
 export const evolutionChain = [
   { repo: 'spring-campus-2019', note: 'Origin · 2019 event project' },
-  { repo: 'lithos-engine', note: 'Early engine · procedural / SDF roots' },
-  { repo: 'hydrogen-vulkan', note: 'Vulkan experiments' },
-  { repo: 'vulkan-engine', note: 'Current main engine' }
+  { repo: 'hydrogen-vulkan', note: 'First Vulkan experiments · 2021' },
+  { repo: 'lithos-engine', note: 'OpenGL engine · 2024 predecessor' },
+  { repo: 'vulkan-engine', note: 'Current main engine · 2025' }
 ]
 
 export function projectByRepo(repo) {
