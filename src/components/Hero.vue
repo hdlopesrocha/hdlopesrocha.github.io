@@ -4,7 +4,19 @@
     <div class="hero-fade" aria-hidden="true"></div>
     <div class="wrap hero-inner">
       <p class="eyebrow mono"><span class="dot" aria-hidden="true"></span> real-time · gpu · procedural · experimental</p>
-      <h1 id="hero-title">Henrique Lopes Rocha</h1>
+      <div class="title-row">
+        <img
+          class="avatar"
+          src="https://avatars.githubusercontent.com/u/6792581?v=4&s=192"
+          alt="Portrait avatar of Henrique Lopes Rocha"
+          width="96"
+          height="96"
+          loading="eager"
+          @error="avatarGone = true"
+          v-if="!avatarGone"
+        />
+        <h1 id="hero-title">Henrique Lopes Rocha</h1>
+      </div>
       <p class="subtitle">Graphics Programmer · Vulkan · AI · VR · Creative Computing</p>
       <p class="lede">
         A collection of projects exploring real-time graphics, GPU programming, signed
@@ -28,7 +40,10 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import HeroBackground from './HeroBackground.vue'
+
+const avatarGone = ref(false)
 </script>
 
 <style scoped>
@@ -48,6 +63,16 @@ import HeroBackground from './HeroBackground.vue'
 .hero-inner { position: relative; }
 .eyebrow { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 1rem; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
+.title-row { display: flex; align-items: center; gap: 1.4rem; }
+.avatar {
+  width: 96px;
+  height: 96px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid rgba(45, 212, 191, 0.55);
+  box-shadow: 0 0 34px rgba(45, 212, 191, 0.22);
+  background: var(--panel-solid);
+}
 h1 {
   margin: 0;
   font-size: clamp(2.6rem, 7vw, 4.8rem);
@@ -76,5 +101,7 @@ h1 {
 .hero-meta dd { margin: 0; color: var(--muted); }
 @media (max-width: 600px) {
   .hero { padding: 4.5rem 0 3rem; min-height: unset; }
+  .title-row { gap: 1rem; }
+  .avatar { width: 64px; height: 64px; }
 }
 </style>
