@@ -155,32 +155,48 @@ function publishToRelay(url, event, timeoutMs = 9000) {
 }
 
 function handleIncoming(url, ev) {
-  if (messages.value.some((m) => m.id === ev.id)) return
   // Accept replies from any sender (owner may reply from another identity),
   // badged in the UI. NIP-04 DMs + NIP-17 gift wraps supported.
   let sender = ''
   let text = ''
+  let at = 0
+  const nowSec = Math.floor(Date.now() / 1000)
   try {
     if (ev.kind === 4) {
       sender = ev.pubkey
       text = nostr.decrypt(hexToBytes(meHex), sender, ev.content)
+      at = Math.min(ev.created_at, nowSec)
     } else if (ev.kind === 1059) {
+      // Gift wraps carry randomized timestamps; the rumor inside holds the real time.
       const rumor = nostr.unwrapEvent(ev, hexToBytes(meHex))
       if (!rumor || rumor.kind !== 14) return
       if (!rumor.tags.some((t) => t[0] === 'p' && t[1] === mePub)) return
       sender = rumor.pubkey
       text = rumor.content
+      at = Math.min(rumor.created_at, nowSec)
     } else {
       return
     }
   } catch {
     return
   }
-  if (!text) return
-  messages.value.push({ id: ev.id, dir: 'in', text, at: ev.created_at, from: sender })
+  if (!text || !at) return
+  // Self-heal: already-seen ids get their time/sender corrected (e.g. entries
+  // stored before rumor-time handling existed), then skip.
+  const existing = messages.value.find((m) => m.id === ev.id)
+  if (existing) {
+    if (existing.at !== at || existing.from !== sender) {
+      existing.at = at
+      existing.from = sender
+      messages.value.sort((a, b) => a.at - b.at)
+      persist()
+    }
+    return
+  }
+  messages.value.push({ id: ev.id, dir: 'in', text, at, from: sender })
   messages.value.sort((a, b) => a.at - b.at)
   persist()
-  if (ev.created_at > getLastSeen()) setLastSeen(ev.created_at)
+  if (at > getLastSeen()) setLastSeen(at)
   scrollDown()
 }
 
@@ -340,6 +356,7 @@ function initIdentity() {
   try {
     const raw = localStorage.getItem(CHAT_HISTORY_KEY)
     messages.value = raw ? JSON.parse(raw) : []
+    messages.value.sort((a, b) => a.at - b.at)
   } catch {
     messages.value = []
   }
