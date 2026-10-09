@@ -32,7 +32,7 @@ function resize() {
 }
 
 function seed() {
-  const count = w < 640 ? 34 : w < 1100 ? 55 : 72
+  const count = w < 640 ? 60 : w < 1100 ? 95 : 130
   points = Array.from({ length: count }, () => ({
     x: Math.random() * w,
     y: Math.random() * h,
@@ -84,7 +84,7 @@ function frame(t) {
   }
 
   // particles + links
-  const maxDist = 130
+  const maxDist = 160
   ctx.lineWidth = 1
   for (let i = 0; i < points.length; i++) {
     const p = points[i]
@@ -100,7 +100,7 @@ function frame(t) {
       const dy = p.y - q.y
       const d2 = dx * dx + dy * dy
       if (d2 < maxDist * maxDist) {
-        const a = (1 - Math.sqrt(d2) / maxDist) * 0.22
+        const a = (1 - Math.sqrt(d2) / maxDist) * 0.28
         ctx.strokeStyle = `rgba(94,234,212,${a.toFixed(3)})`
         ctx.beginPath()
         ctx.moveTo(p.x, p.y)
