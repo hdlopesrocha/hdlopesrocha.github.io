@@ -5,6 +5,7 @@
       <h3>{{ RESUME.fullName }}</h3>
       <p class="muted">{{ RESUME.title }}</p>
       <dl class="facts mono">
+        <div><dt>based in</dt><dd>{{ RESUME.location }}</dd></div>
         <div><dt>phone</dt><dd>{{ RESUME.phone }}</dd></div>
         <div><dt>site</dt><dd>{{ RESUME.site }}</dd></div>
         <div><dt>nostr</dt><dd class="break">{{ NOSTR_RECIPIENT_NPUB }}</dd></div>
