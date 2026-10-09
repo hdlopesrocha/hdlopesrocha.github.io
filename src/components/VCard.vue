@@ -12,7 +12,7 @@
         <div><dt>youtube</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div><dt>nostr</dt><dd class="break">{{ NOSTR_RECIPIENT_NPUB }}</dd></div>
         <div><dt>telegram</dt><dd><a :href="RESUME.telegramUrl" target="_blank" rel="noopener noreferrer">{{ RESUME.telegram }} ↗</a></dd></div>
-        <div><dt>lightning</dt><dd>{{ LIGHTNING_ADDRESS }}</dd></div>
+        <div><dt>lnurl</dt><dd>{{ LIGHTNING_ADDRESS }}</dd></div>
       </dl>
       <div class="vc-actions">
         <button class="btn small primary" type="button" @click="download">Download .vcf</button>
