@@ -51,7 +51,6 @@ function vcardText() {
     `IMPP;TYPE=HOME:nostr:${NOSTR_RECIPIENT_NPUB}`,
     `IMPP;TYPE=HOME:${RESUME.telegramUrl}`,
     `IMPP;TYPE=HOME:lightning:${LIGHTNING_ADDRESS}`,
-    `NOTE:Nostr ${NOSTR_RECIPIENT_NPUB} / Telegram ${RESUME.telegram} / Lightning ${LIGHTNING_ADDRESS}`,
     'END:VCARD'
   ].join('\r\n')
 }
