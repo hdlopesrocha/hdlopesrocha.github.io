@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="vc-qr">
-      <canvas ref="qrCanvas" width="200" height="200" aria-label="vCard QR code — scan to save contact"></canvas>
+      <canvas ref="qrCanvas" width="280" height="280" aria-label="vCard QR code — scan to save contact"></canvas>
       <p class="mono hint">scan to save</p>
     </div>
   </div>
@@ -76,7 +76,7 @@ onMounted(async () => {
   try {
     const { default: QRCode } = await import('qrcode')
     await QRCode.toCanvas(qrCanvas.value, vcardText(), {
-      width: 200,
+      width: 280,
       margin: 1,
       errorCorrectionLevel: 'M',
       color: { dark: '#04181a', light: '#ffffff' }
