@@ -50,7 +50,7 @@ function vcardText() {
     `ADR;TYPE=HOME:;;Castelo Branco;;;Portugal;`,
     `IMPP;TYPE=HOME:nostr:${NOSTR_RECIPIENT_NPUB}`,
     `IMPP;TYPE=HOME:${RESUME.telegramUrl}`,
-    `IMPP;TYPE=HOME:lightning:${LIGHTNING_ADDRESS}`,
+    `IMPP;TYPE=HOME:lnurl:${LIGHTNING_ADDRESS}`,
     'END:VCARD'
   ].join('\r\n')
 }
