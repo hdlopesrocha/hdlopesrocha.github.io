@@ -1,5 +1,5 @@
 <template>
-  <div class="glass chat">
+  <div id="chat" class="glass chat">
     <div class="chat-head">
       <div>
         <p class="mono label">chatting as <span class="dim">(stored only in this browser)</span></p>
@@ -397,7 +397,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.chat { padding: 1.4rem; display: grid; gap: 1rem; }
+.chat { padding: 1.4rem; display: grid; gap: 1rem; scroll-margin-top: 84px; }
 .chat-head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: end; }
 .label { margin: 0 0 0.3rem; color: var(--accent); font-size: 0.76rem; }
 .dim { color: var(--dim); }
