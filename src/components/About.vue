@@ -33,11 +33,15 @@
         <p class="mono stack">c++ · vulkan · glsl · compute · vue · webaudio · lora</p>
       </div>
     </div>
+    <div class="wrap vcard-wrap">
+      <VCard />
+    </div>
   </section>
 </template>
 
 <script setup>
 import { RESUME, interests } from '../data/resume.js'
+import VCard from './VCard.vue'
 
 const interestsList = [
   'C++ & Vulkan',
