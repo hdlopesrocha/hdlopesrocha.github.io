@@ -39,7 +39,7 @@ function vcardText() {
   return [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    'N:Rocha;Henrique Duarte Lopes;;;',
+    'N:Rocha;Henrique;;;',
     `FN:${RESUME.fullName}`,
     `TITLE:${RESUME.title}`,
     `TEL;TYPE=CELL,VOICE:${RESUME.phoneHref.replace('tel:', '')}`,
@@ -47,7 +47,7 @@ function vcardText() {
     `URL:${RESUME.site}`,
     `URL:${RESUME.github}`,
     `URL:${RESUME.youtube}`,
-    `ADR;TYPE=HOME:;;Castelo Branco;;;Portugal;`,
+    `ADR;TYPE=HOME:;;;Castelo Branco;;;Portugal`,
     `IMPP;TYPE=HOME:nostr:${NOSTR_RECIPIENT_NPUB}`,
     `IMPP;TYPE=HOME:${RESUME.telegramUrl}`,
     `IMPP;TYPE=HOME:lnurl:${LIGHTNING_ADDRESS}`,
