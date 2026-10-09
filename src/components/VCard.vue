@@ -21,8 +21,10 @@
       </div>
     </div>
     <div class="vc-qr">
-      <canvas ref="qrCanvas" width="280" height="280" aria-label="vCard QR code — scan to save contact"></canvas>
-      <p class="mono hint">scan to save</p>
+      <button type="button" class="qr-btn" @click="download" aria-label="Download contact as .vcf file" title="Click to download .vcf">
+        <canvas ref="qrCanvas" width="280" height="280" aria-hidden="true"></canvas>
+      </button>
+      <p class="mono hint">scan to save · click to download</p>
     </div>
   </div>
 </template>
@@ -110,6 +112,8 @@ h3 { margin: 0.4rem 0 0.2rem; font-size: 1.3rem; }
 .facts a { color: var(--text); }
 .vc-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .vc-qr { display: grid; gap: 0.4rem; justify-items: center; }
+.qr-btn { background: none; border: none; padding: 0; cursor: pointer; border-radius: 12px; line-height: 0; }
+.qr-btn:hover canvas, .qr-btn:focus-visible canvas { box-shadow: 0 0 0 2px var(--accent), 0 0 26px rgba(45,212,191,0.3); }
 .vc-qr canvas { border-radius: 12px; border: 1px solid var(--line-strong); background: #fff; }
 .hint { margin: 0; color: var(--dim); font-size: 0.72rem; }
 </style>
