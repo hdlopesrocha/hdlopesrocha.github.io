@@ -17,10 +17,6 @@
         <a href="#timeline">Evolution</a>
         <a href="#about">About</a>
         <a href="#resume">CV</a>
-        <a href="#chat" class="chat-link" aria-label="Chat over Nostr">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 3.5A1.5 1.5 0 0 1 3.5 2h9A1.5 1.5 0 0 1 14 3.5v6a1.5 1.5 0 0 1-1.5 1.5H8l-3.2 3v-3H3.5A1.5 1.5 0 0 1 2 9.5v-6Z"/><circle cx="5.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="8" cy="6.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
-          Chat
-        </a>
         <a href="#contact" class="contact-link" aria-label="Contact details">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><path d="m2.5 4.5 5.5 4 5.5-4"/></svg>
           Contact
@@ -55,7 +51,6 @@
       <a href="#timeline" @click="open = false">Evolution</a>
       <a href="#about" @click="open = false">About</a>
       <a href="#resume" @click="open = false">CV</a>
-      <a href="#chat" @click="open = false">💬 Chat</a>
       <a href="#contact" @click="open = false">✉️ Contact</a>
       <a href="#donate" @click="open = false">⚡ Tip sats</a>
       <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer" @click="open = false">GitHub ↗</a>
@@ -118,15 +113,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   text-decoration: none;
 }
 .tip-link:hover { background: rgba(251,191,36,0.16); }
-.chat-link {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  border: 1px solid rgba(45,212,191,0.5);
-  padding: 0.4rem 0.8rem; border-radius: 7px;
-  color: #99f6e4 !important;
-  background: rgba(45,212,191,0.08);
-  text-decoration: none;
-}
-.chat-link:hover { background: rgba(45,212,191,0.16); }
 .contact-link {
   display: inline-flex; align-items: center; gap: 0.4rem;
   border: 1px solid var(--line-strong);
