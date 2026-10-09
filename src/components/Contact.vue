@@ -17,14 +17,6 @@
             {{ copied ? 'Copied ✓' : 'Copy npub' }}
           </button>
         </div>
-        <dl class="facts mono">
-          <div><dt>based in</dt><dd>{{ RESUME.location }}</dd></div>
-          <div><dt>email</dt><dd><a :href="`mailto:${RESUME.email}`">{{ RESUME.email }}</a></dd></div>
-          <div><dt>phone</dt><dd><a :href="RESUME.phoneHref">{{ RESUME.phone }}</a></dd></div>
-          <div><dt>languages</dt><dd>portuguese · english · french</dd></div>
-          <div><dt>video</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">youtube/hdlopesrocha ↗</a></dd></div>
-        </dl>
-        <p class="muted small">Prefer GitHub? <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha</a> works too.</p>
       </div>
 
       <Chat />
@@ -44,7 +36,6 @@ import Chat from './Chat.vue'
 import Donate from './Donate.vue'
 import VCard from './VCard.vue'
 import { NOSTR_RECIPIENT_NPUB } from '../data/contact.js'
-import { RESUME } from '../data/resume.js'
 
 const copied = ref(false)
 
@@ -64,11 +55,6 @@ h2 { margin: 0.5rem 0 1rem; font-size: clamp(1.7rem, 3.4vw, 2.5rem); letter-spac
 .npub-box { padding: 1.1rem 1.2rem; margin-top: 1.2rem; display: grid; gap: 0.7rem; justify-items: start; }
 .label { margin: 0; color: var(--accent); font-size: 0.76rem; }
 .npub { color: var(--text); font-size: 0.78rem; word-break: break-all; user-select: all; }
-.facts { display: grid; gap: 0.35rem; margin: 1.2rem 0 0; font-size: 0.82rem; }
-.facts div { display: flex; gap: 0.8rem; }
-.facts dt { color: var(--accent); min-width: 5.5rem; }
-.facts dd { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
-.facts a { color: var(--text); }
 .muted { color: var(--muted); }
 .small { font-size: 0.88rem; }
 @media (max-width: 860px) {
