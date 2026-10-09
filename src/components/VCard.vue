@@ -7,6 +7,9 @@
       <dl class="facts mono">
         <div><dt>phone</dt><dd>{{ RESUME.phone }}</dd></div>
         <div><dt>site</dt><dd>{{ RESUME.site }}</dd></div>
+        <div><dt>nostr</dt><dd class="break">{{ NOSTR_RECIPIENT_NPUB }}</dd></div>
+        <div><dt>telegram</dt><dd><a :href="RESUME.telegramUrl" target="_blank" rel="noopener noreferrer">{{ RESUME.telegram }} ↗</a></dd></div>
+        <div><dt>lightning</dt><dd>{{ LIGHTNING_ADDRESS }}</dd></div>
       </dl>
       <div class="vc-actions">
         <button class="btn small primary" type="button" @click="download">Download .vcf</button>
@@ -14,7 +17,7 @@
       </div>
     </div>
     <div class="vc-qr">
-      <canvas ref="qrCanvas" width="180" height="180" aria-label="vCard QR code — scan to save contact"></canvas>
+      <canvas ref="qrCanvas" width="200" height="200" aria-label="vCard QR code — scan to save contact"></canvas>
       <p class="mono hint">scan to save</p>
     </div>
   </div>
@@ -23,6 +26,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { RESUME } from '../data/resume.js'
+import { NOSTR_RECIPIENT_NPUB } from '../data/contact.js'
+import { LIGHTNING_ADDRESS } from '../data/donate.js'
 
 const qrCanvas = ref(null)
 const vcopied = ref(false)
@@ -38,6 +43,10 @@ function vcardText() {
     `EMAIL:${RESUME.email}`,
     `URL:${RESUME.site}`,
     `ADR;TYPE=HOME:;;Castelo Branco;;;Portugal;`,
+    `IMPP;TYPE=HOME:nostr:${NOSTR_RECIPIENT_NPUB}`,
+    `IMPP;TYPE=HOME:${RESUME.telegramUrl}`,
+    `IMPP;TYPE=HOME:lightning:${LIGHTNING_ADDRESS}`,
+    `NOTE:Nostr ${NOSTR_RECIPIENT_NPUB} / Telegram ${RESUME.telegram} / Lightning ${LIGHTNING_ADDRESS}`,
     'END:VCARD'
   ].join('\r\n')
 }
@@ -67,7 +76,7 @@ onMounted(async () => {
   try {
     const { default: QRCode } = await import('qrcode')
     await QRCode.toCanvas(qrCanvas.value, vcardText(), {
-      width: 180,
+      width: 200,
       margin: 1,
       errorCorrectionLevel: 'M',
       color: { dark: '#04181a', light: '#ffffff' }
@@ -92,6 +101,8 @@ h3 { margin: 0.4rem 0 0.2rem; font-size: 1.3rem; }
 .facts div { display: flex; gap: 0.8rem; }
 .facts dt { color: var(--accent); min-width: 3.2rem; }
 .facts dd { margin: 0; color: var(--muted); }
+.facts dd.break { word-break: break-all; }
+.facts a { color: var(--text); }
 .vc-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .vc-qr { display: grid; gap: 0.4rem; justify-items: center; }
 .vc-qr canvas { border-radius: 12px; border: 1px solid var(--line-strong); background: #fff; }
