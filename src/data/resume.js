@@ -4,7 +4,7 @@
 export const RESUME = {
   fullName: 'Henrique Duarte Lopes Rocha',
   title: 'Telecommunications and Informatics Engineer',
-  location: '01210 Ferney-Voltaire, France',
+  location: 'Castelo Branco, Portugal',
   email: 'hdlopesrocha@protonmail.com',
   phone: '(+351) 938781922',
   phoneHref: 'tel:+351938781922',

@@ -37,7 +37,7 @@ function vcardText() {
     `TEL;TYPE=CELL,VOICE:${RESUME.phoneHref.replace('tel:', '')}`,
     `EMAIL:${RESUME.email}`,
     `URL:${RESUME.site}`,
-    `ADR;TYPE=HOME:;;01210 Ferney-Voltaire;;;France;`,
+    `ADR;TYPE=HOME:;;Castelo Branco;;;Portugal;`,
     'END:VCARD'
   ].join('\r\n')
 }
