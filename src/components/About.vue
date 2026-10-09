@@ -11,13 +11,6 @@
           real-time video-chat research at IST/INESC. Nowadays focused on Vulkan
           engines, SDF rendering, AI tooling, VR music and creative computing.
         </p>
-        <dl class="facts mono">
-          <div><dt>based in</dt><dd>{{ RESUME.location }}</dd></div>
-          <div><dt>email</dt><dd><a :href="`mailto:${RESUME.email}`">{{ RESUME.email }}</a></dd></div>
-          <div><dt>phone</dt><dd><a :href="RESUME.phoneHref">{{ RESUME.phone }}</a></dd></div>
-          <div><dt>languages</dt><dd>portuguese · english · french</dd></div>
-          <div><dt>video</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">youtube/hdlopesrocha ↗</a></dd></div>
-        </dl>
         <p class="muted">Off-screen: {{ interests }}</p>
         <div class="actions">
           <a class="btn primary" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">CV · English (PDF)</a>
@@ -33,15 +26,11 @@
         <p class="mono stack">c++ · vulkan · glsl · compute · vue · webaudio · lora</p>
       </div>
     </div>
-    <div class="wrap vcard-wrap">
-      <VCard />
-    </div>
   </section>
 </template>
 
 <script setup>
 import { RESUME, interests } from '../data/resume.js'
-import VCard from './VCard.vue'
 
 const interestsList = [
   'C++ & Vulkan',
@@ -61,11 +50,6 @@ const interestsList = [
 h2 { margin: 0.5rem 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing: -0.02em; line-height: 1.15; }
 .lede { font-size: 1.02rem; }
 .lede strong { color: var(--accent); }
-.facts { display: grid; gap: 0.35rem; margin: 1.2rem 0; font-size: 0.82rem; }
-.facts div { display: flex; gap: 0.8rem; }
-.facts dt { color: var(--accent); min-width: 5.5rem; }
-.facts dd { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
-.facts a { color: var(--text); }
 .muted { color: var(--muted); }
 .actions { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.5rem; }
 .interests { padding: 1.4rem 1.5rem; }
