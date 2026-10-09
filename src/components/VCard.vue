@@ -7,6 +7,7 @@
       <dl class="facts mono">
         <div><dt>based in</dt><dd>{{ RESUME.location }}</dd></div>
         <div><dt>phone</dt><dd>{{ RESUME.phone }}</dd></div>
+        <div><dt>email</dt><dd><a :href="`mailto:${RESUME.email}`">{{ RESUME.email }}</a></dd></div>
         <div><dt>site</dt><dd>{{ RESUME.site }}</dd></div>
         <div><dt>github</dt><dd><a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div><dt>youtube</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
