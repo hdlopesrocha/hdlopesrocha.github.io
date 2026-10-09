@@ -8,6 +8,8 @@
         <div><dt>based in</dt><dd>{{ RESUME.location }}</dd></div>
         <div><dt>phone</dt><dd>{{ RESUME.phone }}</dd></div>
         <div><dt>site</dt><dd>{{ RESUME.site }}</dd></div>
+        <div><dt>github</dt><dd><a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
+        <div><dt>youtube</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div><dt>nostr</dt><dd class="break">{{ NOSTR_RECIPIENT_NPUB }}</dd></div>
         <div><dt>telegram</dt><dd><a :href="RESUME.telegramUrl" target="_blank" rel="noopener noreferrer">{{ RESUME.telegram }} ↗</a></dd></div>
         <div><dt>lightning</dt><dd>{{ LIGHTNING_ADDRESS }}</dd></div>
@@ -43,6 +45,8 @@ function vcardText() {
     `TEL;TYPE=CELL,VOICE:${RESUME.phoneHref.replace('tel:', '')}`,
     `EMAIL:${RESUME.email}`,
     `URL:${RESUME.site}`,
+    `URL:${RESUME.github}`,
+    `URL:${RESUME.youtube}`,
     `ADR;TYPE=HOME:;;Castelo Branco;;;Portugal;`,
     `IMPP;TYPE=HOME:nostr:${NOSTR_RECIPIENT_NPUB}`,
     `IMPP;TYPE=HOME:${RESUME.telegramUrl}`,
