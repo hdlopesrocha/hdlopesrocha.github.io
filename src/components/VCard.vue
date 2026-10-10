@@ -5,15 +5,80 @@
       <h3>{{ RESUME.fullName }}</h3>
       <p class="muted">{{ RESUME.title }}</p>
       <dl class="facts mono">
-        <div><dt>based in</dt><dd>{{ RESUME.location }}</dd></div>
-        <div><dt>phone</dt><dd>{{ RESUME.phone }}</dd></div>
+        <div>
+          <dt>based in</dt>
+          <dd class="copyable">
+            <span>{{ RESUME.location }}</span>
+            <button
+              type="button"
+              class="copy-btn"
+              :class="{ ok: copiedKey === 'location' }"
+              @click="copyText('location', RESUME.location)"
+              :aria-label="copiedKey === 'location' ? 'Location copied' : 'Copy location'"
+              title="Copy"
+            >{{ copiedKey === 'location' ? '✓' : '⧉' }}</button>
+          </dd>
+        </div>
+        <div>
+          <dt>phone</dt>
+          <dd class="copyable">
+            <a :href="RESUME.phoneHref">{{ RESUME.phone }}</a>
+            <button
+              type="button"
+              class="copy-btn"
+              :class="{ ok: copiedKey === 'phone' }"
+              @click="copyText('phone', RESUME.phone)"
+              :aria-label="copiedKey === 'phone' ? 'Phone copied' : 'Copy phone'"
+              title="Copy"
+            >{{ copiedKey === 'phone' ? '✓' : '⧉' }}</button>
+          </dd>
+        </div>
         <div><dt>email</dt><dd><a :href="`mailto:${RESUME.email}`">{{ RESUME.email }}</a></dd></div>
-        <div><dt>site</dt><dd>{{ RESUME.site }}</dd></div>
+        <div>
+          <dt>site</dt>
+          <dd class="copyable">
+            <a :href="RESUME.site" target="_blank" rel="noopener noreferrer">{{ RESUME.site }}</a>
+            <button
+              type="button"
+              class="copy-btn"
+              :class="{ ok: copiedKey === 'site' }"
+              @click="copyText('site', RESUME.site)"
+              :aria-label="copiedKey === 'site' ? 'Site copied' : 'Copy site URL'"
+              title="Copy"
+            >{{ copiedKey === 'site' ? '✓' : '⧉' }}</button>
+          </dd>
+        </div>
         <div><dt>github</dt><dd><a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div><dt>youtube</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
-        <div><dt>nostr</dt><dd class="break">{{ NOSTR_RECIPIENT_NPUB }}</dd></div>
+        <div>
+          <dt>nostr</dt>
+          <dd class="copyable">
+            <span class="break">{{ NOSTR_RECIPIENT_NPUB }}</span>
+            <button
+              type="button"
+              class="copy-btn"
+              :class="{ ok: copiedKey === 'nostr' }"
+              @click="copyText('nostr', NOSTR_RECIPIENT_NPUB)"
+              :aria-label="copiedKey === 'nostr' ? 'npub copied' : 'Copy npub'"
+              title="Copy npub"
+            >{{ copiedKey === 'nostr' ? '✓' : '⧉' }}</button>
+          </dd>
+        </div>
         <div><dt>telegram</dt><dd><a :href="RESUME.telegramUrl" target="_blank" rel="noopener noreferrer">{{ RESUME.telegram }} ↗</a></dd></div>
-        <div><dt>lnurl</dt><dd>{{ LIGHTNING_ADDRESS }}</dd></div>
+        <div>
+          <dt>lnurl</dt>
+          <dd class="copyable">
+            <span>{{ LIGHTNING_ADDRESS }}</span>
+            <button
+              type="button"
+              class="copy-btn"
+              :class="{ ok: copiedKey === 'lnurl' }"
+              @click="copyText('lnurl', LIGHTNING_ADDRESS)"
+              :aria-label="copiedKey === 'lnurl' ? 'Lightning address copied' : 'Copy lightning address'"
+              title="Copy"
+            >{{ copiedKey === 'lnurl' ? '✓' : '⧉' }}</button>
+          </dd>
+        </div>
       </dl>
       <div class="vc-actions">
         <button class="btn small primary" type="button" @click="download">Download .vcf</button>
@@ -37,6 +102,8 @@ import { LIGHTNING_ADDRESS } from '../data/donate.js'
 
 const qrCanvas = ref(null)
 const vcopied = ref(false)
+const copiedKey = ref(null)
+let copyTimer = null
 
 function vcardText() {
   return [
@@ -68,6 +135,26 @@ function download() {
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 5000)
+}
+
+async function copyText(key, text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+    } else {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      ta.remove()
+    }
+    copiedKey.value = key
+    clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => (copiedKey.value = null), 1500)
+  } catch {}
 }
 
 async function copyVCard() {
@@ -110,6 +197,22 @@ h3 { margin: 0.4rem 0 0.2rem; font-size: 1.3rem; }
 .facts dd { margin: 0; color: var(--muted); }
 .facts dd.break { word-break: break-all; }
 .facts a { color: var(--text); }
+.facts dd.copyable { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+.facts dd.copyable span.break { word-break: break-all; }
+.copy-btn {
+  flex: none;
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--dim);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.copy-btn:hover { color: var(--text); border-color: var(--accent); }
+.copy-btn.ok { color: var(--accent); border-color: var(--accent); }
 .vc-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .vc-qr { display: grid; gap: 0.4rem; justify-items: center; }
 .qr-btn { background: none; border: none; padding: 0; cursor: pointer; border-radius: 12px; line-height: 0; }

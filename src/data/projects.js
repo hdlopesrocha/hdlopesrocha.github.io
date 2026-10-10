@@ -16,6 +16,19 @@ export const CATEGORIES = {
 
 export const projects = [
   {
+    name: 'opencode-talk',
+    repo: 'opencode-talk',
+    url: 'https://github.com/hdlopesrocha/opencode-talk',
+    pages: 'https://hdlopesrocha.github.io/opencode-talk/',
+    description:
+      'Two-way voice for OpenCode: talk to the agent (speech-to-text) and let it talk back (text-to-speech) — plus remote session control from Telegram, XMPP and Nostr.',
+    category: 'ai',
+    technologies: ['OpenCode Plugin', 'Two-way Voice', 'Whisper STT', 'Neural TTS', 'TypeScript', 'Telegram', 'XMPP', 'Nostr DMs', 'Session API'],
+    featured: true,
+    visual: 'terminal-wave',
+    timeline: 'parallel'
+  },
+  {
     name: 'vulkan-engine',
     repo: 'vulkan-engine',
     url: 'https://github.com/hdlopesrocha/vulkan-engine',
@@ -65,19 +78,6 @@ export const projects = [
     featured: false,
     visual: 'terrain',
     timeline: 'main'
-  },
-  {
-    name: 'opencode-talk',
-    repo: 'opencode-talk',
-    url: 'https://github.com/hdlopesrocha/opencode-talk',
-    pages: 'https://hdlopesrocha.github.io/opencode-talk/',
-    description:
-      'Two-way voice for OpenCode: talk to the agent (speech-to-text) and let it talk back (text-to-speech) — plus remote session control from Telegram, XMPP and Nostr.',
-    category: 'ai',
-    technologies: ['OpenCode Plugin', 'Two-way Voice', 'Whisper STT', 'Neural TTS', 'TypeScript', 'Telegram', 'XMPP', 'Nostr DMs', 'Session API'],
-    featured: true,
-    visual: 'terminal-wave',
-    timeline: 'parallel'
   },
   {
     name: 'music-ai',
