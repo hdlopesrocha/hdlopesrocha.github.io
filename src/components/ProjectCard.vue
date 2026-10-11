@@ -38,6 +38,18 @@
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c-4.5 4.5-4.5 8.5 0 13M8 1.5c4.5 4.5 4.5 8.5 0 13"/></svg>
           Live
         </a>
+        <a
+          v-if="project.video"
+          class="btn small ghost"
+          :href="project.video"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="`Watch ${project.name} demo video`"
+          title="Demo video"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 3.5v9l7-4.5z"/></svg>
+          Demo
+        </a>
         <span class="repo mono">{{ project.repo }}</span>
       </div>
     </div>
