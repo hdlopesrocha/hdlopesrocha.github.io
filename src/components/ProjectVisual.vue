@@ -175,6 +175,143 @@
       <text x="180" y="120" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">lora · 868mhz · ctl</text>
     </svg>
 
+    <!-- matrix : webgl face of falling digital rain -->
+    <svg v-else-if="visual === 'matrix'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <rect width="320" height="150" fill="#020604" />
+      <ellipse cx="160" cy="75" rx="52" ry="62" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="1.5" />
+      <g font-family="monospace" font-size="12" text-anchor="middle">
+        <g fill="#4ade80">
+          <text x="120" y="34">ﾊ</text><text x="140" y="52">ﾐ</text><text x="160" y="30">ﾋ</text>
+          <text x="180" y="50">ｰ</text><text x="200" y="36">ｳ</text><text x="150" y="86">ｼ</text>
+          <text x="170" y="104">ﾅ</text><text x="130" y="116">ﾓ</text><text x="190" y="122">ﾊ</text>
+        </g>
+        <g fill="rgba(34,197,94,0.55)">
+          <text x="120" y="52">ﾐ</text><text x="140" y="70">ﾋ</text><text x="160" y="48">ｰ</text>
+          <text x="180" y="68">ｳ</text><text x="200" y="54">ｼ</text><text x="150" y="104">ﾅ</text>
+          <text x="170" y="122">ﾓ</text><text x="130" y="134">ﾊ</text><text x="190" y="140">ﾐ</text>
+          <text x="110" y="90">1</text><text x="210" y="96">0</text>
+        </g>
+        <g fill="rgba(34,197,94,0.28)">
+          <text x="120" y="70">ﾋ</text><text x="140" y="88">ｰ</text><text x="160" y="66">ｳ</text>
+          <text x="180" y="86">ｼ</text><text x="200" y="72">ﾅ</text><text x="150" y="122">ﾓ</text>
+          <text x="100" y="60">0</text><text x="220" y="70">1</text><text x="110" y="108">ﾊ</text><text x="210" y="114">ﾐ</text>
+        </g>
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">webgl · normal-mapped rain</text>
+    </svg>
+
+    <!-- blend : noise-mask texture blending -->
+    <svg v-else-if="visual === 'blend'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <rect x="36" y="18" width="248" height="114" rx="8" fill="none" stroke="rgba(148,178,255,0.3)" />
+      <path d="M36 76 Q96 96 150 70 Q204 44 284 72" fill="none" stroke="rgba(45,212,191,0.25)" stroke-width="7" />
+      <path d="M36 76 Q96 96 150 70 Q204 44 284 72" fill="none" stroke="#2dd4bf" stroke-width="1.8" />
+      <rect x="52" y="30" width="70" height="30" rx="4" fill="rgba(45,212,191,0.10)" stroke="rgba(45,212,191,0.6)" />
+      <rect x="198" y="90" width="70" height="30" rx="4" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.55)" />
+      <text x="60" y="49" font-family="monospace" font-size="9" fill="rgba(153,246,228,0.9)">grass</text>
+      <text x="210" y="109" font-family="monospace" font-size="9" fill="rgba(253,230,138,0.9)">sand</text>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">glsl · noise-mask blend</text>
+    </svg>
+
+    <!-- water : fft-driven wave mesh -->
+    <svg v-else-if="visual === 'water'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g fill="rgba(45,212,191,0.5)">
+        <rect x="40" y="30" width="5" height="34" rx="2" /><rect x="70" y="22" width="5" height="42" rx="2" />
+        <rect x="100" y="36" width="5" height="28" rx="2" /><rect x="130" y="18" width="5" height="46" rx="2" />
+        <rect x="160" y="30" width="5" height="34" rx="2" /><rect x="190" y="24" width="5" height="40" rx="2" />
+        <rect x="220" y="34" width="5" height="30" rx="2" /><rect x="250" y="20" width="5" height="44" rx="2" />
+      </g>
+      <g fill="none" stroke-linecap="round">
+        <path d="M0 96 Q 20 88 40 96 T 80 96 T 120 96 T 160 96 T 200 96 T 240 96 T 280 96 T 320 96" stroke="rgba(56,189,248,0.8)" stroke-width="2" />
+        <path d="M0 108 Q 20 100 40 108 T 80 108 T 120 108 T 160 108 T 200 108 T 240 108 T 280 108 T 320 108" stroke="rgba(45,212,191,0.5)" stroke-width="1.5" />
+        <path d="M0 120 Q 20 114 40 120 T 80 120 T 120 120 T 160 120 T 200 120 T 240 120 T 280 120 T 320 120" stroke="rgba(56,189,248,0.3)" stroke-width="1.2" />
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">fft wave mesh</text>
+    </svg>
+
+    <!-- perlin : concentric noise circles -->
+    <svg v-else-if="visual === 'perlin'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g fill="none" stroke="rgba(45,212,191,0.65)">
+        <circle cx="160" cy="72" r="14" />
+        <circle cx="160" cy="72" r="24" opacity="0.8" stroke-dasharray="6 4" />
+        <circle cx="160" cy="72" r="35" opacity="0.6" />
+        <circle cx="160" cy="72" r="47" opacity="0.45" stroke-dasharray="3 5" />
+        <circle cx="160" cy="72" r="60" opacity="0.3" />
+      </g>
+      <circle cx="160" cy="72" r="3.5" fill="#2dd4bf" stroke="none" />
+      <g fill="rgba(56,189,248,0.55)">
+        <rect x="36" y="60" width="4" height="24" rx="2" /><rect x="272" y="56" width="4" height="32" rx="2" />
+        <rect x="52" y="70" width="4" height="16" rx="2" /><rect x="258" y="68" width="4" height="20" rx="2" />
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">256 perlin circles</text>
+    </svg>
+
+    <!-- sphere : fft-displaced wireframe sphere -->
+    <svg v-else-if="visual === 'sphere'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g fill="none" stroke="rgba(56,189,248,0.65)">
+        <circle cx="148" cy="72" r="44" />
+        <ellipse cx="148" cy="72" rx="44" ry="16" opacity="0.8" />
+        <ellipse cx="148" cy="72" rx="16" ry="44" opacity="0.8" stroke="#2dd4bf" />
+        <ellipse cx="148" cy="72" rx="30" ry="44" opacity="0.4" />
+        <path d="M104 72 H192" opacity="0.5" />
+      </g>
+      <g fill="rgba(45,212,191,0.6)">
+        <rect x="216" y="96" width="6" height="18" rx="2" /><rect x="228" y="86" width="6" height="28" rx="2" />
+        <rect x="240" y="92" width="6" height="22" rx="2" /><rect x="252" y="78" width="6" height="36" rx="2" />
+        <rect x="264" y="90" width="6" height="24" rx="2" />
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">fft sphere verts</text>
+    </svg>
+
+    <!-- polar : radial perlin rings -->
+    <svg v-else-if="visual === 'polar'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g stroke="rgba(167,139,250,0.6)" fill="none">
+        <circle cx="160" cy="72" r="20" />
+        <circle cx="160" cy="72" r="34" opacity="0.7" />
+        <circle cx="160" cy="72" r="48" opacity="0.45" stroke-dasharray="4 4" />
+        <path d="M160 22 V122 M110 72 H210 M125 37 L195 107 M195 37 L125 107" opacity="0.3" />
+      </g>
+      <g fill="#a78bfa" stroke="none">
+        <circle cx="160" cy="52" r="3" opacity="0.9" /><circle cx="180" cy="72" r="3" opacity="0.7" />
+        <circle cx="160" cy="92" r="3" opacity="0.5" /><circle cx="140" cy="72" r="3" opacity="0.8" />
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">128 polar rings</text>
+    </svg>
+
+    <!-- spiral : noise-driven spiral -->
+    <svg v-else-if="visual === 'spiral'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <path d="M160 72 a5 5 0 0 1 5 5 a10 10 0 0 1 -10 10 a15 15 0 0 1 -15 -15 a20 20 0 0 1 20 -20 a25 25 0 0 1 25 25 a30 30 0 0 1 -30 30 a35 35 0 0 1 -35 -35 a40 40 0 0 1 40 -40" fill="none" stroke="rgba(244,114,182,0.7)" stroke-width="1.6" />
+      <circle cx="160" cy="72" r="3" fill="#f472b6" stroke="none" />
+      <g fill="rgba(244,114,182,0.5)">
+        <rect x="252" y="88" width="5" height="26" rx="2" /><rect x="264" y="78" width="5" height="36" rx="2" /><rect x="276" y="92" width="5" height="22" rx="2" />
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">noise spiral</text>
+    </svg>
+
+    <!-- radial : fft-driven radial blur -->
+    <svg v-else-if="visual === 'radial'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g stroke="rgba(56,189,248,0.55)" fill="none">
+        <path d="M160 72 L160 14 M160 72 L160 130 M160 72 L102 72 M160 72 L218 72 M160 72 L119 31 M160 72 L201 113 M160 72 L201 31 M160 72 L119 113" opacity="0.6" />
+        <circle cx="160" cy="72" r="18" stroke="#2dd4bf" />
+        <circle cx="160" cy="72" r="34" opacity="0.6" stroke-dasharray="5 4" />
+        <circle cx="160" cy="72" r="50" opacity="0.35" />
+      </g>
+      <circle cx="160" cy="72" r="4" fill="#38bdf8" stroke="none" />
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">256-tap radial blur</text>
+    </svg>
+
+    <!-- ripple : fft-driven uv ripple -->
+    <svg v-else-if="visual === 'ripple'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g fill="none" stroke="rgba(45,212,191,0.65)">
+        <ellipse cx="160" cy="78" rx="24" ry="9" />
+        <ellipse cx="160" cy="78" rx="44" ry="15" opacity="0.55" />
+        <ellipse cx="160" cy="78" rx="66" ry="22" opacity="0.35" />
+        <ellipse cx="160" cy="78" rx="88" ry="29" opacity="0.2" />
+      </g>
+      <circle cx="160" cy="40" r="5" fill="none" stroke="rgba(56,189,248,0.8)" />
+      <path d="M160 48 V64" stroke="rgba(56,189,248,0.5)" stroke-dasharray="2 3" />
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">fft ripple</text>
+    </svg>
+
     <!-- rings : spring campus -->
     <svg v-else-if="visual === 'rings'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
       <g fill="none">

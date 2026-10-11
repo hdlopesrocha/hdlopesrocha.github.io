@@ -143,6 +143,131 @@ export const projects = [
     year: '2019'
   },
   {
+    name: 'spring-webgl',
+    repo: 'spring-webgl',
+    url: 'https://github.com/hdlopesrocha/spring-webgl',
+    pages: 'https://hdlopesrocha.github.io/spring-webgl/',
+    description:
+      'Audio-reactive WebGL water: an uploaded sound file drives a simplex-noise wave mesh through FFT frequency data, with diffuse and specular shading.',
+    category: 'experimental',
+    technologies: ['WebGL', 'GLSL', 'Web Audio', 'JavaScript', 'Simplex Noise'],
+    featured: false,
+    visual: 'water',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'water-perlin-music',
+    repo: 'water-perlin-music',
+    url: 'https://github.com/hdlopesrocha/water-perlin-music',
+    pages: 'https://hdlopesrocha.github.io/water-perlin-music/',
+    description:
+      '2D canvas of 256 Perlin-noise circles pulsing to the FFT spectrum of an uploaded mp3.',
+    category: 'experimental',
+    technologies: ['Canvas 2D', 'Web Audio', 'Perlin Noise', 'JavaScript'],
+    featured: false,
+    visual: 'perlin',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'music-sphere',
+    repo: 'music-sphere',
+    url: 'https://github.com/hdlopesrocha/music-sphere',
+    pages: 'https://hdlopesrocha.github.io/music-sphere/',
+    description:
+      'Rotating WebGL sphere whose vertices breathe with an mp3’s frequency and waveform data, plus live spectrum charts.',
+    category: 'experimental',
+    technologies: ['WebGL', 'Web Audio', 'JavaScript'],
+    featured: false,
+    visual: 'sphere',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'polar-perlin-music',
+    repo: 'polar-perlin-music',
+    url: 'https://github.com/hdlopesrocha/polar-perlin-music',
+    pages: 'https://hdlopesrocha.github.io/polar-perlin-music/',
+    description:
+      '128 polar Perlin rings on 2D canvas, warped in real time by the spectrum of an uploaded mp3.',
+    category: 'experimental',
+    technologies: ['Canvas 2D', 'Web Audio', 'Perlin Noise', 'JavaScript'],
+    featured: false,
+    visual: 'polar',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'spiral-viz',
+    repo: 'spiral-viz',
+    url: 'https://github.com/hdlopesrocha/spiral-viz',
+    pages: 'https://hdlopesrocha.github.io/spiral-viz/',
+    description:
+      'Noise-driven 2D spiral visualizer with live time-domain and frequency charts from an uploaded track.',
+    category: 'experimental',
+    technologies: ['Canvas 2D', 'Web Audio', 'Perlin Noise', 'JavaScript'],
+    featured: false,
+    visual: 'spiral',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'texture-blend',
+    repo: 'texture-blend',
+    url: 'https://github.com/hdlopesrocha/texture-blend',
+    pages: 'https://hdlopesrocha.github.io/texture-blend/',
+    description:
+      'Fullscreen WebGL shader blending grass, sand and dirt textures through an animated simplex-noise mask.',
+    category: 'experimental',
+    technologies: ['WebGL', 'GLSL', 'Simplex Noise', 'JavaScript'],
+    featured: false,
+    visual: 'blend',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'radial-blur',
+    repo: 'radial-blur',
+    url: 'https://github.com/hdlopesrocha/radial-blur',
+    pages: 'https://hdlopesrocha.github.io/radial-blur/',
+    description:
+      '256-tap WebGL radial blur whose radius is driven by an mp3’s FFT bins mapped from the image center.',
+    category: 'experimental',
+    technologies: ['WebGL', 'GLSL', 'Web Audio', 'JavaScript'],
+    featured: false,
+    visual: 'radial',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'ripple-viz',
+    repo: 'ripple-viz',
+    url: 'https://github.com/hdlopesrocha/ripple-viz',
+    pages: 'https://hdlopesrocha.github.io/ripple-viz/',
+    description:
+      'WebGL ripple effect distorting a background image with noise whose wavelength follows an mp3’s spectrum.',
+    category: 'experimental',
+    technologies: ['WebGL', 'GLSL', 'Web Audio', 'Simplex Noise'],
+    featured: false,
+    visual: 'ripple',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'matrix-face',
+    repo: 'matrix-face',
+    url: 'https://github.com/hdlopesrocha/matrix-face',
+    pages: 'https://hdlopesrocha.github.io/matrix-face/',
+    description:
+      'WebGL experiment rendering a face formed by Matrix-style digital rain, lit through a normal map with custom GLSL shaders.',
+    category: 'graphics',
+    technologies: ['WebGL', 'GLSL', 'JavaScript', 'Normal Maps'],
+    featured: false,
+    visual: 'matrix',
+    timeline: 'parallel'
+  },
+  {
     name: 'mobarrocas',
     repo: 'mobarrocas',
     url: 'https://github.com/hdlopesrocha/mobarrocas',
