@@ -21,6 +21,7 @@
           <header>
             <h4>{{ org.org }}</h4>
             <p v-if="org.place" class="mono place">{{ org.place }}</p>
+            <a v-if="org.link" class="tag link mono" :href="org.link" target="_blank" rel="noopener noreferrer">↗ {{ org.linkLabel }}</a>
           </header>
           <ol>
             <li v-for="r in org.roles" :key="r.title + r.period">
