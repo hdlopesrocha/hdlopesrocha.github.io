@@ -26,13 +26,23 @@
           </li>
         </ul>
       </div>
+
+      <div class="thesis glass">
+        <p class="mono thesis-title">// master thesis</p>
+        <p>
+          <a href="https://github.com/hdlopesrocha/ist168621" target="_blank" rel="noopener noreferrer" class="mono repo-link">Master Thesis — Interactive Multi-User Video Chat</a>
+          <span class="mono repo-id">(ist168621 · IST, 2015)</span>
+          — interactive multi-user video chat with recording, content overlay and collaborative text editor.
+          <a href="https://www.youtube.com/watch?v=TWfbcBKbseA" target="_blank" rel="noopener noreferrer">Watch demo</a>
+        </p>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
 import { evolutionChain, projectByRepo } from '../data/projects.js'
-const parallelRepos = ['vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk', 'ist168621']
+const parallelRepos = ['vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk']
 </script>
 
 <style scoped>
@@ -65,6 +75,12 @@ const parallelRepos = ['vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card
   font-weight: 700;
 }
 .parallel { padding: 1.1rem 1.3rem; }
+.thesis { padding: 1.1rem 1.3rem; margin-top: 1rem; border-color: rgba(45, 212, 191, 0.35); }
+.thesis-title { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.8rem; }
+.thesis p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.repo-id { color: var(--dim); font-size: 0.78rem; margin-left: 0.5rem; }
+.thesis a:last-child { color: var(--accent); text-decoration: none; white-space: nowrap; }
+.thesis a:last-child:hover { text-decoration: underline; }
 .parallel-title { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.8rem; }
 .parallel ul {
   list-style: none; margin: 0; padding: 0;
