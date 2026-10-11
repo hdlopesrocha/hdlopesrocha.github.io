@@ -128,6 +128,33 @@ export const projects = [
     timeline: 'parallel'
   },
   {
+    name: 'spring-campus-2019',
+    repo: 'spring-campus-2019',
+    url: 'https://github.com/hdlopesrocha/spring-campus-2019',
+    pages: 'https://hdlopesrocha.github.io/spring-campus-2019/dist/spring/',
+    description: 'Older project from the Spring Campus 2019 period.',
+    category: 'experimental',
+    technologies: ['Spring Campus', '2019', 'Experiment'],
+    featured: false,
+    visual: 'rings',
+    timeline: 'main',
+    year: '2019'
+  },
+  {
+    name: 'mobarrocas',
+    repo: 'mobarrocas',
+    url: 'https://github.com/hdlopesrocha/mobarrocas',
+    pages: 'https://hdlopesrocha.github.io/mobarrocas/',
+    description:
+      'Website for “Aromas de Guidintesta”: Vue 3 + Bootstrap site with client-side routing, deployed to GitHub Pages.',
+    category: 'web',
+    technologies: ['Vue 3', 'vue-router', 'Bootstrap', 'JavaScript'],
+    featured: false,
+    visual: 'cards',
+    timeline: 'parallel',
+    year: '2022'
+  },
+  {
     name: 'Master Thesis — Interactive Multi-User Video Chat',
     repo: 'ist168621',
     url: 'https://github.com/hdlopesrocha/ist168621',
@@ -140,19 +167,6 @@ export const projects = [
     visual: 'rings',
     timeline: 'thesis',
     year: '2015'
-  },
-  {
-    name: 'spring-campus-2019',
-    repo: 'spring-campus-2019',
-    url: 'https://github.com/hdlopesrocha/spring-campus-2019',
-    pages: 'https://hdlopesrocha.github.io/spring-campus-2019/dist/spring/',
-    description: 'Older project from the Spring Campus 2019 period.',
-    category: 'experimental',
-    technologies: ['Spring Campus', '2019', 'Experiment'],
-    featured: false,
-    visual: 'rings',
-    timeline: 'main',
-    year: '2019'
   }
 ]
 
