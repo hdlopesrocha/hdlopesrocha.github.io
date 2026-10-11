@@ -28,7 +28,9 @@ export const experience = [
         title: 'Full-Stack Development & Support — FAP-BC-UI',
         detail:
           'Maintenance, development and support of recruitment and document-management applications.',
-        tags: ['Vue', 'React', 'Elastic Search', 'Prometheus', 'OracleHR', 'Activiti']
+        tags: ['Vue', 'React', 'Elastic Search', 'Prometheus', 'OracleHR', 'Activiti'],
+        link: 'https://indico.cern.ch/event/844444/attachments/1909261/3154346/IST_CERN_Collaboration_Agreement_Visita_dos_Professor_Arlindo_Oliveira___Nuno_Roma_4th_of_September_2019.pdf',
+        linkLabel: 'IST–CERN agreement (PDF)'
       },
       {
         period: 'Sep 2019 · 4 days',
