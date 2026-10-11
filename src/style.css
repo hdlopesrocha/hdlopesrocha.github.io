@@ -164,6 +164,7 @@ section { scroll-margin-top: 84px; }
 .cat-vr { border-color: rgba(56,189,248,.5); color: #bae6fd; }
 .cat-web { border-color: rgba(251,191,36,.45); color: #fde68a; }
 .cat-hardware { border-color: rgba(244,114,182,.45); color: #fbcfe8; }
+.cat-thesis { border-color: rgba(45,212,191,.55); color: #99f6e4; }
 .cat-experimental { border-color: rgba(148,163,184,.5); color: #cbd5e1; }
 
 .sr-only {

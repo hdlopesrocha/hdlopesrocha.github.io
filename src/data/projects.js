@@ -11,6 +11,7 @@ export const CATEGORIES = {
   vr: { label: 'VR', class: 'cat-vr' },
   web: { label: 'Web', class: 'cat-web' },
   hardware: { label: 'Hardware', class: 'cat-hardware' },
+  thesis: { label: 'Thesis', class: 'cat-thesis' },
   experimental: { label: 'Experimental', class: 'cat-experimental' }
 }
 
@@ -127,16 +128,17 @@ export const projects = [
     timeline: 'parallel'
   },
   {
-    name: 'ist168621',
+    name: 'Master Thesis — Interactive Multi-User Video Chat',
     repo: 'ist168621',
     url: 'https://github.com/hdlopesrocha/ist168621',
+    video: 'https://www.youtube.com/watch?v=TWfbcBKbseA',
     description:
-      'IST student-number archive: thesis drafts, WebRTC experiments, presentations and project documents from the university years.',
-    category: 'experimental',
-    technologies: ['WebRTC', 'JavaScript', 'Academic', 'Archive'],
-    featured: false,
+      'Master thesis (IST, 2015): interactive multi-user video chat with recording, content overlay and collaborative text editor — Kurento mixing, QR detection and operational transforms via ot.js.',
+    category: 'thesis',
+    technologies: ['Kurento', 'WebRTC', 'JavaScript', 'ot.js', 'QR Detection'],
+    featured: true,
     visual: 'rings',
-    timeline: 'parallel',
+    timeline: 'thesis',
     year: '2015'
   },
   {
