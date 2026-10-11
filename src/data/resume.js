@@ -10,6 +10,7 @@ export const RESUME = {
   phoneHref: 'tel:+351938781922',
   github: 'https://github.com/hdlopesrocha',
   youtube: 'https://www.youtube.com/user/hdlopesrocha',
+  soundcloud: 'https://soundcloud.com/hdlopesrocha',
   telegram: '@hdlopesrocha',
   telegramUrl: 'https://t.me/hdlopesrocha',
   site: 'https://hdlopesrocha.github.io/',

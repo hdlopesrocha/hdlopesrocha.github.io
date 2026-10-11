@@ -50,6 +50,7 @@
         </div>
         <div><dt>github</dt><dd><a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div><dt>youtube</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
+        <div><dt>soundcloud</dt><dd><a :href="RESUME.soundcloud" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div>
           <dt>nostr</dt>
           <dd class="copyable">
@@ -117,6 +118,7 @@ function vcardText() {
     `URL:${RESUME.site}`,
     `URL:${RESUME.github}`,
     `URL:${RESUME.youtube}`,
+    `URL:${RESUME.soundcloud}`,
     `ADR;TYPE=HOME:;;;Castelo Branco;;;Portugal`,
     `IMPP;TYPE=HOME:nostr:${NOSTR_RECIPIENT_NPUB}`,
     `IMPP;TYPE=HOME:${RESUME.telegramUrl}`,
