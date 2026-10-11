@@ -45,6 +45,19 @@ export const projects = [
     timeline: 'main'
   },
   {
+    name: 'lora-control',
+    repo: 'lora-control',
+    url: 'https://github.com/hdlopesrocha/lora-control',
+    pages: 'https://hdlopesrocha.github.io/lora-control/',
+    description:
+      'ESP32 LoRa relay control: server node schedules remote relays over 868 MHz with .ics calendar uploads, web dashboard, OLED status and SHA-256 authenticated packets — docs site in Vue 3 + Vite.',
+    category: 'hardware',
+    technologies: ['ESP32', 'LoRa', 'Arduino', 'Relays', '.ics Scheduling', 'SHA-256', 'OLED', 'Vue 3'],
+    featured: false,
+    visual: 'signal',
+    timeline: 'parallel'
+  },
+  {
     name: 'sdf-smoke',
     repo: 'sdf-smoke',
     url: 'https://github.com/hdlopesrocha/sdf-smoke',
@@ -114,17 +127,6 @@ export const projects = [
     technologies: ['Web', 'JavaScript', 'Generative UI'],
     featured: false,
     visual: 'cards',
-    timeline: 'parallel'
-  },
-  {
-    name: 'lora-control',
-    repo: 'lora-control',
-    url: 'https://github.com/hdlopesrocha/lora-control',
-    description: 'LoRa / control-related project: low-power radio signalling and device control.',
-    category: 'hardware',
-    technologies: ['LoRa', 'Controllers', 'Signals'],
-    featured: false,
-    visual: 'signal',
     timeline: 'parallel'
   },
   {
