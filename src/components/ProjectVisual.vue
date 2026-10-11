@@ -109,6 +109,32 @@
       <text x="14" y="20" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">webAudio → canvas · webgl</text>
     </svg>
 
+    <!-- teashop : mobarrocas tea shop website -->
+    <svg v-else-if="visual === 'teashop'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <rect x="44" y="16" width="232" height="118" rx="8" fill="rgba(5,7,13,0.8)" stroke="rgba(148,178,255,0.35)" />
+      <path d="M44 40 H276" stroke="rgba(148,178,255,0.35)" />
+      <circle cx="58" cy="28" r="3" fill="#2dd4bf" stroke="none" opacity="0.8" />
+      <circle cx="70" cy="28" r="3" fill="#38bdf8" stroke="none" opacity="0.8" />
+      <circle cx="82" cy="28" r="3" fill="#a78bfa" stroke="none" opacity="0.8" />
+      <rect x="96" y="22" width="150" height="12" rx="6" fill="none" stroke="rgba(148,178,255,0.3)" />
+      <text x="104" y="31" font-family="monospace" font-size="8" fill="rgba(147,161,184,0.9)">mobarrocas · shop</text>
+      <g fill="none" stroke="rgba(45,212,191,0.75)" stroke-width="1.5">
+        <path d="M120 70 h44 l-6 34 h-32 z" />
+        <path d="M164 74 q16 2 12 16 q-3 12 -16 10" />
+        <path d="M112 112 H176" stroke="rgba(148,178,255,0.4)" />
+      </g>
+      <g fill="none" stroke="rgba(56,189,248,0.7)" stroke-width="1.5" stroke-linecap="round">
+        <path d="M134 62 q-6 -8 0 -16 q6 -8 0 -14" />
+        <path d="M148 62 q-6 -8 0 -16 q6 -8 0 -14" opacity="0.6" />
+      </g>
+      <g fill="none" stroke="rgba(251,191,36,0.7)" stroke-width="1.5">
+        <rect x="196" y="80" width="34" height="30" rx="3" />
+        <path d="M203 80 q0 -12 10 -12 q10 0 10 12" />
+      </g>
+      <text x="203" y="99" font-family="monospace" font-size="11" fill="#fde68a">€</text>
+      <text x="56" y="126" font-family="monospace" font-size="8" fill="rgba(147,161,184,0.9)">vue · shop · tea</text>
+    </svg>
+
     <!-- spatial : vr -->
     <svg v-else-if="visual === 'spatial'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
       <g fill="none" stroke="rgba(56,189,248,0.6)">

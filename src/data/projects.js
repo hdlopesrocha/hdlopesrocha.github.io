@@ -150,7 +150,7 @@ export const projects = [
     category: 'web',
     technologies: ['Vue 3', 'vue-router', 'Bootstrap', 'JavaScript'],
     featured: false,
-    visual: 'cards',
+    visual: 'teashop',
     timeline: 'parallel',
     year: '2022'
   },
