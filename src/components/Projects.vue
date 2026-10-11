@@ -3,7 +3,7 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow mono">~/projects — 11 repos</p>
-        <h2 id="projects-title">Experiments in graphics, AI &amp; beyond</h2>
+        <h2 id="projects-title">Projects in graphics, AI &amp; beyond</h2>
         <p>
           Each card links to the live repository. Live star / language data loads
           progressively when the GitHub API is reachable — the catalogue below always renders regardless.
@@ -52,6 +52,7 @@ const filters = [
   { id: 'vr', label: 'vr' },
   { id: 'web', label: 'web' },
   { id: 'hardware', label: 'hardware' },
+  { id: 'thesis', label: 'thesis' },
   { id: 'experimental', label: 'experimental' }
 ]
 const activeFilter = ref('all')
