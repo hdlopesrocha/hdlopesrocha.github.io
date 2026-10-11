@@ -134,9 +134,10 @@ export const projects = [
     repo: 'spring-campus-2019',
     url: 'https://github.com/hdlopesrocha/spring-campus-2019',
     pages: 'https://hdlopesrocha.github.io/spring-campus-2019/dist/spring/',
-    description: 'Older project from the Spring Campus 2019 period.',
+    description:
+      'HTML presentation about WebGL and the WebAudio API, delivered for CERN at TUHH Hamburg — Spring Campus 2019, with live music-visualization demos.',
     category: 'experimental',
-    technologies: ['Spring Campus', '2019', 'Experiment'],
+    technologies: ['WebGL', 'Web Audio', 'HTML', 'Presentation', 'CERN', 'TUHH'],
     featured: false,
     visual: 'audio3d',
     timeline: 'main',
