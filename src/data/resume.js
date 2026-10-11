@@ -169,13 +169,17 @@ export const education = [
     period: '2013–2016',
     degree: 'Master of Science',
     school: 'Instituto Superior Técnico — Taguspark',
-    detail: 'Telecommunications and Informatics Engineering · final grade 16/20'
+    detail: 'Telecommunications and Informatics Engineering · final grade 16/20',
+    link: 'https://fenix.tecnico.ulisboa.pt/cursos/merc/dissertacao/1691203502342257',
+    linkLabel: 'Master thesis (Fenix)'
   },
   {
     period: '2009–2014',
     degree: 'Bachelor of Science',
     school: 'Instituto Superior Técnico — Taguspark',
-    detail: 'Communication Networks Engineering · final grade 13.2/20'
+    detail: 'Communication Networks Engineering · final grade 13.2/20',
+    link: 'https://conselhopedagogico.tecnico.ulisboa.pt/premios-e-projetos/quadro-e-diplomas-de-merito/quadro-de-merito-academico-20132014/#leti',
+    linkLabel: 'Academic merit board 2013/2014'
   }
 ]
 

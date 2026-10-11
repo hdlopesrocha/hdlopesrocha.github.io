@@ -45,6 +45,9 @@
           <h4>{{ e.degree }}</h4>
           <p class="school">{{ e.school }}</p>
           <p class="muted">{{ e.detail }}</p>
+          <p v-if="e.link" class="links">
+            <a :href="e.link" target="_blank" rel="noopener noreferrer">↗ {{ e.linkLabel }}</a>
+          </p>
         </article>
       </div>
 
