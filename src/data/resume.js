@@ -209,28 +209,23 @@ export const languages = [
 // the rest are listed as text (original store links are long dead).
 export const earlyApps = [
   {
-    year: '2020',
-    name: 'VR music visualizer',
-    detail: 'VR music visualizer using WebXR and WebGL.',
-    link: 'https://hdlopesrocha.github.io/vrMusic/',
-    linkLabel: 'Live demo',
-    video: 'https://www.youtube.com/watch?v=DSdHLLsvcnM'
-  },
-  {
     year: '2015',
     name: 'Bomb Raider',
-    detail: 'Single/multiplayer Android game; OpenGL ES rendering, WiFi-Direct multiplayer.'
+    detail: 'Single/multiplayer Android game; OpenGL ES rendering, WiFi-Direct multiplayer.',
+    video: 'https://www.youtube.com/watch?v=_ceeTe4TS1U'
   },
-  { year: '2013', name: 'OpenGlobe', detail: 'Earth-surface modeling from GPS and topographic data, plus satellite prediction from ephemeris data.' },
+  { year: '2013', name: 'OpenGlobe', detail: 'Earth-surface modeling from GPS and topographic data, plus satellite prediction from ephemeris data.', video: 'https://www.youtube.com/watch?v=f1tAC4ZhqkQ' },
   {
     year: '2012',
     name: 'Infinity Edge',
-    detail: 'First-person spaceship shooter for Windows Phone 7 in XNA/HLSL — 2nd place, Pizza Night competition.'
+    detail: 'First-person spaceship shooter for Windows Phone 7 in XNA/HLSL — 2nd place, Pizza Night competition.',
+    video: 'https://www.youtube.com/watch?v=3gUKui7O9TY'
   },
   {
     year: '2011',
     name: 'Era of Empires',
-    detail: '3D environment generator and real-time-strategy engine in OpenGL.'
+    detail: '3D environment generator and real-time-strategy engine in OpenGL.',
+    video: 'https://www.youtube.com/watch?v=ly_NmJW4YTY'
   }
 ]
 

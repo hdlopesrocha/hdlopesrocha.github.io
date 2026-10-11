@@ -110,6 +110,7 @@ export const projects = [
     repo: 'vrMusic',
     url: 'https://github.com/hdlopesrocha/vrMusic',
     pages: 'https://hdlopesrocha.github.io/vrMusic/',
+    video: 'https://www.youtube.com/watch?v=DSdHLLsvcnM',
     description: 'Virtual-reality music project: immersive, interactive musical experience.',
     category: 'vr',
     technologies: ['VR', 'Interactive Music', 'Immersive'],
