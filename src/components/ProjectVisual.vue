@@ -81,6 +81,34 @@
       </g>
     </svg>
 
+    <!-- audio3d : spring-campus music visualization (3d + webaudio) -->
+    <svg v-else-if="visual === 'audio3d'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g stroke="rgba(56,189,248,0.4)" fill="none">
+        <path d="M0 118 H320" />
+        <path d="M20 150 L160 118 M70 150 L160 118 M120 150 L160 118 M160 150 L160 118 M200 150 L160 118 M250 150 L160 118 M300 150 L160 118" opacity="0.55" />
+      </g>
+      <g fill="none" stroke="rgba(45,212,191,0.7)">
+        <rect x="36" y="44" width="52" height="52" />
+        <rect x="54" y="30" width="52" height="52" opacity="0.8" />
+        <path d="M36 44 L54 30 M88 44 L106 30 M36 96 L54 82 M88 96 L106 82" opacity="0.8" />
+      </g>
+      <circle cx="54" cy="30" r="3" fill="#2dd4bf" stroke="none" />
+      <g>
+        <rect x="150" y="112" width="8" height="20" rx="2" fill="rgba(167,139,250,0.65)" />
+        <rect x="164" y="98" width="8" height="34" rx="2" fill="rgba(45,212,191,0.65)" />
+        <rect x="178" y="84" width="8" height="48" rx="2" fill="rgba(167,139,250,0.65)" />
+        <rect x="192" y="104" width="8" height="28" rx="2" fill="rgba(45,212,191,0.65)" />
+        <rect x="206" y="76" width="8" height="56" rx="2" fill="rgba(167,139,250,0.8)" />
+        <rect x="220" y="92" width="8" height="40" rx="2" fill="rgba(45,212,191,0.65)" />
+        <rect x="234" y="68" width="8" height="64" rx="2" fill="rgba(167,139,250,0.8)" />
+        <rect x="248" y="96" width="8" height="36" rx="2" fill="rgba(45,212,191,0.65)" />
+        <rect x="262" y="80" width="8" height="52" rx="2" fill="rgba(167,139,250,0.65)" />
+        <rect x="276" y="108" width="8" height="24" rx="2" fill="rgba(45,212,191,0.65)" />
+        <rect x="290" y="88" width="8" height="44" rx="2" fill="rgba(167,139,250,0.65)" />
+      </g>
+      <text x="14" y="20" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">webAudio → canvas · webgl</text>
+    </svg>
+
     <!-- spatial : vr -->
     <svg v-else-if="visual === 'spatial'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
       <g fill="none" stroke="rgba(56,189,248,0.6)">

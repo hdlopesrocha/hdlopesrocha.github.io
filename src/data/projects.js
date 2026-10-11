@@ -136,7 +136,7 @@ export const projects = [
     category: 'experimental',
     technologies: ['Spring Campus', '2019', 'Experiment'],
     featured: false,
-    visual: 'rings',
+    visual: 'audio3d',
     timeline: 'main',
     year: '2019'
   },
