@@ -22,7 +22,7 @@
       <g fill="none" stroke="rgba(148,178,255,0.35)">
         <path d="M62 76 C 92 76 96 44 128 44" />
         <path d="M62 76 C 92 76 96 104 128 104" />
-        <path d="M62 76 C 92 76 96 132 126 132" stroke-dasharray="3 4" />
+        <path d="M62 76 C 92 76 96 116 124 116" stroke-dasharray="3 4" />
       </g>
       <g fill="none" stroke="rgba(45,212,191,0.5)">
         <path d="M128 44 C 156 44 160 26 190 26" />
@@ -43,13 +43,13 @@
         <circle cx="188" cy="58" r="4" fill="rgba(56,189,248,0.55)" />
         <circle cx="186" cy="92" r="6" fill="rgba(167,139,250,0.8)" />
         <circle cx="184" cy="120" r="3.5" fill="rgba(167,139,250,0.55)" />
-        <circle cx="126" cy="132" r="4" fill="rgba(45,212,191,0.5)" />
+        <circle cx="124" cy="116" r="4" fill="rgba(45,212,191,0.5)" />
       </g>
       <g font-family="monospace" font-size="8" fill="rgba(147,161,184,0.9)">
         <text x="198" y="29">src/</text>
         <text x="192" y="95">docs/</text>
       </g>
-      <text x="14" y="14" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">git history → animated map</text>
+      <text x="14" y="134" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">git history → animated map</text>
     </svg>
 
     <!-- smoke : sdf volumetric -->
