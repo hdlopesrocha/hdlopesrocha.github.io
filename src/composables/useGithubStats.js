@@ -23,7 +23,7 @@ export function useGithubStats(repos) {
       forks: json.forks_count ?? 0,
       language: json.language ?? null,
       description: json.description ?? null,
-      updated: json.updated_at ?? null,
+      updated: json.pushed_at ?? json.updated_at ?? null,
       openIssues: json.open_issues_count ?? 0
     }
     cache.set(repo, slim)
@@ -49,7 +49,7 @@ export function useGithubStats(repos) {
                 stars: json.stargazers_count ?? 0,
                 forks: json.forks_count ?? 0,
                 language: json.language ?? null,
-                updated: json.updated_at ?? null
+                updated: json.pushed_at ?? json.updated_at ?? null
               }
             ]
           })
@@ -80,7 +80,9 @@ export function formatUpdated(iso) {
   if (!iso) return ''
   try {
     const d = new Date(iso)
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+    if (Number.isNaN(d.getTime())) return ''
+    // UTC keeps date-only fallback stamps (YYYY-MM-DD) stable across timezones.
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', timeZone: 'UTC' })
   } catch {
     return ''
   }

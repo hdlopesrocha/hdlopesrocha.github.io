@@ -38,7 +38,7 @@
       <dl class="hero-meta mono">
         <div><dt>focus</dt><dd>vulkan · sdf · ray-marching · compute</dd></div>
         <div><dt>also</dt><dd>ai agents · vr · web · procedural audio</dd></div>
-        <div><dt>repos</dt><dd>12 curated projects ↓</dd></div>
+        <div><dt>repos</dt><dd>{{ projects.length }} curated projects ↓</dd></div>
       </dl>
     </div>
   </section>
@@ -47,6 +47,7 @@
 <script setup>
 import { ref } from 'vue'
 import HeroBackground from './HeroBackground.vue'
+import { projects } from '../data/projects.js'
 
 const avatarGone = ref(false)
 </script>

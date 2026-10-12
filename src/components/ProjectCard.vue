@@ -5,7 +5,7 @@
       <div class="top">
         <span class="cat tag" :class="categoryClass">{{ categoryLabel }}</span>
         <span v-if="project.featured" class="feat tag mono">★ featured</span>
-        <span v-if="project.year" class="year mono">{{ project.year }}</span>
+        <span v-if="created" class="year mono" :title="dateTitle">{{ created.slice(0, 4) }}</span>
       </div>
       <h3>
         <a :href="project.url" target="_blank" rel="noopener noreferrer">{{ project.name }}</a>
@@ -15,11 +15,11 @@
         <li v-for="t in visibleTech" :key="t" class="tag">{{ t }}</li>
         <li v-if="project.technologies.length > maxTech" class="tag more">+{{ project.technologies.length - maxTech }}</li>
       </ul>
-      <div class="meta mono" v-if="stat">
-        <span title="Stars">★ {{ stat.stars }}</span>
-        <span title="Forks">⑂ {{ stat.forks }}</span>
-        <span v-if="stat.language">{{ stat.language }}</span>
-        <span v-if="stat.updated">upd {{ formatUpdated(stat.updated) }}</span>
+      <div class="meta mono">
+        <span v-if="stat" title="Stars">★ {{ stat.stars }}</span>
+        <span v-if="stat" title="Forks">⑂ {{ stat.forks }}</span>
+        <span v-if="stat && stat.language">{{ stat.language }}</span>
+        <span v-if="updated" :title="stat ? 'Last push (live GitHub data)' : 'Last push (cached catalogue data)'">upd {{ formatUpdated(updated) }}</span>
       </div>
       <div class="actions">
         <a class="btn small primary" :href="project.url" target="_blank" rel="noopener noreferrer" :aria-label="`Open ${project.name} on GitHub`">
@@ -71,6 +71,14 @@ const props = defineProps({
 const categoryLabel = computed(() => CATEGORIES[props.project.category]?.label ?? props.project.category)
 const categoryClass = computed(() => CATEGORIES[props.project.category]?.class ?? '')
 const visibleTech = computed(() => props.project.technologies.slice(0, props.maxTech))
+// Local date stamps keep every card dated even if the GitHub API is rate-limited.
+const created = computed(() => props.project.created ?? null)
+const updated = computed(() => props.stat?.updated || props.project.updated || null)
+const dateTitle = computed(() => {
+  if (!created.value) return ''
+  const lastPush = updated.value ? ` · last push ${updated.value.slice(0, 10)}` : ''
+  return `Created ${created.value}${lastPush}`
+})
 </script>
 
 <style scoped>

@@ -1,6 +1,8 @@
 // Central project catalogue. Cards are rendered dynamically from this file.
 // Keep descriptions conservative: only what can be inferred from the repo
 // name / brief, without inventing private implementation details.
+// created / updated (ISO dates) mirror each repo's GitHub created_at / pushed_at;
+// they are the fallback date stamps when the live GitHub API is unreachable.
 
 export const GITHUB_USER = 'hdlopesrocha'
 export const GITHUB_PROFILE = 'https://github.com/hdlopesrocha'
@@ -27,7 +29,9 @@ export const projects = [
     technologies: ['OpenCode Plugin', 'Two-way Voice', 'Whisper STT', 'Neural TTS', 'TypeScript', 'Telegram', 'XMPP', 'Nostr DMs', 'Session API'],
     featured: true,
     visual: 'terminal-wave',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2026-10-07',
+    updated: '2026-10-11'
   },
   {
     name: 'vulkan-engine',
@@ -42,7 +46,26 @@ export const projects = [
     featured: true,
     primary: true,
     visual: 'wireframe',
-    timeline: 'main'
+    timeline: 'main',
+    created: '2025-12-06',
+    updated: '2026-10-12'
+  },
+  {
+    name: 'web-gource',
+    repo: 'web-gource',
+    url: 'https://github.com/hdlopesrocha/web-gource',
+    pages: 'https://hdlopesrocha.github.io/web-gource/',
+    description:
+      'Browser-based, WebGL-powered reimplementation of Gource: paste a public Git repository URL and watch its history grow into an animated 2D map — directories branching like trees, files as size-scaled circles and authors flying between the files they touch.',
+    longDescription:
+      'Commit history is read straight from the provider’s REST API in the browser — nothing is cloned, uploaded or built on a server — then rendered by an independently written Three.js renderer with add / modify / delete / rename activity bursts.',
+    category: 'graphics',
+    technologies: ['Three.js', 'WebGL', 'TypeScript', 'Vue 3', 'Vite', 'GitHub API'],
+    featured: true,
+    visual: 'gource',
+    timeline: 'parallel',
+    created: '2026-10-11',
+    updated: '2026-10-12'
   },
   {
     name: 'lora-control',
@@ -55,7 +78,9 @@ export const projects = [
     technologies: ['ESP32', 'LoRa', 'Arduino', 'Relays', '.ics Scheduling', 'SHA-256', 'OLED', 'Vue 3'],
     featured: false,
     visual: 'signal',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2024-08-17',
+    updated: '2026-10-11'
   },
   {
     name: 'sdf-smoke',
@@ -68,7 +93,9 @@ export const projects = [
     technologies: ['SDF', 'Ray Marching', 'Procedural Effects', 'Real-time', 'GPU'],
     featured: true,
     visual: 'smoke',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2026-10-05',
+    updated: '2026-10-06'
   },
   {
     name: 'hydrogen-vulkan',
@@ -79,7 +106,9 @@ export const projects = [
     technologies: ['Vulkan', 'GPU', 'Real-time'],
     featured: false,
     visual: 'grid',
-    timeline: 'main'
+    timeline: 'main',
+    created: '2021-06-30',
+    updated: '2024-12-08'
   },
   {
     name: 'lithos-engine',
@@ -91,7 +120,9 @@ export const projects = [
     technologies: ['OpenGL', 'Real-time Graphics', 'Procedural', 'SDF', 'Engine'],
     featured: false,
     visual: 'terrain',
-    timeline: 'main'
+    timeline: 'main',
+    created: '2024-12-09',
+    updated: '2025-12-24'
   },
   {
     name: 'music-ai',
@@ -103,7 +134,9 @@ export const projects = [
     technologies: ['AI', 'Music', 'Generative'],
     featured: false,
     visual: 'waveform',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2026-10-04',
+    updated: '2026-10-04'
   },
   {
     name: 'vrMusic',
@@ -116,7 +149,9 @@ export const projects = [
     technologies: ['VR', 'Interactive Music', 'Immersive'],
     featured: false,
     visual: 'spatial',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2020-04-15',
+    updated: '2025-09-18'
   },
   {
     name: 'card-generator',
@@ -128,7 +163,9 @@ export const projects = [
     technologies: ['Web', 'JavaScript', 'Generative UI'],
     featured: false,
     visual: 'cards',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2026-09-30',
+    updated: '2026-10-07'
   },
   {
     name: 'spring-campus-2019',
@@ -142,7 +179,8 @@ export const projects = [
     featured: false,
     visual: 'audio3d',
     timeline: 'main',
-    year: '2019'
+    created: '2019-05-13',
+    updated: '2025-09-18'
   },
   {
     name: 'spring-webgl',
@@ -156,7 +194,8 @@ export const projects = [
     featured: false,
     visual: 'water',
     timeline: 'main',
-    year: '2019'
+    created: '2019-06-02',
+    updated: '2019-09-18'
   },
   {
     name: 'water-perlin-music',
@@ -170,7 +209,8 @@ export const projects = [
     featured: false,
     visual: 'perlin',
     timeline: 'main',
-    year: '2019'
+    created: '2019-04-01',
+    updated: '2019-04-01'
   },
   {
     name: 'music-sphere',
@@ -184,7 +224,8 @@ export const projects = [
     featured: false,
     visual: 'sphere',
     timeline: 'main',
-    year: '2019'
+    created: '2019-09-16',
+    updated: '2019-09-16'
   },
   {
     name: 'polar-perlin-music',
@@ -198,7 +239,8 @@ export const projects = [
     featured: false,
     visual: 'polar',
     timeline: 'main',
-    year: '2019'
+    created: '2019-03-31',
+    updated: '2019-03-31'
   },
   {
     name: 'spiral-viz',
@@ -212,7 +254,8 @@ export const projects = [
     featured: false,
     visual: 'spiral',
     timeline: 'main',
-    year: '2019'
+    created: '2019-09-16',
+    updated: '2019-09-16'
   },
   {
     name: 'texture-blend',
@@ -226,7 +269,8 @@ export const projects = [
     featured: false,
     visual: 'blend',
     timeline: 'main',
-    year: '2019'
+    created: '2019-09-18',
+    updated: '2019-09-18'
   },
   {
     name: 'radial-blur',
@@ -240,7 +284,8 @@ export const projects = [
     featured: false,
     visual: 'radial',
     timeline: 'main',
-    year: '2019'
+    created: '2019-06-12',
+    updated: '2019-06-12'
   },
   {
     name: 'ripple-viz',
@@ -254,7 +299,8 @@ export const projects = [
     featured: false,
     visual: 'ripple',
     timeline: 'main',
-    year: '2019'
+    created: '2019-06-08',
+    updated: '2019-06-08'
   },
   {
     name: 'matrix-face',
@@ -267,7 +313,9 @@ export const projects = [
     technologies: ['WebGL', 'GLSL', 'JavaScript', 'Normal Maps'],
     featured: false,
     visual: 'matrix',
-    timeline: 'parallel'
+    timeline: 'parallel',
+    created: '2021-02-19',
+    updated: '2021-02-20'
   },
   {
     name: 'mobarrocas',
@@ -281,7 +329,8 @@ export const projects = [
     featured: false,
     visual: 'teashop',
     timeline: 'parallel',
-    year: '2022'
+    created: '2022-12-20',
+    updated: '2026-10-11'
   },
   {
     name: 'Master Thesis — Interactive Multi-User Video Chat',
@@ -295,7 +344,8 @@ export const projects = [
     featured: true,
     visual: 'rings',
     timeline: 'thesis',
-    year: '2015'
+    created: '2015-02-28',
+    updated: '2017-02-22'
   }
 ]
 
