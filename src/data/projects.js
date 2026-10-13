@@ -55,6 +55,7 @@ export const projects = [
     repo: 'web-gource',
     url: 'https://github.com/hdlopesrocha/web-gource',
     pages: 'https://hdlopesrocha.github.io/web-gource/',
+    video: 'https://www.youtube.com/watch?v=qsaNWbTsbjA',
     description:
       'Browser-based, WebGL-powered reimplementation of Gource: paste a public Git repository URL and watch its history grow into an animated 2D map — directories branching like trees, files as size-scaled circles and authors flying between the files they touch.',
     longDescription:
