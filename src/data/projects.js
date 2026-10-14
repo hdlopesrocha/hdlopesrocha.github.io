@@ -69,6 +69,23 @@ export const projects = [
     updated: '2026-10-12'
   },
   {
+    name: 'infinity-edge-web',
+    repo: 'infinity-edge-web',
+    url: 'https://github.com/hdlopesrocha/infinity-edge-web',
+    pages: 'https://hdlopesrocha.github.io/infinity-edge-web/',
+    description:
+      'AI-assisted XNA → web migration of Infinity Edge (2013): the original XNA 4.0 game — C# simulation, 13 AIs, CTF / time-trial rules, compiled XNB models, textures and sounds — running in the browser on Vue 3 + TypeScript + raw WebGL2.',
+    longDescription:
+      'The 2013 Windows Phone XNA sources and the compiled content-pipeline output were ported piece by piece: an XNB model converter, BasicEffect-exact GLSL shaders, the level / menu XML data and the original physics and AI — rendered by a hand-written WebGL2 engine (no Three.js, no game framework).',
+    category: 'graphics',
+    technologies: ['XNA → Web', 'AI-assisted port', 'WebGL2', 'GLSL', 'TypeScript', 'Vue 3', 'Vite', 'XNB Conversion', 'Game AI'],
+    featured: true,
+    visual: 'space',
+    timeline: 'parallel',
+    created: '2026-10-14',
+    updated: '2026-10-14'
+  },
+  {
     name: 'lora-control',
     repo: 'lora-control',
     url: 'https://github.com/hdlopesrocha/lora-control',

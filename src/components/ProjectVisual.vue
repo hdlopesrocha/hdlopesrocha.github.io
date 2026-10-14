@@ -358,6 +358,38 @@
       <text x="14" y="136" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">spring-campus · 2019</text>
     </svg>
 
+    <!-- space : infinity-edge-web — XNA 2013 game ported to WebGL2 -->
+    <svg v-else-if="visual === 'space'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <g fill="rgba(230,241,255,0.85)">
+        <circle cx="30" cy="26" r="1.1" />
+        <circle cx="74" cy="16" r="0.8" opacity="0.65" />
+        <circle cx="118" cy="34" r="1" opacity="0.8" />
+        <circle cx="236" cy="20" r="1.2" />
+        <circle cx="284" cy="38" r="0.9" opacity="0.7" />
+        <circle cx="262" cy="112" r="1" opacity="0.75" />
+        <circle cx="46" cy="112" r="0.9" opacity="0.6" />
+        <circle cx="198" cy="18" r="0.7" opacity="0.5" />
+        <circle cx="300" cy="84" r="0.8" opacity="0.6" />
+        <circle cx="16" cy="72" r="0.8" opacity="0.55" />
+      </g>
+      <g fill="none">
+        <circle cx="160" cy="68" r="54" stroke="rgba(45,212,191,0.85)" stroke-width="7" />
+        <circle cx="160" cy="68" r="34" stroke="rgba(148,178,255,0.4)" />
+        <circle cx="160" cy="68" r="19" stroke="rgba(148,178,255,0.3)" />
+      </g>
+      <g>
+        <ellipse cx="186" cy="108" rx="30" ry="8" fill="rgba(226,232,240,0.16)" />
+        <ellipse cx="164" cy="112" rx="18" ry="6" fill="rgba(226,232,240,0.26)" />
+        <polygon points="160,84 184,102 160,106 136,102" fill="#cbd5e1" />
+        <polygon points="142,102 178,102 160,94" fill="#94a3b8" />
+        <circle cx="150" cy="103" r="3.4" fill="#22d3ee" opacity="0.35" />
+        <circle cx="170" cy="103" r="3.4" fill="#22d3ee" opacity="0.35" />
+        <circle cx="150" cy="103" r="1.6" fill="#67e8f9" />
+        <circle cx="170" cy="103" r="1.6" fill="#67e8f9" />
+      </g>
+      <text x="14" y="140" font-family="monospace" font-size="9" fill="rgba(147,161,184,0.9)">xna · 2013 → webgl2</text>
+    </svg>
+
     <div class="scan" aria-hidden="true"></div>
   </div>
 </template>
