@@ -1,10 +1,13 @@
 <template>
   <section id="timeline" class="section" aria-labelledby="timeline-title">
     <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow mono">~/evolution — how the engines connect</p>
-        <h2 id="timeline-title">One lineage, many side quests</h2>
-        <p>Core rendering lineage from 2019 experiments to the current Vulkan engine, plus parallel tracks in AI, VR, web and hardware.</p>
+      <div class="section-head split">
+        <div class="section-head-copy">
+          <p class="eyebrow mono">~/evolution — how the engines connect</p>
+          <h2 id="timeline-title">One lineage, many side quests</h2>
+          <p>Core rendering lineage from 2019 experiments to the current Vulkan engine, plus parallel tracks in AI, VR, web and hardware.</p>
+        </div>
+        <SectionVisual variant="timeline" class="section-art" />
       </div>
 
       <ol class="chain">
@@ -41,6 +44,7 @@
 </template>
 
 <script setup>
+import SectionVisual from './SectionVisual.vue'
 import { evolutionChain, projectByRepo } from '../data/projects.js'
 const parallelRepos = ['web-gource', 'vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk']
 </script>
@@ -62,7 +66,7 @@ const parallelRepos = ['web-gource', 'vrMusic', 'music-ai', 'sdf-smoke', 'lora-c
   gap: 0.5rem;
 }
 .idx { color: var(--accent); font-size: 0.8rem; }
-.repo-link { color: var(--text); font-size: 0.92rem; text-decoration: none; border-bottom: 1px dashed rgba(45,212,191,0.4); }
+.repo-link { color: var(--text); font-size: 0.92rem; text-decoration: none; border-bottom: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent); }
 .repo-link:hover { color: var(--accent); }
 .node p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.86rem; }
 .arrow {
@@ -75,7 +79,7 @@ const parallelRepos = ['web-gource', 'vrMusic', 'music-ai', 'sdf-smoke', 'lora-c
   font-weight: 700;
 }
 .parallel { padding: 1.1rem 1.3rem; }
-.thesis { padding: 1.1rem 1.3rem; margin-top: 1rem; border-color: rgba(45, 212, 191, 0.35); }
+.thesis { padding: 1.1rem 1.3rem; margin-top: 1rem; border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .thesis-title { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.8rem; }
 .thesis p { margin: 0; color: var(--muted); font-size: 0.9rem; }
 .repo-id { color: var(--dim); font-size: 0.78rem; margin-left: 0.5rem; }

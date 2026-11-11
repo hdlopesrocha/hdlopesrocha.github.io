@@ -218,7 +218,7 @@ h3 { margin: 0.4rem 0 0.2rem; font-size: 1.3rem; }
 .vc-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 .vc-qr { display: grid; gap: 0.4rem; justify-items: center; }
 .qr-btn { background: none; border: none; padding: 0; cursor: pointer; border-radius: 12px; line-height: 0; }
-.qr-btn:hover canvas, .qr-btn:focus-visible canvas { box-shadow: 0 0 0 2px var(--accent), 0 0 26px rgba(45,212,191,0.3); }
+.qr-btn:hover canvas, .qr-btn:focus-visible canvas { box-shadow: 0 0 0 2px var(--accent), 0 0 26px color-mix(in srgb, var(--accent) 30%, transparent); }
 .vc-qr canvas { border-radius: 12px; border: 1px solid var(--line-strong); background: #fff; }
 .hint { margin: 0; color: var(--dim); font-size: 0.72rem; }
 </style>

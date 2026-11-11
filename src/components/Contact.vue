@@ -17,6 +17,7 @@
             {{ copied ? 'Copied ✓' : 'Copy npub' }}
           </button>
         </div>
+        <SectionVisual variant="contact" class="contact-art" />
       </div>
 
       <Chat />
@@ -34,6 +35,7 @@
 import { ref } from 'vue'
 import Chat from './Chat.vue'
 import Donate from './Donate.vue'
+import SectionVisual from './SectionVisual.vue'
 import VCard from './VCard.vue'
 import { NOSTR_RECIPIENT_NPUB } from '../data/contact.js'
 
@@ -53,6 +55,7 @@ async function copyNpub() {
 h2 { margin: 0.5rem 0 1rem; font-size: clamp(1.7rem, 3.4vw, 2.5rem); letter-spacing: -0.02em; line-height: 1.1; }
 .lede { color: var(--muted); }
 .npub-box { padding: 1.1rem 1.2rem; margin-top: 1.2rem; display: grid; gap: 0.7rem; justify-items: start; }
+.contact-art { margin-top: 1.2rem; }
 .label { margin: 0; color: var(--accent); font-size: 0.76rem; }
 .npub { color: var(--text); font-size: 0.78rem; word-break: break-all; user-select: all; }
 .muted { color: var(--muted); }

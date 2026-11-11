@@ -420,7 +420,7 @@ onBeforeUnmount(() => {
 .sender { font-size: 0.68rem !important; opacity: 0.65; margin-bottom: 0.15rem !important; }
 .sender.owner { color: var(--accent); opacity: 1; }
 .msg time { font-size: 0.68rem; opacity: 0.6; }
-.msg.out { align-self: flex-end; background: linear-gradient(135deg, #14b8a6, #0ea5e9); color: #03181a; }
+.msg.out { align-self: flex-end; background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright)); color: #03181a; }
 .msg.out time { opacity: 0.7; }
 .msg.in { align-self: flex-start; background: rgba(148, 178, 255, 0.1); border: 1px solid var(--line-strong); }
 .input-row { display: flex; gap: 0.6rem; }

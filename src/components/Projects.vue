@@ -76,7 +76,7 @@ const { stats, available } = useGithubStats(projects.map((p) => p.repo))
   transition: all 0.15s ease;
 }
 .chip:hover { color: var(--text); border-color: var(--accent); }
-.chip.active { background: rgba(45,212,191,0.14); border-color: var(--accent); color: var(--text); }
+.chip.active { background: color-mix(in srgb, var(--accent) 14%, transparent); border-color: var(--accent); color: var(--text); }
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

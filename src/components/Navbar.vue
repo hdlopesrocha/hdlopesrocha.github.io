@@ -4,8 +4,8 @@
       <a href="#home" class="brand" aria-label="Henrique Lopes Rocha — home">
         <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
           <rect width="64" height="64" rx="12" fill="#0b1220" />
-          <circle cx="32" cy="32" r="15.5" fill="none" stroke="#155e63" stroke-width="2" />
-          <circle cx="32" cy="32" r="10" fill="none" stroke="#2dd4bf" stroke-width="2.4" />
+          <circle cx="32" cy="32" r="15.5" fill="none" stroke="var(--accent)" stroke-opacity="0.45" stroke-width="2" />
+          <circle cx="32" cy="32" r="10" fill="none" stroke="var(--accent)" stroke-width="2.4" />
           <path d="M24 22v20M40 22v20M24 32h16" stroke="#e6f1ff" stroke-width="3.4" stroke-linecap="round" fill="none" />
         </svg>
         <span class="brand-text mono">hdlopesrocha<span class="caret">_</span></span>

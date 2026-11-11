@@ -91,17 +91,20 @@ const dateTitle = computed(() => {
 }
 .card:hover, .card:focus-within {
   transform: translateY(-4px);
-  border-color: rgba(45, 212, 191, 0.45);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(45,212,191,0.15), 0 0 34px rgba(45,212,191,0.08);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent),
+    0 0 34px color-mix(in srgb, var(--accent) 8%, transparent);
 }
-.card.featured { border-color: rgba(45, 212, 191, 0.35); }
+.card.featured { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .card.primary {
-  border-color: rgba(45, 212, 191, 0.55);
-  background: linear-gradient(180deg, rgba(20,184,166,0.10), rgba(13,19,32,0.85));
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, transparent), rgba(13,19,32,0.85));
 }
 .body { padding: 1.1rem 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 0.7rem; flex: 1; }
 .top { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-.feat { border-color: rgba(45,212,191,0.6); color: #04211d; background: var(--accent); font-weight: 700; }
+.feat { border-color: color-mix(in srgb, var(--accent) 60%, transparent); color: #04211d; background: var(--accent-bright); font-weight: 700; }
 .year { margin-left: auto; color: var(--dim); font-size: 0.75rem; }
 h3 { margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
 h3 a { text-decoration: none; }

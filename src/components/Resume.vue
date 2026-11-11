@@ -1,18 +1,21 @@
 <template>
   <section id="resume" class="section" aria-labelledby="resume-title">
     <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow mono">~/cv — experience &amp; education</p>
-        <h2 id="resume-title">Résumé</h2>
-        <p>
-          Software engineer (MSc, IST Lisbon) — previously at CERN, Bullray-CIT and IST/INESC.
-          Full CV as PDF, in English and French:
-        </p>
-        <div class="cv-actions">
-          <a class="btn primary small" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">CV · English (PDF)</a>
-          <a class="btn small" :href="RESUME.cvFr" target="_blank" rel="noopener noreferrer">CV · Français (PDF)</a>
-          <a class="btn small ghost" href="https://github.com/hdlopesrocha/cv" target="_blank" rel="noopener noreferrer">LaTeX source</a>
+      <div class="section-head split">
+        <div class="section-head-copy">
+          <p class="eyebrow mono">~/cv — experience &amp; education</p>
+          <h2 id="resume-title">Résumé</h2>
+          <p>
+            Software engineer (MSc, IST Lisbon) — previously at CERN, Bullray-CIT and IST/INESC.
+            Full CV as PDF, in English and French:
+          </p>
+          <div class="cv-actions">
+            <a class="btn primary small" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">CV · English (PDF)</a>
+            <a class="btn small" :href="RESUME.cvFr" target="_blank" rel="noopener noreferrer">CV · Français (PDF)</a>
+            <a class="btn small ghost" href="https://github.com/hdlopesrocha/cv" target="_blank" rel="noopener noreferrer">LaTeX source</a>
+          </div>
         </div>
+        <SectionVisual variant="resume" class="section-art" />
       </div>
 
       <h3 class="sub">Experience</h3>
@@ -90,6 +93,7 @@
 </template>
 
 <script setup>
+import SectionVisual from './SectionVisual.vue'
 import { RESUME, experience, education, skills, languages, earlyApps } from '../data/resume.js'
 </script>
 
@@ -109,7 +113,7 @@ import { RESUME, experience, education, skills, languages, earlyApps } from '../
 .period { color: var(--accent); font-size: 0.78rem; white-space: nowrap; }
 .org p { margin: 0.3rem 0 0.5rem; color: var(--muted); font-size: 0.9rem; }
 .meta { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.tag.link { text-decoration: none; border-color: rgba(45,212,191,0.45); color: #99f6e4; }
+.tag.link { text-decoration: none; border-color: color-mix(in srgb, var(--accent) 45%, transparent); color: color-mix(in srgb, var(--accent) 55%, white); }
 .edu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
 .edu { padding: 1.2rem 1.4rem; }
 .school { margin: 0.2rem 0; font-weight: 600; }

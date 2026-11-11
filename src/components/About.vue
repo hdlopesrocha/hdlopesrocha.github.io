@@ -18,18 +18,22 @@
           <a class="btn ghost" href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>
-      <div class="glass interests grid-overlay">
-        <p class="mono interests-title">$ interests --list</p>
-        <ul>
-          <li v-for="i in interestsList" :key="i">{{ i }}</li>
-        </ul>
-        <p class="mono stack">c++ · vulkan · glsl · compute · vue · webaudio · lora</p>
+      <div class="about-side">
+        <SectionVisual variant="about" />
+        <div class="glass interests grid-overlay">
+          <p class="mono interests-title">$ interests --list</p>
+          <ul>
+            <li v-for="i in interestsList" :key="i">{{ i }}</li>
+          </ul>
+          <p class="mono stack">c++ · vulkan · glsl · compute · vue · webaudio · lora</p>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
+import SectionVisual from './SectionVisual.vue'
 import { RESUME, interests } from '../data/resume.js'
 
 const interestsList = [
@@ -47,6 +51,7 @@ const interestsList = [
 
 <style scoped>
 .about-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2.5rem; align-items: start; }
+.about-side { display: grid; gap: 1rem; }
 h2 { margin: 0.5rem 0 1rem; font-size: clamp(1.5rem, 3vw, 2.1rem); letter-spacing: -0.02em; line-height: 1.15; }
 .lede { font-size: 1.02rem; }
 .lede strong { color: var(--accent); }

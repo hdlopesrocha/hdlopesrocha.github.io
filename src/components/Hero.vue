@@ -35,6 +35,7 @@
         <a class="btn ghost" href="https://github.com/hdlopesrocha/cv/blob/master/cv.pdf" target="_blank" rel="noopener noreferrer">CV (PDF)</a>
         <a class="btn ghost" href="#contact">Contact</a>
       </div>
+      <AudioControl />
       <dl class="hero-meta mono">
         <div><dt>focus</dt><dd>vulkan · sdf · ray-marching · compute</dd></div>
         <div><dt>also</dt><dd>ai agents · vr · web · procedural audio</dd></div>
@@ -47,6 +48,7 @@
 <script setup>
 import { ref } from 'vue'
 import HeroBackground from './HeroBackground.vue'
+import AudioControl from './AudioControl.vue'
 import { projects } from '../data/projects.js'
 
 const avatarGone = ref(false)
@@ -75,16 +77,19 @@ const avatarGone = ref(false)
   height: 96px;
   flex: none;
   border-radius: 50%;
-  border: 2px solid rgba(45, 212, 191, 0.55);
-  box-shadow: 0 0 34px rgba(45, 212, 191, 0.22);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 34px color-mix(in srgb, var(--accent) 22%, transparent);
   background: var(--panel-solid);
+  transform: scale(calc(1 + var(--kick, 0) * 0.018));
+  will-change: transform;
+  transition: transform 80ms linear;
 }
 h1 {
   margin: 0;
   font-size: clamp(2.6rem, 7vw, 4.8rem);
   letter-spacing: -0.03em;
   line-height: 1.02;
-  text-shadow: 0 0 40px rgba(45,212,191,0.18);
+  text-shadow: 0 0 40px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .subtitle {
   margin: 0.9rem 0 0;
