@@ -60,8 +60,8 @@ export const projects = [
       'Browser-based, WebGL-powered reimplementation of Gource: paste a public Git repository URL and watch its history grow into an animated 2D map — directories branching like trees, files as size-scaled circles and authors flying between the files they touch.',
     longDescription:
       'Commit history is read straight from the provider’s REST API in the browser — nothing is cloned, uploaded or built on a server — then rendered by an independently written Three.js renderer with add / modify / delete / rename activity bursts.',
-    category: 'graphics',
     technologies: ['Three.js', 'WebGL', 'TypeScript', 'Vue 3', 'Vite', 'GitHub API'],
+    category: 'vr',
     featured: true,
     visual: 'gource',
     timeline: 'parallel',
@@ -93,7 +93,7 @@ export const projects = [
       'AI-assisted XNA → web migration of Infinity Edge (2013): the original XNA 4.0 game — C# simulation, 13 AIs, CTF / time-trial rules, compiled XNB models, textures and sounds — running in the browser on Vue 3 + TypeScript + raw WebGL2, now with WebXR VR, a six-stage WebGL2 pipeline, zoom blur and a full GL HUD.',
     longDescription:
       'The 2013 Windows Phone XNA sources and the compiled content-pipeline output were ported piece by piece: an XNB model converter, BasicEffect-exact GLSL shaders, the level / menu XML data and the original physics and AI — rendered by a hand-written WebGL2 engine (no Three.js, no game framework). Now includes WebXR immersive VR (with a split-screen fallback, gyro + drag-look, tap-to-recenter, gaze-dwell menu clicks), a six-stage framebuffer pipeline (sky / models / billboards / blur / UI / final) with zoom blur and deferred depth test, a per-eye WebGL HUD, missile-lock warnings, 16 px UI padding, and HTTPS dev serving.',
-    category: 'graphics',
+    category: 'vr',
     technologies: ['XNA → Web', 'AI-assisted port', 'WebGL2', 'GLSL', 'TypeScript', 'Vue 3', 'Vite', 'XNB Conversion', 'Game AI', 'WebXR VR'],
     featured: true,
     visual: 'space',
@@ -123,7 +123,7 @@ export const projects = [
     pages: 'https://hdlopesrocha.github.io/sdf-smoke/',
     description:
       'Experimental volumetric smoke built on signed distance fields and ray marching.',
-    category: 'graphics',
+    category: 'experimental',
     technologies: ['SDF', 'Ray Marching', 'Procedural Effects', 'Real-time', 'GPU'],
     featured: true,
     visual: 'smoke',
