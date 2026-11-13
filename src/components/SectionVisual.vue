@@ -5,8 +5,9 @@
       <defs>
         <linearGradient id="sv-timeline-line" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stop-color="var(--accent)" />
-          <stop offset="55%" stop-color="var(--accent-2)" />
-          <stop offset="100%" stop-color="var(--accent-3)" />
+          <stop offset="38%" stop-color="var(--accent-2)" />
+          <stop offset="70%" stop-color="var(--accent-3)" />
+          <stop offset="100%" stop-color="var(--accent-4)" />
         </linearGradient>
       </defs>
       <g class="sv-dash-branches" fill="none" stroke="rgba(148,178,255,0.28)" stroke-dasharray="3 4">

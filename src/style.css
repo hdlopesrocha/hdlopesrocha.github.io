@@ -8,14 +8,30 @@
   --text: #e6f1ff;
   --muted: #93a1b8;
   --dim: #64748b;
-  --accent: #2dd4bf;
-  --accent-2: #38bdf8;
-  --accent-3: #a78bfa;
-  --accent-bright: #2dd4bf;
-  --accent-2-bright: #38bdf8;
-  --accent-glow: rgba(45, 212, 191, 0.08);
-  --accent-2-glow: rgba(56, 189, 248, 0.08);
-  --accent-3-glow: rgba(167, 139, 250, 0.07);
+  --palette-1: #ff8800;
+  --palette-2: #dfff14;
+  --palette-3: #62ff29;
+  --palette-4: #41fb7f;
+  --palette-1-bright: #ffac4d;
+  --palette-2-bright: #eaff61;
+  --palette-3-bright: #8fff66;
+  --palette-4-bright: #7affa7;
+  --palette-1-glow: rgba(255, 136, 0, 0.09);
+  --palette-2-glow: rgba(223, 255, 20, 0.08);
+  --palette-3-glow: rgba(98, 255, 41, 0.07);
+  --palette-4-glow: rgba(65, 251, 127, 0.06);
+  --accent: var(--palette-1);
+  --accent-2: var(--palette-2);
+  --accent-3: var(--palette-3);
+  --accent-4: var(--palette-4);
+  --accent-bright: var(--palette-1-bright);
+  --accent-2-bright: var(--palette-2-bright);
+  --accent-3-bright: var(--palette-3-bright);
+  --accent-4-bright: var(--palette-4-bright);
+  --accent-glow: var(--palette-1-glow);
+  --accent-2-glow: var(--palette-2-glow);
+  --accent-3-glow: var(--palette-3-glow);
+  --accent-4-glow: var(--palette-4-glow);
   --kick: 0;
   --snare: 0;
   --energy: 0;
@@ -27,6 +43,9 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --max: 1180px;
 }
+
+/* One shared palette for every section: no per-section accent overrides. */
+
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -54,7 +73,8 @@ body::before {
   background:
     radial-gradient(900px 480px at 15% 0%, var(--accent-glow), transparent 60%),
     radial-gradient(800px 500px at 90% 20%, var(--accent-2-glow), transparent 60%),
-    radial-gradient(700px 600px at 50% 110%, var(--accent-3-glow), transparent 60%);
+    radial-gradient(700px 600px at 50% 110%, var(--accent-3-glow), transparent 60%),
+    radial-gradient(640px 480px at 85% 90%, var(--accent-4-glow), transparent 60%);
 }
 
 #app { position: relative; z-index: 1; }
@@ -115,7 +135,7 @@ a { color: inherit; }
   box-shadow: 0 8px 30px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .btn.primary {
-  background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright));
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright) 38%, var(--accent-3-bright) 70%, var(--accent-4-bright));
   border-color: transparent;
   color: #03181a;
 }
@@ -175,19 +195,30 @@ section { scroll-margin-top: 84px; }
   font-size: 0.72rem;
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  color: #c3d0e6;
-  background: rgba(148,178,255,0.06);
+  border: 1px solid color-mix(in srgb, var(--tag-color, var(--accent)) 45%, transparent);
+  color: color-mix(in srgb, var(--tag-color, var(--accent)) 68%, white);
+  background: color-mix(in srgb, var(--tag-color, var(--accent)) 8%, transparent);
   white-space: nowrap;
 }
 
-.cat-graphics { border-color: rgba(45,212,191,.45); color: #99f6e4; }
-.cat-ai { border-color: rgba(167,139,250,.5); color: #ddd6fe; }
-.cat-vr { border-color: rgba(56,189,248,.5); color: #bae6fd; }
-.cat-web { border-color: rgba(251,191,36,.45); color: #fde68a; }
-.cat-hardware { border-color: rgba(244,114,182,.45); color: #fbcfe8; }
-.cat-thesis { border-color: rgba(45,212,191,.55); color: #99f6e4; }
-.cat-experimental { border-color: rgba(148,163,184,.5); color: #cbd5e1; }
+/* Category tags use the same four-slot base palette as everything else. */
+.tag.cat-graphics { --tag-color: var(--palette-1); }
+.tag.cat-ai { --tag-color: var(--palette-2); }
+.tag.cat-vr { --tag-color: var(--palette-3); }
+.tag.cat-web { --tag-color: var(--palette-4); }
+.tag.cat-hardware { --tag-color: var(--palette-1); }
+.tag.cat-thesis { --tag-color: var(--palette-2); }
+.tag.cat-experimental { --tag-color: var(--palette-3); }
+
+/* Technology and résumé tags rotate through the same four colours. */
+.tech > .tag:nth-child(4n+1),
+.meta > .tag:nth-child(4n+1) { --tag-color: var(--palette-1); }
+.tech > .tag:nth-child(4n+2),
+.meta > .tag:nth-child(4n+2) { --tag-color: var(--palette-2); }
+.tech > .tag:nth-child(4n+3),
+.meta > .tag:nth-child(4n+3) { --tag-color: var(--palette-3); }
+.tech > .tag:nth-child(4n+4),
+.meta > .tag:nth-child(4n+4) { --tag-color: var(--palette-4); }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px;

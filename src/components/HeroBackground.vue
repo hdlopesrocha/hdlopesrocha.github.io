@@ -25,6 +25,10 @@ function reducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+function shortestHueDelta(from, to) {
+  return ((to - from + 540) % 360) - 180
+}
+
 function resize() {
   const el = canvas.value
   if (!el || !ctx) return
@@ -62,13 +66,14 @@ function drawGrid(t) {
   const energy = active ? audioState.energy : 0
   const pace = active ? audioState.pace : 0
   const p = palette.value
+  const tone = p.tones[0]
 
   const amp = 3 + lowMid * 20 + bass * 14 + kick * 8
   const timeScale = 1 + bass * 3 + mid * 2 + pace * 2
   const alpha = 0.055 + treble * 0.08 + energy * 0.035
 
   ctx.save()
-  ctx.strokeStyle = `hsla(${p.hue + 8}, 82%, 70%, ${alpha.toFixed(3)})`
+  ctx.strokeStyle = `hsla(${(tone.h + 8).toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(76, tone.l)).toFixed(1)}%, ${alpha.toFixed(3)})`
   ctx.lineWidth = 1
   const step = 44
 
@@ -101,6 +106,7 @@ function drawBlobs(t) {
   const energy = active ? audioState.energy : 0
   const pace = active ? audioState.pace : 0
   const p = palette.value
+  const tones = p.tones
   const drift = t / (7000 / (1 + pace * 1.6 + energy * 0.35))
 
   const blobs = [
@@ -108,28 +114,37 @@ function drawBlobs(t) {
       x: w * (0.22 + Math.sin(drift + 0.6) * 0.045 + bass * 0.02),
       y: h * (0.32 + Math.cos(drift * 1.3) * 0.035),
       r: Math.max(120, 175 + bass * 170 + kick * 70),
-      hue: p.hue,
+      tone: tones[0],
       alpha: 0.07 + bass * 0.15 + kick * 0.05
     },
     {
       x: w * (0.8 + Math.cos(drift * 0.8 + 1.2) * 0.04),
       y: h * (0.25 + Math.sin(drift * 1.7) * 0.045 + mid * 0.02),
       r: Math.max(130, 190 + mid * 170 + snare * 60),
-      hue: p.hue2,
+      tone: tones[1],
       alpha: 0.06 + mid * 0.13 + snare * 0.04
     },
     {
       x: w * (0.55 + Math.sin(drift * 1.1 + 2.4) * 0.05),
       y: h * (0.85 + Math.cos(drift + 1.7) * 0.03),
       r: Math.max(140, 195 + treble * 150 + energy * 60),
-      hue: p.hue3,
+      tone: tones[2],
       alpha: 0.05 + treble * 0.12
+    },
+    {
+      x: w * (0.78 + Math.sin(drift * 1.35 + 3.4) * 0.04),
+      y: h * (0.68 + Math.cos(drift * 0.9 + 0.4) * 0.04),
+      r: Math.max(125, 165 + treble * 145 + energy * 55),
+      tone: tones[3],
+      alpha: 0.045 + treble * 0.1 + energy * 0.02
     }
   ]
 
   for (const blob of blobs) {
+    const tone = blob.tone
+    const light = Math.max(52, Math.min(78, tone.l))
     const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.r)
-    gradient.addColorStop(0, `hsla(${blob.hue}, 88%, 62%, ${blob.alpha.toFixed(3)})`)
+    gradient.addColorStop(0, `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${light.toFixed(1)}%, ${blob.alpha.toFixed(3)})`)
     gradient.addColorStop(1, 'rgba(0,0,0,0)')
     ctx.fillStyle = gradient
     ctx.fillRect(blob.x - blob.r, blob.y - blob.r, blob.r * 2, blob.r * 2)
@@ -146,7 +161,7 @@ function drawParticles(t) {
   const energy = active ? audioState.energy : 0
   const pace = active ? audioState.pace : 0
   const p = palette.value
-  const hues = [p.hue, p.hue2, p.hue3]
+  const tones = p.tones
 
   const maxDist = 150 + mid * 70 + bass * 30 + pace * 45
   const movement = 1 + energy * 1.8 + bass * 1.1 + pace * 1.7 + kick * 1.2 + snare * 0.15
@@ -193,7 +208,8 @@ function drawParticles(t) {
       const pairSeed = (point.seed * 3 + other.seed * 7) % 1
       if (d2 < maxDist * maxDist && pairSeed < linkDensity) {
         const a = (1 - Math.sqrt(d2) / maxDist) * linkAlpha
-        ctx.strokeStyle = `hsla(${hues[i % 3]}, 88%, 70%, ${a.toFixed(3)})`
+        const tone = tones[i % tones.length]
+        ctx.strokeStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(78, tone.l)).toFixed(1)}%, ${a.toFixed(3)})`
         ctx.beginPath()
         ctx.moveTo(point.sx, point.sy)
         ctx.lineTo(other.sx, other.sy)
@@ -205,7 +221,9 @@ function drawParticles(t) {
   for (let i = 0; i < points.length; i++) {
     const point = points[i]
     const radius = point.r * (1 + treble * 1.5 + kick * 0.8 + snare * 0.3)
-    ctx.fillStyle = `hsla(${hues[i % 3]}, 92%, ${(66 + treble * 10).toFixed(0)}%, ${(0.55 + energy * 0.35).toFixed(2)})`
+    const tone = tones[i % tones.length]
+    const light = Math.max(58, Math.min(88, tone.l + treble * 8))
+    ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${light.toFixed(1)}%, ${(0.55 + energy * 0.35).toFixed(2)})`
     ctx.beginPath()
     ctx.arc(point.sx, point.sy, radius, 0, Math.PI * 2)
     ctx.fill()
@@ -218,6 +236,7 @@ function drawSpectrum() {
   if (!data || !data.length) return
 
   const p = palette.value
+  const tones = p.tones
   const energy = audioState.energy
   const barCount = w < 640 ? 36 : 72
   const gap = w < 640 ? 2 : 3
@@ -234,8 +253,15 @@ function drawSpectrum() {
     )
     const value = data[index] / 255
     const height = Math.pow(value, 1.35) * maxHeight * (0.6 + energy * 0.8)
-    const hue = p.hue + norm * 85
-    ctx.fillStyle = `hsla(${hue}, 92%, 68%, ${(0.08 + value * 0.38).toFixed(3)})`
+    const pos = norm * (tones.length - 1)
+    const toneIndex = Math.min(tones.length - 2, Math.floor(pos))
+    const blend = pos - toneIndex
+    const from = tones[toneIndex]
+    const to = tones[toneIndex + 1]
+    const hue = from.h + shortestHueDelta(from.h, to.h) * blend
+    const sat = from.s + (to.s - from.s) * blend
+    const light = from.l + (to.l - from.l) * blend
+    ctx.fillStyle = `hsla(${hue.toFixed(1)}, ${sat.toFixed(1)}%, ${Math.min(88, light + 2).toFixed(1)}%, ${(0.08 + value * 0.38).toFixed(3)})`
     ctx.fillRect(i * barWidth + gap / 2, h - height, Math.max(1, barWidth - gap), height)
   }
   ctx.restore()
@@ -256,7 +282,8 @@ function drawStatic() {
   drawGrid(1200)
 
   const p = palette.value
-  ctx.fillStyle = `hsla(${p.hue}, 92%, 72%, 0.6)`
+  const tone = p.tones[0]
+  ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(82, tone.l)).toFixed(1)}%, 0.6)`
   for (const point of points) {
     ctx.beginPath()
     ctx.arc(point.x, point.y, point.r, 0, Math.PI * 2)

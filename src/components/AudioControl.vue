@@ -38,6 +38,36 @@
       </button>
     </div>
 
+    <div class="band-colors" role="group" aria-label="Theme colours">
+      <span class="band-colors-title mono" title="Whichever band is strongest becomes the main accent">theme</span>
+      <label
+        v-for="meter in meters"
+        :key="`color-${meter.colorKey}`"
+        class="band-color"
+        :style="{ '--band-color': bandColors[meter.colorKey] }"
+        :title="`Choose a colour for ${meter.label}`"
+      >
+        <input
+          class="meter-color"
+          type="color"
+          :value="bandColors[meter.colorKey]"
+          :aria-label="`${meter.label} colour`"
+          @input="setBandColor(meter.colorKey, $event.target.value)"
+        />
+        <span>{{ meter.shortLabel }}</span>
+      </label>
+      <button
+        v-if="hasCustomColors"
+        type="button"
+        class="mini-btn mono reset-btn"
+        title="Reset band colours"
+        aria-label="Reset band colours to defaults"
+        @click="resetBandColors"
+      >
+        reset
+      </button>
+    </div>
+
     <div v-if="isActive" class="audio-panel glass">
       <div class="panel-head">
         <span
@@ -62,17 +92,20 @@
           v-for="meter in meters"
           :key="meter.key"
           class="meter"
-          role="meter"
-          :aria-label="meter.label"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          :aria-valuenow="percent(state[meter.key])"
+          :style="{ '--band-color': bandColors[meter.colorKey] }"
         >
           <span class="meter-label mono">{{ meter.label }}</span>
-          <span class="meter-track">
+          <span
+            class="meter-track"
+            role="meter"
+            :aria-label="meter.label"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-valuenow="percent(state[meter.key])"
+          >
             <span
               class="meter-fill"
-              :style="{ transform: `scaleX(${state[meter.key]})`, background: meter.color }"
+              :style="{ transform: `scaleX(${state[meter.key]})`, background: bandColors[meter.colorKey] }"
             ></span>
           </span>
         </div>
@@ -87,9 +120,13 @@
 import { computed } from 'vue'
 import {
   state,
+  bandColors,
+  DEFAULT_BAND_COLORS,
   isActive,
   isMic,
   isFile,
+  setBandColor,
+  resetBandColors,
   toggleMic,
   loadTrack,
   togglePlayback,
@@ -97,11 +134,15 @@ import {
 } from '../composables/useAudioReactive'
 
 const meters = [
-  { key: 'bass', label: 'bass / kick', color: 'var(--accent)' },
-  { key: 'highMid', label: 'snare', color: 'var(--accent-2)' },
-  { key: 'mid', label: 'voice', color: 'var(--accent-3)' },
-  { key: 'treble', label: 'air', color: 'linear-gradient(90deg, var(--accent-2), var(--accent-3))' }
+  { key: 'bass', colorKey: 'bass', label: 'bass / kick', shortLabel: 'bass' },
+  { key: 'highMid', colorKey: 'snare', label: 'snare', shortLabel: 'snare' },
+  { key: 'mid', colorKey: 'voice', label: 'voice', shortLabel: 'voice' },
+  { key: 'treble', colorKey: 'air', label: 'air', shortLabel: 'air' }
 ]
+
+const hasCustomColors = computed(() =>
+  Object.keys(DEFAULT_BAND_COLORS).some((key) => bandColors[key] !== DEFAULT_BAND_COLORS[key])
+)
 
 const micLabel = computed(() => {
   if (state.status === 'requesting') return 'Requesting mic…'
@@ -140,7 +181,7 @@ async function onFile(event) {
 .audio-btn:hover { border-color: var(--accent-3); }
 .audio-btn:disabled { opacity: 0.6; cursor: progress; transform: none; }
 .audio-btn.primary {
-  background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright));
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright) 38%, var(--accent-3-bright) 70%, var(--accent-4-bright));
   border-color: transparent;
   color: #04211d;
 }
@@ -148,6 +189,34 @@ async function onFile(event) {
 .file-label.active { border-color: var(--accent-2); }
 .file-label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
 .stop-btn { color: var(--muted); }
+
+.band-colors {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.95rem;
+  margin-top: 0.65rem;
+  max-width: 620px;
+}
+.band-colors-title {
+  color: var(--dim);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.band-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  color: color-mix(in srgb, var(--band-color) 72%, var(--text));
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.band-color:hover { color: var(--text); }
 
 .live-dot {
   width: 7px;
@@ -197,6 +266,8 @@ async function onFile(event) {
   line-height: 1.4;
 }
 .mini-btn:hover { border-color: var(--accent); }
+.reset-btn { color: var(--muted); }
+.reset-btn:hover { color: var(--text); }
 
 .meters {
   display: grid;
@@ -209,9 +280,26 @@ async function onFile(event) {
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--dim);
+  color: color-mix(in srgb, var(--band-color) 72%, var(--text));
   white-space: nowrap;
 }
+.meter-color {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.meter-color::-webkit-color-swatch-wrapper { padding: 0; }
+.meter-color::-webkit-color-swatch { border: 0; border-radius: 3px; }
+.meter-color::-moz-color-swatch { border: 0; border-radius: 3px; }
+.meter-color:hover { border-color: var(--text); }
+.meter-color:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .meter-track {
   display: block;
   height: 4px;

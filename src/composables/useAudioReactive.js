@@ -13,9 +13,6 @@ import { computed, reactive } from 'vue'
  */
 
 const FFT_SIZE = 2048
-const BASE_HUE = 173
-const BASE_HUE_2 = 209
-const BASE_HUE_3 = 269
 const ANALYSIS_INTERVAL = 33 // ~30 Hz UI updates; the FFT itself is 2048 bins
 const AUDIO_EXTENSIONS = /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)$/i
 
@@ -27,6 +24,8 @@ const BANDS = {
   treble: { range: [5000, 12000], gain: 3.4 } // hats / cymbals / air
 }
 
+// The four editable components define the weights of their colours. Those
+// weights produce one shared main colour x; every palette slot derives from x.
 export const state = reactive({
   status: 'idle', // idle | requesting | mic | file | error
   playing: false,
@@ -41,100 +40,254 @@ export const state = reactive({
   kick: 0,
   snare: 0,
   centroid: 0,
-  pace: 0,
-  hue: BASE_HUE,
-  hue2: BASE_HUE_2,
-  hue3: BASE_HUE_3
+  pace: 0
 })
 
 export const isActive = computed(() => state.status === 'mic' || state.status === 'file')
 export const isMic = computed(() => state.status === 'mic')
 export const isFile = computed(() => state.status === 'file')
 
-function wrapHue(value) {
-  return ((value % 360) + 360) % 360
+// Editable colours for the four meter bands. These are UI preferences rather
+// than analysis data, so they live outside the transient `state` object and
+// survive reloads in localStorage.
+export const DEFAULT_BAND_COLORS = Object.freeze({
+  bass: '#ff0033',
+  snare: '#1eff00',
+  voice: '#4000ff',
+  air: '#ffea00'
+})
+export const bandColors = reactive({ ...DEFAULT_BAND_COLORS })
+
+const BAND_COLORS_KEY = 'hdlr-audio-band-colors'
+const HEX_COLOR = /^#[0-9a-f]{6}$/i
+
+function readSavedBandColors() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BAND_COLORS_KEY) || 'null')
+    if (!saved || typeof saved !== 'object') return
+    for (const key of Object.keys(DEFAULT_BAND_COLORS)) {
+      if (typeof saved[key] === 'string' && HEX_COLOR.test(saved[key])) {
+        bandColors[key] = saved[key]
+      }
+    }
+  } catch {
+    /* localStorage can be unavailable (private mode, blocked storage) */
+  }
+}
+
+readSavedBandColors()
+
+export function setBandColor(key, value) {
+  if (!(key in DEFAULT_BAND_COLORS) || !HEX_COLOR.test(value)) return
+  bandColors[key] = value
+  syncDocumentPalette(true)
+  try {
+    localStorage.setItem(BAND_COLORS_KEY, JSON.stringify(bandColors))
+  } catch {
+    /* preference simply won't persist */
+  }
+}
+
+export function resetBandColors() {
+  Object.assign(bandColors, DEFAULT_BAND_COLORS)
+  syncDocumentPalette(true)
+  try {
+    localStorage.removeItem(BAND_COLORS_KEY)
+  } catch {
+    /* preference simply won't persist */
+  }
+}
+
+function hexToHsl(hex) {
+  const value = hex.slice(1)
+  const r = parseInt(value.slice(0, 2), 16) / 255
+  const g = parseInt(value.slice(2, 4), 16) / 255
+  const b = parseInt(value.slice(4, 6), 16) / 255
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const lightness = (max + min) / 2
+  let hue = 0
+  let saturation = 0
+
+  if (max !== min) {
+    const delta = max - min
+    saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min)
+    if (max === r) hue = (g - b) / delta + (g < b ? 6 : 0)
+    else if (max === g) hue = (b - r) / delta + 2
+    else hue = (r - g) / delta + 4
+    hue *= 60
+  }
+
+  return { h: hue, s: saturation * 100, l: lightness * 100 }
+}
+
+/**
+ * The four component levels act as weights for their respective colours.
+ * Mixing happens in HSL: hue is averaged on the unit circle, saturation and
+ * lightness are weighted too. This weighted colour is the main/base colour;
+ * every other palette slot is then derived from the same hue x.
+ */
+function mixWeightedColor(colors, weights) {
+  let sin = 0
+  let cos = 0
+  let saturation = 0
+  let lightness = 0
+  let weightSum = 0
+
+  for (let i = 0; i < colors.length; i += 1) {
+    const { h, s, l } = hexToHsl(colors[i])
+    const weight = weights[i] || 0
+    const angle = (h * Math.PI) / 180
+    sin += Math.sin(angle) * weight
+    cos += Math.cos(angle) * weight
+    saturation += s * weight
+    lightness += l * weight
+    weightSum += weight
+  }
+
+  if (weightSum === 0) return { h: 173, s: 78, l: 56 }
+  const hue = ((Math.atan2(sin / weightSum, cos / weightSum) * 180) / Math.PI + 360) % 360
+  return {
+    h: hue,
+    s: saturation / weightSum,
+    l: lightness / weightSum
+  }
+}
+
+function tuneTone(base, satBoost, lightBoost) {
+  return {
+    h: base.h,
+    s: clamp(base.s + satBoost, 0, 100),
+    l: clamp(base.l + lightBoost, 0, 100)
+  }
+}
+
+function hslColor(tone, satBoost = 0, lightBoost = 0) {
+  return `hsl(${tone.h.toFixed(1)}, ${clamp(tone.s + satBoost, 0, 100).toFixed(1)}%, ${clamp(tone.l + lightBoost, 0, 100).toFixed(1)}%)`
+}
+
+function hslaColor(tone, alpha, satBoost = 0, lightBoost = 0) {
+  return `hsla(${tone.h.toFixed(1)}, ${clamp(tone.s + satBoost, 0, 100).toFixed(1)}%, ${clamp(tone.l + lightBoost, 0, 100).toFixed(1)}%, ${alpha.toFixed(3)})`
 }
 
 export const palette = computed(() => {
   const active = isActive.value
-  const hue = active ? wrapHue(state.hue) : BASE_HUE
-  const hue2 = active ? wrapHue(state.hue2) : BASE_HUE_2
-  const hue3 = active ? wrapHue(state.hue3) : BASE_HUE_3
   const kick = active ? state.kick : 0
   const snare = active ? state.snare : 0
   const mid = active ? state.mid : 0
   const treble = active ? state.treble : 0
   const energy = active ? state.energy : 0
+  const centroid = active ? state.centroid : 0
 
-  const sat1 = Math.min(100, Math.round(88 + kick * 10 + snare * 4))
-  const light1 = Math.round(58 + treble * 8 + energy * 5)
-  const sat2 = Math.min(100, Math.round(90 + snare * 8 + mid * 4))
-  const light2 = Math.round(64 + mid * 5 + treble * 6)
-  const sat3 = Math.min(100, Math.round(88 + treble * 8 + energy * 3))
-  const light3 = Math.round(68 + treble * 7 + energy * 3)
+  // BASS / SNARE / VOICE / AIR levels are the weights of their respective
+  // colours. The weighted mix is the main/base colour; the rest of the
+  // palette is derived from the same hue x.
+  const levels = [
+    active ? state.bass : 0,
+    active ? state.highMid : 0,
+    active ? state.mid : 0,
+    active ? state.treble : 0
+  ]
+  const floor = 0.1
+  const rawWeights = levels.map((level) => floor + level)
+  const weightSum = rawWeights.reduce((sum, weight) => sum + weight, 0)
+  const weights = rawWeights.map((weight) => weight / weightSum)
+  const base = mixWeightedColor(
+    [bandColors.bass, bandColors.snare, bandColors.voice, bandColors.air],
+    weights
+  )
+
+  const slots = [
+    tuneTone(base, kick * 4 + snare * 1.5, kick * 3 + energy * 2),
+    tuneTone(
+      { h: (base.h + 36) % 360, s: clamp(base.s + 4, 0, 100), l: clamp(base.l + 4, 0, 100) },
+      snare * 4 + mid,
+      snare * 3 + mid * 2
+    ),
+    tuneTone(
+      { h: (base.h + 72) % 360, s: clamp(base.s, 0, 100), l: clamp(base.l + 8, 0, 100) },
+      mid * 4 + energy,
+      mid * 3 + treble * 2
+    ),
+    tuneTone(
+      { h: (base.h + 108) % 360, s: clamp(base.s - 4, 0, 100), l: clamp(base.l + 12, 0, 100) },
+      treble * 5 + centroid * 3,
+      treble * 4 + energy * 2
+    )
+  ]
+
+  const tones = slots
+  const accents = tones.map((tone) => hslColor(tone))
+  const brights = [
+    hslColor(slots[0], 4, 15 + treble * 4),
+    hslColor(slots[1], 4, 15 + mid * 4),
+    hslColor(slots[2], 4, 12 + mid * 4),
+    hslColor(slots[3], 4, 12 + treble * 4)
+  ]
+  const glows = [
+    hslaColor(slots[0], 0.09 + energy * 0.05 + kick * 0.03),
+    hslaColor(slots[1], 0.08 + mid * 0.05 + snare * 0.03),
+    hslaColor(slots[2], 0.07 + treble * 0.06 + energy * 0.02),
+    hslaColor(slots[3], 0.06 + treble * 0.07 + energy * 0.02)
+  ]
 
   return {
-    hue,
-    hue2,
-    hue3,
-    accent: `hsl(${hue.toFixed(1)}, ${sat1}%, ${light1}%)`,
-    accent2: `hsl(${hue2.toFixed(1)}, ${sat2}%, ${light2}%)`,
-    accent3: `hsl(${hue3.toFixed(1)}, ${sat3}%, ${light3}%)`,
-    accentBright: `hsl(${hue.toFixed(1)}, ${Math.min(100, sat1 + 2)}%, ${Math.round(74 + kick * 4 + treble * 4)}%)`,
-    accent2Bright: `hsl(${hue2.toFixed(1)}, ${Math.min(100, sat2 + 2)}%, ${Math.round(72 + mid * 4 + treble * 4)}%)`,
-    accentGlow: `hsla(${hue.toFixed(1)}, 92%, 64%, ${(0.09 + energy * 0.05 + kick * 0.03).toFixed(3)})`,
-    accent2Glow: `hsla(${hue2.toFixed(1)}, 92%, 64%, ${(0.08 + mid * 0.05 + snare * 0.03).toFixed(3)})`,
-    accent3Glow: `hsla(${hue3.toFixed(1)}, 90%, 64%, ${(0.07 + treble * 0.06 + energy * 0.02).toFixed(3)})`
+    base,
+    weights,
+    tones,
+    accents,
+    brights,
+    glows,
+    accent: accents[0],
+    accent2: accents[1],
+    accent3: accents[2],
+    accent4: accents[3],
+    accentBright: brights[0],
+    accent2Bright: brights[1],
+    accent3Bright: brights[2],
+    accent4Bright: brights[3],
+    accentGlow: glows[0],
+    accent2Glow: glows[1],
+    accent3Glow: glows[2],
+    accent4Glow: glows[3]
   }
 })
 
-const CSS_PALETTE_VARS = [
-  '--accent',
-  '--accent-2',
-  '--accent-3',
-  '--accent-bright',
-  '--accent-2-bright',
-  '--accent-glow',
-  '--accent-2-glow',
-  '--accent-3-glow',
-  '--kick',
-  '--snare',
-  '--energy',
-  '--pace',
-  '--motion-speed'
-]
 let lastPaletteSync = 0
 let lastMotionSync = 0
 
 /**
- * Push the music palette into the document root so the whole page — not just
- * the hero — shares the same live accent colours and ambient glows.
+ * Push the shared palette into the document root so every section uses the
+ * same four colours. The component levels weight the four picks into one base
+ * colour x; all slots are offsets from x and stay active with or without audio.
  */
 function syncDocumentPalette(force = false) {
   if (typeof document === 'undefined') return
-
-  const root = document.documentElement
-  if (!isActive.value) {
-    if (root.dataset.audioPalette === 'on') {
-      CSS_PALETTE_VARS.forEach((name) => root.style.removeProperty(name))
-      delete root.dataset.audioPalette
-    }
-    return
-  }
 
   const now = performance.now()
   if (!force && now - lastPaletteSync < 50) return
   lastPaletteSync = now
 
+  const root = document.documentElement
   const p = palette.value
+  for (let i = 0; i < p.accents.length; i += 1) {
+    const slot = i + 1
+    root.style.setProperty(`--palette-${slot}`, p.accents[i])
+    root.style.setProperty(`--palette-${slot}-bright`, p.brights[i])
+    root.style.setProperty(`--palette-${slot}-glow`, p.glows[i])
+  }
   root.style.setProperty('--accent', p.accent)
   root.style.setProperty('--accent-2', p.accent2)
   root.style.setProperty('--accent-3', p.accent3)
+  root.style.setProperty('--accent-4', p.accent4)
   root.style.setProperty('--accent-bright', p.accentBright)
   root.style.setProperty('--accent-2-bright', p.accent2Bright)
+  root.style.setProperty('--accent-3-bright', p.accent3Bright)
+  root.style.setProperty('--accent-4-bright', p.accent4Bright)
   root.style.setProperty('--accent-glow', p.accentGlow)
   root.style.setProperty('--accent-2-glow', p.accent2Glow)
   root.style.setProperty('--accent-3-glow', p.accent3Glow)
+  root.style.setProperty('--accent-4-glow', p.accent4Glow)
   root.style.setProperty('--kick', state.kick.toFixed(3))
   root.style.setProperty('--snare', state.snare.toFixed(3))
   root.style.setProperty('--energy', state.energy.toFixed(3))
@@ -146,7 +299,6 @@ function syncDocumentPalette(force = false) {
     root.style.setProperty('--motion-speed', `${motionSpeed.toFixed(2)}s`)
     lastMotionSync = now
   }
-  root.dataset.audioPalette = 'on'
 }
 
 let audioCtx = null
@@ -160,9 +312,6 @@ let freqData = null
 let timeData = null
 let rafId = 0
 let lastAnalysed = 0
-let smoothHue = BASE_HUE
-let smoothHue2 = BASE_HUE_2
-let smoothHue3 = BASE_HUE_3
 let smoothedEnergy = 0
 let kickAvg = 0
 let snareAvg = 0
@@ -317,21 +466,11 @@ function analyse(now) {
   }
   snareAvg += (snareDrive - snareAvg) * 0.08
 
-  // Each layer of the spectrum owns a different part of the palette:
-  // bass/kick moves the main accent, voice/snare moves the second hue and
-  // treble/air sweeps the third. Wider targets + faster smoothing make the
-  // whole page visibly react to the music instead of only drifting slowly.
+  // The four component levels weight the four picks into one base colour;
+  // these slots are all derived from the resulting hue x. Audio also
+  // modulates their brightness and glow, but the palette stays shared.
   const nextKick = kickHit ? 1 : state.kick * 0.86
   const nextSnare = snareHit ? 1 : state.snare * 0.84
-
-  const targetHue = BASE_HUE + centroid * 180 + smoothed.bass * 55 + nextKick * 30
-  smoothHue += (targetHue - smoothHue) * 0.11
-
-  const targetHue2 = smoothHue + 40 + smoothed.mid * 25 + nextSnare * 20
-  smoothHue2 += (targetHue2 - smoothHue2) * 0.14
-
-  const targetHue3 = smoothHue + 100 + smoothed.treble * 30 + smoothed.highMid * 10
-  smoothHue3 += (targetHue3 - smoothHue3) * 0.14
 
   state.bass = smoothed.bass
   state.lowMid = smoothed.lowMid
@@ -343,9 +482,6 @@ function analyse(now) {
   state.snare = nextSnare
   state.centroid = centroid
   state.pace = tempoPace
-  state.hue = smoothHue
-  state.hue2 = smoothHue2
-  state.hue3 = smoothHue3
   syncDocumentPalette()
 }
 
@@ -367,9 +503,6 @@ function resetLevels() {
   for (const key of Object.keys(smoothed)) smoothed[key] = 0
   for (const key of Object.keys(previousBands)) previousBands[key] = 0
   smoothedEnergy = 0
-  smoothHue = BASE_HUE
-  smoothHue2 = BASE_HUE_2
-  smoothHue3 = BASE_HUE_3
   kickAvg = 0
   snareAvg = 0
   lastKickAt = 0
@@ -387,9 +520,6 @@ function resetLevels() {
   state.snare = 0
   state.centroid = 0
   state.pace = 0
-  state.hue = BASE_HUE
-  state.hue2 = BASE_HUE_2
-  state.hue3 = BASE_HUE_3
 }
 
 function teardown() {
@@ -569,3 +699,7 @@ export async function togglePlayback() {
 export function getFrequencyData() {
   return isActive.value ? freqData : null
 }
+
+// Apply the saved band colours immediately on first load, before any audio
+// source exists, so the whole page starts with the user's theme.
+syncDocumentPalette(true)
