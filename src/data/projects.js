@@ -69,6 +69,22 @@ export const projects = [
     updated: '2026-10-12'
   },
   {
+    name: 'open-studio',
+    repo: 'open-studio',
+    url: 'https://github.com/hdlopesrocha/open-studio',
+    description:
+      'Private, password-protected AI studio running entirely on your own machine: chat, music, video, voice, subtitles, images, documents and media tools — every model in Docker, behind one gateway, one shared file tree and one global job system.',
+    longDescription:
+      'A single Vue 3 app sits behind an authentication gateway that routes requests to containerised services for chat, ACE-Step music and DJ mixing, video pipelines, OmniVoice / Piper speech, Whisper subtitles, Diffusers images, PDF and document tools, translation, summaries, FFmpeg and yt-dlp. Every long task runs through a persistent job hub with per-component queues, live SSE progress and cancellation, while all services share one file tree.',
+    category: 'ai',
+    technologies: ['Docker', 'Vue 3', 'Python', 'Local LLMs', 'Ollama', 'ACE-Step', 'Whisper', 'Piper TTS', 'Diffusers', 'FFmpeg', 'yt-dlp', 'QVAC'],
+    featured: true,
+    visual: 'studio',
+    timeline: 'parallel',
+    created: '2026-11-11',
+    updated: '2026-11-13'
+  },
+  {
     name: 'infinity-edge-web',
     repo: 'infinity-edge-web',
     url: 'https://github.com/hdlopesrocha/infinity-edge-web',

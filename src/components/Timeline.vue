@@ -46,7 +46,7 @@
 <script setup>
 import SectionVisual from './SectionVisual.vue'
 import { evolutionChain, projectByRepo } from '../data/projects.js'
-const parallelRepos = ['web-gource', 'vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk']
+const parallelRepos = ['web-gource', 'open-studio', 'vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk']
 </script>
 
 <style scoped>

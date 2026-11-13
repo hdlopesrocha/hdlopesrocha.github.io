@@ -105,6 +105,58 @@
       </g>
     </svg>
 
+    <!-- studio : open-studio local AI workspace -->
+    <svg v-else-if="visual === 'studio'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
+      <rect x="16" y="8" width="288" height="134" rx="8" fill="rgba(5,7,13,0.82)" stroke="rgba(148,178,255,0.35)" />
+      <path d="M16 30 H304" stroke="rgba(148,178,255,0.3)" />
+      <circle cx="28" cy="19" r="2.6" fill="var(--accent)" opacity="0.85" />
+      <circle cx="38" cy="19" r="2.6" fill="var(--accent-2)" opacity="0.85" />
+      <circle cx="48" cy="19" r="2.6" fill="var(--accent-3)" opacity="0.85" />
+      <text x="60" y="22" font-family="monospace" font-size="8" fill="rgba(147,161,184,0.9)">open-studio · local</text>
+      <text x="222" y="22" font-family="monospace" font-size="7" fill="var(--accent-bright)" fill-opacity="0.85">● gateway</text>
+
+      <g class="pv-tile">
+        <rect x="26" y="38" width="108" height="24" rx="5" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-opacity="0.5" />
+        <path d="M35 46 h9 v6 h-9 z M41 52 l3 3" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round" />
+        <text x="50" y="53" font-family="monospace" font-size="7.5" fill="#c9d6ea">chat</text>
+      </g>
+      <g class="pv-tile">
+        <rect x="142" y="38" width="108" height="24" rx="5" fill="var(--accent-3)" fill-opacity="0.08" stroke="var(--accent-3)" stroke-opacity="0.5" />
+        <path d="M151 54 v-8 M155 54 v-12 M159 54 v-5" stroke="var(--accent-3)" stroke-width="1.4" stroke-linecap="round" />
+        <text x="166" y="53" font-family="monospace" font-size="7.5" fill="#c9d6ea">audio</text>
+      </g>
+      <g class="pv-tile">
+        <rect x="26" y="67" width="108" height="24" rx="5" fill="var(--accent-2)" fill-opacity="0.08" stroke="var(--accent-2)" stroke-opacity="0.5" />
+        <path d="M35 81 l9 -5 v10 z" fill="none" stroke="var(--accent-2)" stroke-width="1.2" stroke-linejoin="round" />
+        <text x="50" y="82" font-family="monospace" font-size="7.5" fill="#c9d6ea">video</text>
+      </g>
+      <g class="pv-tile">
+        <rect x="142" y="67" width="108" height="24" rx="5" fill="var(--accent-2)" fill-opacity="0.08" stroke="var(--accent-2)" stroke-opacity="0.5" />
+        <rect x="153" y="72" width="4" height="8" rx="2" fill="var(--accent-2)" />
+        <path d="M155 82 v3 M151 85 h8" stroke="var(--accent-2)" stroke-width="1.2" stroke-linecap="round" />
+        <text x="166" y="82" font-family="monospace" font-size="7.5" fill="#c9d6ea">voice</text>
+      </g>
+      <g class="pv-tile">
+        <rect x="26" y="96" width="108" height="24" rx="5" fill="var(--accent)" fill-opacity="0.08" stroke="var(--accent)" stroke-opacity="0.5" />
+        <rect x="35" y="101" width="9" height="9" rx="1.5" fill="none" stroke="var(--accent)" stroke-width="1.1" />
+        <path d="M36 109 l3 -4 l2 2 l3 -4" fill="none" stroke="var(--accent)" stroke-width="1.1" stroke-linejoin="round" />
+        <text x="50" y="111" font-family="monospace" font-size="7.5" fill="#c9d6ea">images</text>
+      </g>
+      <g class="pv-tile">
+        <rect x="142" y="96" width="108" height="24" rx="5" fill="var(--accent-3)" fill-opacity="0.08" stroke="var(--accent-3)" stroke-opacity="0.5" />
+        <path d="M151 102 h5 l2 2 h6 v7 h-13 z" fill="none" stroke="var(--accent-3)" stroke-width="1.1" stroke-linejoin="round" />
+        <text x="166" y="111" font-family="monospace" font-size="7.5" fill="#c9d6ea">files</text>
+      </g>
+
+      <rect x="258" y="38" width="36" height="82" rx="6" fill="rgba(148,178,255,0.05)" stroke="rgba(148,178,255,0.3)" />
+      <circle class="pv-twinkle" cx="276" cy="52" r="3" fill="var(--accent)" />
+      <rect x="270" y="66" width="12" height="8" rx="2" fill="none" stroke="var(--accent-2)" stroke-width="1.1" />
+      <path d="M270 88 h12 M270 93 h8" stroke="var(--accent-3)" stroke-width="1.3" stroke-linecap="round" />
+      <circle cx="276" cy="106" r="4" fill="none" stroke="var(--accent)" stroke-opacity="0.7" stroke-width="1.1" />
+
+      <text x="26" y="132" font-family="monospace" font-size="7" fill="rgba(147,161,184,0.9)">gateway · jobs · shared files</text>
+    </svg>
+
     <!-- waveform : music-ai -->
     <svg v-else-if="visual === 'waveform'" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice">
       <path class="pv-sine" d="M0 75 Q 20 30 40 75 T 80 75 T 120 75 T 160 75 T 200 75 T 240 75 T 280 75 T 320 75" fill="none" stroke="var(--accent-3)" stroke-width="2" />
@@ -482,6 +534,7 @@ onBeforeUnmount(() => window.clearInterval(matrixTimer))
 .pv-stars,
 .pv-ship,
 .pv-rings,
+.pv-tile,
 .pv-sine,
 .pv-waves,
 .pv-rain text {
@@ -628,6 +681,11 @@ onBeforeUnmount(() => window.clearInterval(matrixTimer))
   .pv-twinkle {
     animation: pv-twinkle calc(var(--motion-speed, 2.4s) * 1.8) ease-in-out infinite;
   }
+  .pv-tile {
+    animation: pv-tile calc(var(--motion-speed, 2.4s) * 2.8) ease-in-out infinite alternate;
+  }
+  .pv-tile:nth-child(2n) { animation-delay: calc(var(--motion-speed, 2.4s) * -0.9); }
+  .pv-tile:nth-child(3n) { animation-delay: calc(var(--motion-speed, 2.4s) * -1.5); }
 }
 
 @keyframes pv-breathe {
@@ -730,5 +788,9 @@ onBeforeUnmount(() => window.clearInterval(matrixTimer))
 @keyframes pv-twinkle {
   0%, 100% { opacity: 0.35; }
   50% { opacity: calc(0.7 + var(--snare, 0) * 0.3); }
+}
+@keyframes pv-tile {
+  from { translate: 0 1px; opacity: 0.72; }
+  to { translate: 0 -2px; opacity: 1; }
 }
 </style>
