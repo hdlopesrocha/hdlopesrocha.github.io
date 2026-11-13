@@ -13,7 +13,7 @@ import { computed, reactive } from 'vue'
  */
 
 const FFT_SIZE = 2048
-const ANALYSIS_INTERVAL = 33 // ~30 Hz UI updates; the FFT itself is 2048 bins
+const ANALYSIS_INTERVAL = 16 // ~60 Hz updates; one analysis per animation frame
 const AUDIO_EXTENSIONS = /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)$/i
 
 const BANDS = {
@@ -51,10 +51,10 @@ export const isFile = computed(() => state.status === 'file')
 // than analysis data, so they live outside the transient `state` object and
 // survive reloads in localStorage.
 export const DEFAULT_BAND_COLORS = Object.freeze({
-  bass: '#ff0033',
-  snare: '#1eff00',
-  voice: '#4000ff',
-  air: '#ffea00'
+  bass: '#04ff60',
+  snare: '#fe6800',
+  voice: '#ffb005',
+  air: '#1a5eff'
 })
 export const bandColors = reactive({ ...DEFAULT_BAND_COLORS })
 
@@ -265,7 +265,7 @@ function syncDocumentPalette(force = false) {
   if (typeof document === 'undefined') return
 
   const now = performance.now()
-  if (!force && now - lastPaletteSync < 50) return
+  if (!force && now - lastPaletteSync < 16) return
   lastPaletteSync = now
 
   const root = document.documentElement
@@ -349,7 +349,7 @@ async function ensureContext() {
     audioCtx = new AudioCtor()
     analyser = audioCtx.createAnalyser()
     analyser.fftSize = FFT_SIZE
-    analyser.smoothingTimeConstant = 0.6
+    analyser.smoothingTimeConstant = 0.35
     analyser.minDecibels = -95
     analyser.maxDecibels = -12
 
@@ -413,10 +413,10 @@ function analyse(now) {
   for (const key of Object.keys(smoothed)) {
     const target = raw[key]
     const current = smoothed[key]
-    const rate = target > current ? 0.45 : 0.09
+    const rate = target > current ? 0.55 : 0.12
     smoothed[key] = current + (target - current) * rate
   }
-  smoothedEnergy += (energyRaw - smoothedEnergy) * (energyRaw > smoothedEnergy ? 0.4 : 0.08)
+  smoothedEnergy += (energyRaw - smoothedEnergy) * (energyRaw > smoothedEnergy ? 0.5 : 0.12)
 
   // Onset detection uses positive spectral rises, not the raw level: a
   // sustained bass note should not retrigger the kick on every frame.
@@ -429,7 +429,7 @@ function analyse(now) {
   // Kick / bass drum: low-frequency attack above its local flux average.
   const kickDrive = rises.bass * 1.25 + rises.lowMid * 0.2
   let kickHit = false
-  if (kickDrive > kickAvg * 1.3 + 0.015 && kickDrive > 0.05 && raw.bass > 0.08 && now - lastKickAt > 180) {
+  if (kickDrive > kickAvg * 1.3 + 0.012 && kickDrive > 0.05 && raw.bass > 0.08 && now - lastKickAt > 180) {
     kickHit = true
     lastKickAt = now
     kickTimes.push(now)
@@ -460,7 +460,7 @@ function analyse(now) {
   // Snare / clap: noisy attack in the presence band.
   const snareDrive = Math.max(rises.highMid, rises.mid * 0.35, rises.treble * 0.5)
   let snareHit = false
-  if (snareDrive > snareAvg * 1.3 + 0.012 && snareDrive > 0.04 && now - lastSnareAt > 120) {
+  if (snareDrive > snareAvg * 1.3 + 0.01 && snareDrive > 0.04 && now - lastSnareAt > 120) {
     snareHit = true
     lastSnareAt = now
   }
@@ -469,8 +469,8 @@ function analyse(now) {
   // The four component levels weight the four picks into one base colour;
   // these slots are all derived from the resulting hue x. Audio also
   // modulates their brightness and glow, but the palette stays shared.
-  const nextKick = kickHit ? 1 : state.kick * 0.86
-  const nextSnare = snareHit ? 1 : state.snare * 0.84
+  const nextKick = kickHit ? 1 : state.kick * 0.92
+  const nextSnare = snareHit ? 1 : state.snare * 0.9
 
   state.bass = smoothed.bass
   state.lowMid = smoothed.lowMid
