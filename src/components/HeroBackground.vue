@@ -29,6 +29,8 @@ let flowLayerCanvas = null
 let flowLayerCtx = null
 let glowCanvas = null
 let glowCtx = null
+let sceneSnapshotCanvas = null
+let sceneSnapshotCtx = null
 let smokeMaskCanvas = null
 let smokeMaskCtx = null
 let smokeWorker = null
@@ -502,6 +504,29 @@ function drawFlowField(t) {
   }
 }
 
+function captureSceneSnapshot() {
+  if (!ctx) return
+  const source = ctx.canvas
+  if (!sceneSnapshotCanvas) {
+    sceneSnapshotCanvas = document.createElement('canvas')
+    sceneSnapshotCtx = sceneSnapshotCanvas.getContext('2d')
+  }
+  if (
+    sceneSnapshotCanvas.width !== source.width ||
+    sceneSnapshotCanvas.height !== source.height
+  ) {
+    sceneSnapshotCanvas.width = source.width
+    sceneSnapshotCanvas.height = source.height
+  }
+  sceneSnapshotCtx.setTransform(1, 0, 0, 1, 0, 0)
+  sceneSnapshotCtx.clearRect(0, 0, source.width, source.height)
+  // Frosted-glass blur for the refracted triangle samples.
+  const blurPx = 5 * Math.min(window.devicePixelRatio || 1, 1.5)
+  sceneSnapshotCtx.filter = `blur(${blurPx.toFixed(1)}px)`
+  sceneSnapshotCtx.drawImage(source, 0, 0)
+  sceneSnapshotCtx.filter = 'none'
+}
+
 function drawParticles(t) {
   const active = isActive.value
   const bass = active ? audioState.bass : 0
@@ -660,6 +685,7 @@ function drawParticles(t) {
   }
 
   if (sceneFx.showTriangles) {
+    if (triangles.length) captureSceneSnapshot()
     ctx.save()
     const currentKeys = new Set()
     for (const triangle of triangles) {
@@ -678,13 +704,39 @@ function drawParticles(t) {
       const b = points[triangle.j]
       const c = points[triangle.k]
       const tone = tones[(triangle.i + triangle.j + triangle.k) % tones.length]
-      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(84, tone.l + 4)).toFixed(1)}%, ${next.toFixed(3)})`
+
+      // Refract a snapshot of the scene from before the graph layer. The
+      // triangle's hue chooses the sample direction and strength.
+      const strength = 6 + (tone.l / 100) * 8 + next * 26
+      const angle = (tone.h / 360) * Math.PI * 2
+      const dx = Math.cos(angle) * strength
+      const dy = Math.sin(angle) * strength
+      const zoom = 1 + (strength * 2.2) / Math.min(w, h) + 0.015
+
+      ctx.save()
       ctx.beginPath()
       ctx.moveTo(a.sx, a.sy)
       ctx.lineTo(b.sx, b.sy)
       ctx.lineTo(c.sx, c.sy)
       ctx.closePath()
+      ctx.clip()
+
+      ctx.save()
+      ctx.translate(triangle.cx + dx, triangle.cy + dy)
+      ctx.scale(zoom, zoom)
+      ctx.translate(-triangle.cx, -triangle.cy)
+      ctx.globalAlpha = Math.min(1, 0.72 + next * 1.6)
+      ctx.drawImage(
+        sceneSnapshotCanvas,
+        0, 0, sceneSnapshotCanvas.width, sceneSnapshotCanvas.height,
+        0, 0, w, h
+      )
+      ctx.restore()
+
+      // Preserve the triangle's palette colour as a glass tint.
+      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(84, tone.l + 4)).toFixed(1)}%, ${Math.min(0.2, 0.04 + next * 0.9).toFixed(3)})`
       ctx.fill()
+      ctx.restore()
     }
 
     // Fade out weights for triangles that no longer exist.
