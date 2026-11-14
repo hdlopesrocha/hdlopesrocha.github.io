@@ -12,6 +12,7 @@ import {
   getFrequencyData
 } from '../composables/useAudioReactive'
 import { cloudNoise } from '../lib/perlin'
+import Delaunator from 'delaunator'
 import { hexToHsl } from '../lib/color'
 import { sceneFx } from '../composables/useSceneFx'
 
@@ -547,59 +548,75 @@ function drawParticles(t) {
     }
   }
 
-  const links = []
-  for (let i = 0; i < points.length; i++) {
-    const point = points[i]
-    for (let j = i + 1; j < points.length; j++) {
-      const other = points[j]
-      const dx = point.sx - other.sx
-      const dy = point.sy - other.sy
-      const d2 = dx * dx + dy * dy
-      const pairSeed = (point.seed * 3 + other.seed * 7) % 1
-      if (d2 < maxDist * maxDist && pairSeed < linkDensity) {
-        links.push({
-          a: i,
-          b: j,
-          ax: point.sx,
-          ay: point.sy,
-          bx: other.sx,
-          by: other.sy,
-          alpha: (1 - Math.sqrt(d2) / maxDist) * linkAlpha,
-          tone: tones[i % tones.length]
-        })
-      }
-    }
+  const nodeScale = 1 + treble * 1.5 + kick * 0.8 + snare * 0.3
+  const nodeSizes = points.map((point) => point.r * nodeScale)
+
+  // Delaunay keeps the graph planar: edges never cross and its faces are
+  // non-overlapping. Filtering only removes edges/faces, so planarity holds.
+  let delaunay
+  try {
+    delaunay = Delaunator.from(points, (point) => point.sx, (point) => point.sy)
+  } catch {
+    delaunay = { triangles: [] }
   }
 
-  const adjacency = Array.from({ length: points.length }, () => new Set())
-  for (const link of links) {
-    adjacency[link.a].add(link.b)
-    adjacency[link.b].add(link.a)
+  const edgeIndex = new Map()
+  const links = []
+  const maxDist2 = maxDist * maxDist
+
+  const edgeFor = (i, j) => {
+    const a = Math.min(i, j)
+    const b = Math.max(i, j)
+    const key = `${a}:${b}`
+    const cached = edgeIndex.get(key)
+    if (cached) return cached
+
+    const p1 = points[a]
+    const p2 = points[b]
+    const dx = p1.sx - p2.sx
+    const dy = p1.sy - p2.sy
+    const d2 = dx * dx + dy * dy
+    const pairSeed = (p1.seed * 3 + p2.seed * 7) % 1
+    const included = d2 < maxDist2 && pairSeed < linkDensity
+    const width = Math.min(3.4, 0.5 + (nodeSizes[a] + nodeSizes[b]) * 0.24)
+    const edge = {
+      included,
+      width,
+      ax: p1.sx,
+      ay: p1.sy,
+      bx: p2.sx,
+      by: p2.sy,
+      alpha: included ? (1 - Math.sqrt(d2) / maxDist) * linkAlpha : 0,
+      tone: tones[a % tones.length]
+    }
+    edgeIndex.set(key, edge)
+    if (included) links.push(edge)
+    return edge
   }
 
   const triangles = []
-  for (let i = 0; i < points.length; i += 1) {
-    const neighbors = [...adjacency[i]].filter((j) => j > i).sort((a, b) => a - b)
-    for (let m = 0; m < neighbors.length; m += 1) {
-      const j = neighbors[m]
-      const jNeighbors = adjacency[j]
-      for (let n = m + 1; n < neighbors.length; n += 1) {
-        const k = neighbors[n]
-        if (jNeighbors.has(k)) {
-          const a = points[i]
-          const b = points[j]
-          const c = points[k]
-          triangles.push({
-            key: `${i}:${j}:${k}`,
-            i,
-            j,
-            k,
-            cx: (a.sx + b.sx + c.sx) / 3,
-            cy: (a.sy + b.sy + c.sy) / 3
-          })
-        }
-      }
-    }
+  const delaunayTriangles = delaunay.triangles
+  for (let i = 0; i < delaunayTriangles.length; i += 3) {
+    const ia = delaunayTriangles[i]
+    const ib = delaunayTriangles[i + 1]
+    const ic = delaunayTriangles[i + 2]
+    const e1 = edgeFor(ia, ib)
+    const e2 = edgeFor(ib, ic)
+    const e3 = edgeFor(ic, ia)
+    if (!e1.included || !e2.included || !e3.included) continue
+
+    const ids = [ia, ib, ic].sort((a, b) => a - b)
+    const a = points[ids[0]]
+    const b = points[ids[1]]
+    const c = points[ids[2]]
+    triangles.push({
+      key: `${ids[0]}:${ids[1]}:${ids[2]}`,
+      i: ids[0],
+      j: ids[1],
+      k: ids[2],
+      cx: (a.sx + b.sx + c.sx) / 3,
+      cy: (a.sy + b.sy + c.sy) / 3
+    })
   }
 
   // Every particle chooses its two closest triangles. Distance weights blend
@@ -683,9 +700,9 @@ function drawParticles(t) {
   if (sceneFx.showGraph) {
     // Simple connection lines on top.
     ctx.save()
-    ctx.lineWidth = 1
     for (const link of links) {
       const tone = link.tone
+      ctx.lineWidth = link.width
       ctx.strokeStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(78, tone.l)).toFixed(1)}%, ${link.alpha.toFixed(3)})`
       ctx.beginPath()
       ctx.moveTo(link.ax, link.ay)
@@ -698,7 +715,7 @@ function drawParticles(t) {
     ctx.save()
     for (let i = 0; i < points.length; i += 1) {
       const point = points[i]
-      const radius = point.r * (1 + treble * 1.5 + kick * 0.8 + snare * 0.3)
+      const radius = nodeSizes[i]
       const tone = tones[i % tones.length]
       const light = Math.max(62, Math.min(90, tone.l + treble * 8))
       ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${light.toFixed(1)}%, ${(0.86 + energy * 0.14).toFixed(2)})`
