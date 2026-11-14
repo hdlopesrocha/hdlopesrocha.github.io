@@ -3,8 +3,8 @@
     <HeroBackground />
     <div class="hero-fade" aria-hidden="true"></div>
     <div class="wrap hero-inner">
-      <p class="eyebrow mono"><span class="dot" aria-hidden="true"></span> real-time · gpu · procedural · experimental</p>
-      <div class="title-row">
+      <p class="eyebrow mono hero-shade"><span class="dot" aria-hidden="true"></span> real-time · gpu · procedural · experimental</p>
+      <div class="title-row hero-shade">
         <img
           class="avatar"
           src="https://avatars.githubusercontent.com/u/6792581?v=4&s=192"
@@ -17,8 +17,8 @@
         />
         <h1 id="hero-title">Henrique Lopes Rocha</h1>
       </div>
-      <p class="subtitle">Telecommunications &amp; Informatics Engineer · ex-CERN · Vulkan · AI · VR</p>
-      <p class="lede">
+      <p class="subtitle hero-shade">Telecommunications &amp; Informatics Engineer · ex-CERN · Vulkan · AI · VR</p>
+      <p class="lede hero-shade">
         A collection of projects exploring real-time graphics, GPU programming, signed
         distance fields, procedural generation, AI, virtual reality and experimental software.
       </p>
@@ -69,6 +69,24 @@ const avatarGone = ref(false)
   background: linear-gradient(180deg, rgba(5,7,13,0.25), rgba(5,7,13,0) 35%, rgba(5,7,13,0.55) 100%);
 }
 .hero-inner { position: relative; }
+.hero-shade {
+  position: relative;
+  isolation: isolate;
+  width: fit-content;
+  max-width: 100%;
+}
+.hero-shade::before {
+  content: "";
+  position: absolute;
+  inset: -0.2rem -0.55rem;
+  z-index: -1;
+  border-radius: 10px;
+  background: rgba(5, 7, 13, 0.54);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+  backdrop-filter: blur(12px) saturate(1.05);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
 .eyebrow { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 1rem; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 14px var(--accent); }
 .title-row { display: flex; align-items: center; gap: 1.4rem; }
@@ -105,6 +123,8 @@ h1 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(9, 13, 22, 0.6);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   font-size: 0.8rem;
 }
 .hero-meta div { display: flex; gap: 0.7rem; margin: 0; }

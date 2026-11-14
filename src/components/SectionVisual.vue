@@ -124,10 +124,14 @@
       <text x="14" y="20" font-family="monospace" font-size="9" fill="var(--accent-bright)" fill-opacity="0.85">contact · encrypted channel</text>
       <text x="14" y="140" font-family="monospace" font-size="8" fill="rgba(147,161,184,0.9)">nostr · nip-04 · no backend</text>
     </svg>
+
+    <HorizontalBands :gap="3" :opacity="0.3" />
   </div>
 </template>
 
 <script setup>
+import HorizontalBands from './HorizontalBands.vue'
+
 defineProps({
   variant: {
     type: String,

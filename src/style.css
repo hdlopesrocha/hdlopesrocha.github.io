@@ -8,18 +8,18 @@
   --text: #e6f1ff;
   --muted: #93a1b8;
   --dim: #64748b;
-  --palette-1: #a3ff08;
-  --palette-2: #23ff1d;
-  --palette-3: #31ffa7;
-  --palette-4: #49dcfb;
-  --palette-1-bright: #bfff55;
-  --palette-2-bright: #6dff69;
-  --palette-3-bright: #6effc1;
-  --palette-4-bright: #83e9ff;
-  --palette-1-glow: rgba(163, 255, 8, 0.09);
-  --palette-2-glow: rgba(35, 255, 29, 0.08);
-  --palette-3-glow: rgba(49, 255, 167, 0.07);
-  --palette-4-glow: rgba(73, 220, 251, 0.06);
+  --palette-1: #88ff07;
+  --palette-2: #1cff2e;
+  --palette-3: #30ffbd;
+  --palette-4: #48c9fb;
+  --palette-1-bright: #adff54;
+  --palette-2-bright: #68ff74;
+  --palette-3-bright: #6dffd1;
+  --palette-4-bright: #82dcff;
+  --palette-1-glow: rgba(136, 255, 7, 0.09);
+  --palette-2-glow: rgba(28, 255, 46, 0.08);
+  --palette-3-glow: rgba(48, 255, 189, 0.07);
+  --palette-4-glow: rgba(72, 201, 251, 0.06);
   --accent: var(--palette-1);
   --accent-2: var(--palette-2);
   --accent-3: var(--palette-3);
@@ -139,7 +139,11 @@ a { color: inherit; }
   border-color: transparent;
   color: #03181a;
 }
-.btn.ghost { background: transparent; }
+.btn.ghost {
+  background: rgba(5, 7, 13, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
 .btn.small { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
 
 /* Section scaffolding */
