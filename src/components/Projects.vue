@@ -2,9 +2,9 @@
   <section id="projects" class="section" aria-labelledby="projects-title">
     <div class="wrap">
       <div class="section-head">
-        <p class="eyebrow mono">~/projects — {{ projects.length }} repos</p>
-        <h2 id="projects-title">Projects in graphics, AI &amp; beyond</h2>
-        <p>
+        <p class="eyebrow mono soft-shade">~/projects — {{ projects.length }} repos</p>
+        <h2 id="projects-title" class="soft-shade">Projects in graphics, AI &amp; beyond</h2>
+        <p class="soft-shade">
           Each card links to the live repository. Live star / language data loads
           progressively when the GitHub API is reachable — the catalogue below always renders regardless.
         </p>
@@ -32,7 +32,7 @@
         />
       </div>
 
-      <p v-if="!available" class="fallback mono" role="status">
+      <p v-if="!available" class="fallback mono soft-shade" role="status">
         // github api unreachable — showing cached catalogue data
       </p>
     </div>
@@ -66,7 +66,9 @@ const { stats, available } = useGithubStats(projects.map((p) => p.repo))
 <style scoped>
 .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.6rem; }
 .chip {
-  background: transparent;
+  background: rgba(5, 7, 13, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border: 1px solid var(--line-strong);
   color: var(--muted);
   border-radius: 999px;

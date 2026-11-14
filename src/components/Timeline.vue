@@ -3,9 +3,9 @@
     <div class="wrap">
       <div class="section-head split">
         <div class="section-head-copy">
-          <p class="eyebrow mono">~/evolution — how the engines connect</p>
-          <h2 id="timeline-title">One lineage, many side quests</h2>
-          <p>Core rendering lineage from 2019 experiments to the current Vulkan engine, plus parallel tracks in AI, VR, web and hardware.</p>
+          <p class="eyebrow mono soft-shade">~/evolution — how the engines connect</p>
+          <h2 id="timeline-title" class="soft-shade">One lineage, many side quests</h2>
+          <p class="soft-shade">Core rendering lineage from 2019 experiments to the current Vulkan engine, plus parallel tracks in AI, VR, web and hardware.</p>
         </div>
         <SectionVisual variant="timeline" class="section-art" />
       </div>

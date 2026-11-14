@@ -1,5 +1,6 @@
 <template>
   <a class="skip-link" href="#projects">Skip to projects</a>
+  <HeroBackground />
   <Navbar />
   <main>
     <Hero />
@@ -14,6 +15,7 @@
 
 <script setup>
 import Navbar from './components/Navbar.vue'
+import HeroBackground from './components/HeroBackground.vue'
 import Hero from './components/Hero.vue'
 import Projects from './components/Projects.vue'
 import Timeline from './components/Timeline.vue'

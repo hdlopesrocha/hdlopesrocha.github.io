@@ -3,9 +3,9 @@
     <div class="wrap">
       <div class="section-head split">
         <div class="section-head-copy">
-          <p class="eyebrow mono">~/cv — experience &amp; education</p>
-          <h2 id="resume-title">Résumé</h2>
-          <p>
+          <p class="eyebrow mono soft-shade">~/cv — experience &amp; education</p>
+          <h2 id="resume-title" class="soft-shade">Résumé</h2>
+          <p class="soft-shade">
             Software engineer (MSc, IST Lisbon) — previously at CERN, Bullray-CIT and IST/INESC.
             Full CV as PDF, in English and French:
           </p>
@@ -18,7 +18,7 @@
         <SectionVisual variant="resume" class="section-art" />
       </div>
 
-      <h3 class="sub">Experience</h3>
+      <h3 class="sub soft-shade">Experience</h3>
       <div class="orgs">
         <article v-for="org in experience" :key="org.org" class="glass org">
           <header>
@@ -42,7 +42,7 @@
         </article>
       </div>
 
-      <h3 class="sub">Education</h3>
+      <h3 class="sub soft-shade">Education</h3>
       <div class="edu-grid">
         <article v-for="e in education" :key="e.degree" class="glass edu">
           <p class="mono period">{{ e.period }}</p>
@@ -55,7 +55,7 @@
         </article>
       </div>
 
-      <h3 class="sub">Skills</h3>
+      <h3 class="sub soft-shade">Skills</h3>
       <div class="skills-grid">
         <div class="glass skill">
           <p class="mono label">programming</p>
@@ -74,7 +74,7 @@
         </div>
       </div>
 
-      <h3 class="sub">Earlier applications <span class="muted small">(from the CV — pre-GitHub era)</span></h3>
+      <h3 class="sub soft-shade">Earlier applications <span class="muted small">(from the CV — pre-GitHub era)</span></h3>
       <ol class="apps">
         <li v-for="a in earlyApps" :key="a.name" class="glass app">
           <span class="mono period">{{ a.year }}</span>

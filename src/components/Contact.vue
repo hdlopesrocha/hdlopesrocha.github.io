@@ -2,9 +2,9 @@
   <section id="contact" class="section" aria-labelledby="contact-title">
     <div class="wrap contact-grid">
       <div>
-        <p class="eyebrow mono">~/contact — direct line</p>
-        <h2 id="contact-title">Chat over Nostr</h2>
-        <p class="lede">
+        <p class="eyebrow mono soft-shade">~/contact — direct line</p>
+        <h2 id="contact-title" class="soft-shade">Chat over Nostr</h2>
+        <p class="lede soft-shade">
           This is a live, <strong>end-to-end encrypted</strong> chat (NIP-04 DMs) running
           straight from your browser to my relays — no account, no backend, no middleman.
           Your chat identity is generated locally and kept only in this browser's storage.

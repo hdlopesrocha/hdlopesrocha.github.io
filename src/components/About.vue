@@ -2,16 +2,16 @@
   <section id="about" class="section" aria-labelledby="about-title">
     <div class="wrap about-grid">
       <div>
-        <p class="eyebrow mono">~/about — {{ RESUME.fullName }}</p>
-        <h2 id="about-title">{{ RESUME.title }}</h2>
-        <p class="lede">
+        <p class="eyebrow mono soft-shade">~/about — {{ RESUME.fullName }}</p>
+        <h2 id="about-title" class="soft-shade">{{ RESUME.title }}</h2>
+        <p class="lede soft-shade">
           MSc in Telecommunications and Informatics Engineering (IST Lisbon).
           Previously building recruitment, planning and warehouse software at
           <strong>CERN</strong>, full-stack and mobile work at Bullray-CIT, and
           real-time video-chat research at IST/INESC. Nowadays focused on Vulkan
           engines, SDF rendering, AI tooling, VR music and creative computing.
         </p>
-        <p class="muted">Off-screen: {{ interests }}</p>
+        <p class="muted soft-shade">Off-screen: {{ interests }}</p>
         <div class="actions">
           <a class="btn primary" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">CV · English (PDF)</a>
           <a class="btn" href="#resume">Full résumé</a>
