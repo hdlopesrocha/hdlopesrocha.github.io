@@ -83,6 +83,9 @@ const dateTitle = computed(() => {
 
 <style scoped>
 .card {
+  --blur-opacity: 0.86;
+  --blur-radius: 28px;
+  --blur-saturation: 1.08;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -97,10 +100,13 @@ const dateTitle = computed(() => {
     0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent),
     0 0 34px color-mix(in srgb, var(--accent) 8%, transparent);
 }
-.card.featured { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.card.featured {
+  --blur-opacity: 0.74;
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
 .card.primary {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, transparent), rgba(13,19,32,0.85));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, transparent), rgba(5, 7, 13, var(--blur-opacity, 0.74)));
 }
 .body { padding: 1.1rem 1.15rem 1.2rem; display: flex; flex-direction: column; gap: 0.7rem; flex: 1; }
 .top { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

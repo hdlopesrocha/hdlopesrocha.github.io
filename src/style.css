@@ -1,7 +1,6 @@
 :root {
   --bg: #05070d;
   --bg-soft: #090d16;
-  --panel: rgba(13, 19, 32, 0.72);
   --panel-solid: #0d1320;
   --line: rgba(148, 178, 255, 0.12);
   --line-strong: rgba(148, 178, 255, 0.22);
@@ -115,6 +114,35 @@ a { color: inherit; }
 }
 
 /* Buttons */
+/* Single dark blurred surface shared by panels, cards, buttons and controls. */
+.blur-surface,
+.glass,
+.btn,
+.icon-btn {
+  background: rgba(5, 7, 13, var(--blur-opacity, 0.74));
+  -webkit-backdrop-filter: blur(var(--blur-radius, 14px)) saturate(var(--blur-saturation, 1.04));
+  backdrop-filter: blur(var(--blur-radius, 14px)) saturate(var(--blur-saturation, 1.04));
+}
+
+/* Controls and text wrappers keep the shared surface, even when nested. */
+.soft-shade,
+.hero-shade,
+.btn,
+.icon-btn {
+  --blur-opacity: 0.74;
+  --blur-radius: 14px;
+  --blur-saturation: 1.04;
+}
+
+/* Text and section-name wrappers use the same dark blurred surface. */
+.soft-shade::before,
+.hero-shade::before {
+  background: rgba(5, 7, 13, var(--blur-opacity, 0.74));
+  -webkit-backdrop-filter: blur(var(--blur-radius, 14px)) saturate(var(--blur-saturation, 1.04));
+  backdrop-filter: blur(var(--blur-radius, 14px)) saturate(var(--blur-saturation, 1.04));
+  border-radius: var(--radius);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -122,9 +150,6 @@ a { color: inherit; }
   padding: 0.72rem 1.15rem;
   border-radius: 8px;
   border: 1px solid var(--line-strong);
-  background: rgba(5, 7, 13, 0.48);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   color: var(--text);
   text-decoration: none;
   font-weight: 600;
@@ -140,11 +165,6 @@ a { color: inherit; }
   background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright) 38%, var(--accent-3-bright) 70%, var(--accent-4-bright));
   border-color: transparent;
   color: #03181a;
-}
-.btn.ghost {
-  background: rgba(5, 7, 13, 0.5);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
 }
 .btn.small { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
 
@@ -174,10 +194,7 @@ section { scroll-margin-top: 84px; }
 
 /* Cards / glass */
 .glass {
-  background: var(--panel);
   border: 1px solid var(--line);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border-radius: var(--radius);
 }
 
@@ -208,11 +225,6 @@ section { scroll-margin-top: 84px; }
   position: absolute;
   inset: -0.16rem -0.5rem;
   z-index: -1;
-  border-radius: 9px;
-  background: rgba(5, 7, 13, 0.5);
-  -webkit-backdrop-filter: blur(10px) saturate(1.04);
-  backdrop-filter: blur(10px) saturate(1.04);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
   pointer-events: none;
 }
 

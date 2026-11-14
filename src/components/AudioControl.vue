@@ -101,7 +101,7 @@
         </div>
       </div>
 
-      <div v-if="showFilters" class="filter-box">
+      <div v-if="showFilters" class="filter-box blur-surface">
         <div class="filter-box-head">
           <span class="mono filter-title">band-pass</span>
           <button
@@ -150,7 +150,7 @@
         </label>
       </div>
 
-      <div v-if="showScene" class="filter-box scene-box">
+      <div v-if="showScene" class="filter-box scene-box blur-surface">
         <div class="filter-box-head">
           <span class="mono filter-title">scene</span>
           <span class="mono scene-glow-value">{{ Math.round(sceneFx.glow * 100) }}%</span>
@@ -504,9 +504,6 @@ async function onFile(event) {
   padding: 0;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  background: rgba(5, 7, 13, 0.55);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
   color: var(--muted);
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
@@ -530,7 +527,6 @@ async function onFile(event) {
   padding: 0.6rem 0.7rem;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(5, 7, 13, 0.38);
 }
 .filter-box-head {
   display: flex;
@@ -614,7 +610,7 @@ async function onFile(event) {
 
 .audio-panel {
   margin-top: 0.9rem;
-  max-width: 620px;
+  max-width: var(--hero-copy-width, 640px);
   padding: 0.75rem 0.95rem 0.85rem;
 }
 .panel-head {

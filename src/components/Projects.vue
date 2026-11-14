@@ -14,7 +14,7 @@
         <button
           v-for="f in filters"
           :key="f.id"
-          class="chip mono"
+          class="chip mono blur-surface"
           :class="{ active: activeFilter === f.id }"
           :aria-pressed="activeFilter === f.id ? 'true' : 'false'"
           @click="activeFilter = f.id"
@@ -66,9 +66,6 @@ const { stats, available } = useGithubStats(projects.map((p) => p.repo))
 <style scoped>
 .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.6rem; }
 .chip {
-  background: rgba(5, 7, 13, 0.5);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   border: 1px solid var(--line-strong);
   color: var(--muted);
   border-radius: 999px;

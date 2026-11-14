@@ -47,7 +47,7 @@ const avatarGone = ref(false)
   position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(5,7,13,0.25), rgba(5,7,13,0) 35%, rgba(5,7,13,0.55) 100%);
 }
-.hero-inner { position: relative; }
+.hero-inner { position: relative; --hero-copy-width: 640px; }
 .hero-shade {
   position: relative;
   isolation: isolate;
@@ -59,11 +59,6 @@ const avatarGone = ref(false)
   position: absolute;
   inset: -0.2rem -0.55rem;
   z-index: -1;
-  border-radius: 10px;
-  background: rgba(5, 7, 13, 0.54);
-  -webkit-backdrop-filter: blur(12px) saturate(1.05);
-  backdrop-filter: blur(12px) saturate(1.05);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
   pointer-events: none;
 }
 .eyebrow { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 1rem; }
@@ -94,7 +89,7 @@ h1 {
   color: var(--accent);
   font-family: var(--font-mono);
 }
-.lede { max-width: 640px; color: var(--muted); font-size: 1.06rem; }
+.lede { max-width: var(--hero-copy-width, 640px); color: var(--muted); font-size: 1.06rem; }
 @media (max-width: 600px) {
   .hero { padding: 4.5rem 0 3rem; min-height: unset; }
   .title-row { gap: 1rem; }

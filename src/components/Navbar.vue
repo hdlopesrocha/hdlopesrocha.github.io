@@ -1,5 +1,5 @@
 <template>
-  <header class="nav" :class="{ scrolled }">
+  <header class="nav blur-surface" :class="{ scrolled }">
     <div class="wrap nav-inner">
       <a href="#home" class="brand" aria-label="Henrique Lopes Rocha — home">
         <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
@@ -76,9 +76,6 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   top: 0;
   z-index: 50;
   border-bottom: 1px solid transparent;
-  background: rgba(5, 7, 13, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 .nav.scrolled { border-bottom-color: var(--line); }
 .nav-inner {
