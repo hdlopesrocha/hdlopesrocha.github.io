@@ -821,8 +821,8 @@ function frame(t) {
   const time = t || 0
   ctx.clearRect(0, 0, w, h)
   drawFlowField(time)
-  drawParticles(time)
   drawSpectrum()
+  drawParticles(time)
   raf = requestAnimationFrame(frame)
 }
 
@@ -830,6 +830,7 @@ function drawStatic() {
   if (!ctx) return
   ctx.clearRect(0, 0, w, h)
   drawFlowField(0)
+  drawSpectrum()
   drawParticles(0)
 }
 
