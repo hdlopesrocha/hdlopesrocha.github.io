@@ -8,7 +8,7 @@ import { hexToHsl } from '../lib/color'
  *   mic / <audio> -> AnalyserNode (FFT) -> (file audio also -> speakers)
  *
  * The analyser is split into perceptually useful bands (kick/bass, drums,
- * voice, snare presence, air) and a few smoothed descriptors (energy,
+ * voice, snare presence, melody) and a few smoothed descriptors (energy,
  * spectral centroid, beat impulses). HeroBackground and the UI read from the
  * same state, so palette + animation stay perfectly in sync.
  */
@@ -18,11 +18,11 @@ const ANALYSIS_INTERVAL = 16 // ~60 Hz updates; one analysis per animation frame
 const AUDIO_EXTENSIONS = /\.(mp3|wav|ogg|oga|m4a|aac|flac|opus|webm)$/i
 
 const BANDS = {
-  bass: { range: [30, 140], gain: 1.2 }, // kick drum / sub
-  lowMid: { range: [140, 400], gain: 1.7 }, // toms / body
-  mid: { range: [400, 2000], gain: 2.2 }, // voice / melody
-  highMid: { range: [2000, 5000], gain: 2.8 }, // snare crack / presence
-  treble: { range: [5000, 12000], gain: 3.4 } // hats / cymbals / air
+  bass: { range: [30, 160], gain: 1.25 }, // kick drum / sub
+  lowMid: { range: [160, 320], gain: 1.8 }, // snare body / low voice
+  mid: { range: [300, 3000], gain: 2.4 }, // human voice formants
+  highMid: { range: [2000, 8000], gain: 3.0 }, // snare crack / presence
+  treble: { range: [1000, 5000], gain: 2.6 } // melody / lead harmonics
 }
 
 // The four editable components define the weights of their colours. Those
@@ -50,9 +50,9 @@ export const isFile = computed(() => state.status === 'file')
 
 export const FILTER_PRESETS = [
   { id: 'bass', label: 'BASS', frequency: 90, q: 0.9 },
-  { id: 'snare', label: 'SNARE', frequency: 3000, q: 1.1 },
-  { id: 'voice', label: 'VOICE', frequency: 1000, q: 1.0 },
-  { id: 'air', label: 'AIR', frequency: 8000, q: 0.8 }
+  { id: 'snare', label: 'SNARE', frequency: 3200, q: 1.2 },
+  { id: 'voice', label: 'VOICE', frequency: 800, q: 1.1 },
+  { id: 'melody', label: 'MELODY', frequency: 2500, q: 0.9 }
 ]
 
 export const filterState = reactive({
@@ -101,10 +101,10 @@ export function applyFilterPreset(id) {
 // than analysis data, so they live outside the transient `state` object and
 // survive reloads in localStorage.
 export const DEFAULT_BAND_COLORS = Object.freeze({
-  bass: '#04ff60',
-  snare: '#fe6800',
-  voice: '#1a5eff',
-  air: '#ffd500'
+  bass: '#1a5eff',
+  snare: '#00ffff',
+  voice: '#04ff60',
+  air: '#ffff00'
 })
 export const bandColors = reactive({ ...DEFAULT_BAND_COLORS })
 

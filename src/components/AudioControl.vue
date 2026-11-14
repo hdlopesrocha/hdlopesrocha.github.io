@@ -59,11 +59,25 @@
           <button
             type="button"
             class="icon-btn"
+            :class="{ active: showScene }"
+            :aria-pressed="showScene ? 'true' : 'false'"
+            aria-label="Background scene controls"
+            title="Background scene controls"
+            @click="toggleScenePanel"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z" />
+              <path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
             :class="{ active: showFilters }"
             :aria-pressed="showFilters ? 'true' : 'false'"
             aria-label="Band-pass filter controls"
             title="Band-pass filter controls"
-            @click="showFilters = !showFilters"
+            @click="toggleFilterPanel"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
               <path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h13M21 17h-1" />
@@ -136,6 +150,146 @@
         </label>
       </div>
 
+      <div v-if="showScene" class="filter-box scene-box">
+        <div class="filter-box-head">
+          <span class="mono filter-title">scene</span>
+          <span class="mono scene-glow-value">{{ Math.round(sceneFx.glow * 100) }}%</span>
+        </div>
+        <label class="filter-slider">
+          <span class="mono">glow strength</span>
+          <input
+            type="range"
+            min="0"
+            max="300"
+            step="1"
+            :value="Math.round(sceneFx.glow * 100)"
+            :disabled="!sceneFx.showGlow"
+            @input="sceneFx.glow = Number($event.target.value) / 100"
+          />
+        </label>
+        <div class="filter-presets">
+          <button
+            v-for="item in sceneToggles"
+            :key="item.key"
+            type="button"
+            class="filter-preset mono"
+            :class="{ active: sceneFx[item.key] }"
+            @click="toggleScene(item.key)"
+          >
+            {{ item.label }}
+          </button>
+        </div>
+        <div class="scene-divider mono">perlin noise</div>
+        <label class="filter-slider">
+          <span class="mono">octaves · {{ sceneFx.noiseOctaves }}</span>
+          <input
+            type="range"
+            min="1"
+            max="8"
+            step="1"
+            :value="sceneFx.noiseOctaves"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseOctaves = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">lacunarity · {{ sceneFx.noiseLacunarity.toFixed(2) }}</span>
+          <input
+            type="range"
+            min="1.2"
+            max="4"
+            step="0.05"
+            :value="sceneFx.noiseLacunarity"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseLacunarity = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">amplitude · {{ sceneFx.noiseAmplitude.toFixed(2) }}</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            :value="sceneFx.noiseAmplitude"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseAmplitude = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">gain · {{ sceneFx.noiseGain.toFixed(2) }}</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            :value="sceneFx.noiseGain"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseGain = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">contrast · {{ sceneFx.noiseContrast.toFixed(2) }}</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            :value="sceneFx.noiseContrast"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseContrast = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">brightness · {{ sceneFx.noiseBrightness.toFixed(2) }}</span>
+          <input
+            type="range"
+            min="0"
+            max="2"
+            step="0.01"
+            :value="sceneFx.noiseBrightness"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseBrightness = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">period · {{ sceneFx.noisePeriod.toFixed(1) }} s</span>
+          <input
+            type="range"
+            min="1"
+            max="30"
+            step="0.5"
+            :value="sceneFx.noisePeriod"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noisePeriod = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">scale · {{ formatScale(sceneFx.noiseScale) }}</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            :value="scaleToSlider(sceneFx.noiseScale)"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseScale = sliderToScale(Number($event.target.value))"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">speed · {{ sceneFx.noiseSpeed.toFixed(2) }}×</span>
+          <input
+            type="range"
+            min="0"
+            max="4"
+            step="0.05"
+            :value="sceneFx.noiseSpeed"
+            :disabled="!sceneFx.showSmoke"
+            @input="sceneFx.noiseSpeed = Number($event.target.value)"
+          />
+        </label>
+      </div>
+
       <div class="meters">
         <div
           v-for="meter in meters"
@@ -194,18 +348,44 @@ import {
   togglePlayback,
   stop
 } from '../composables/useAudioReactive'
+import { sceneFx } from '../composables/useSceneFx'
 
 const meters = [
   { key: 'bass', colorKey: 'bass', label: 'bass / kick' },
   { key: 'highMid', colorKey: 'snare', label: 'snare' },
   { key: 'mid', colorKey: 'voice', label: 'voice' },
-  { key: 'treble', colorKey: 'air', label: 'air' }
+  { key: 'treble', colorKey: 'air', label: 'melody' }
 ]
 
 const showFilters = ref(false)
+const showScene = ref(false)
+const sceneToggles = [
+  { key: 'showGraph', label: 'graph' },
+  { key: 'showTriangles', label: 'triangles' },
+  { key: 'showGlow', label: 'glow' },
+  { key: 'showParticles', label: 'particles' },
+  { key: 'showDots', label: 'dots' },
+  { key: 'showSmoke', label: 'noise' }
+]
+
+function toggleFilterPanel() {
+  showFilters.value = !showFilters.value
+  if (showFilters.value) showScene.value = false
+}
+
+function toggleScenePanel() {
+  showScene.value = !showScene.value
+  if (showScene.value) showFilters.value = false
+}
+
+function toggleScene(key) {
+  sceneFx[key] = !sceneFx[key]
+}
 
 const FILTER_MIN = 60
 const FILTER_MAX = 12000
+const SCALE_MIN = 0.5
+const SCALE_MAX = 8096
 
 function freqToSlider(hz) {
   return Math.round((100 * Math.log(hz / FILTER_MIN)) / Math.log(FILTER_MAX / FILTER_MIN))
@@ -213,6 +393,18 @@ function freqToSlider(hz) {
 
 function sliderToFreq(value) {
   return Math.round(FILTER_MIN * Math.pow(FILTER_MAX / FILTER_MIN, value / 100))
+}
+
+function scaleToSlider(value) {
+  return Math.round((100 * Math.log(value / SCALE_MIN)) / Math.log(SCALE_MAX / SCALE_MIN))
+}
+
+function sliderToScale(value) {
+  return SCALE_MIN * Math.pow(SCALE_MAX / SCALE_MIN, value / 100)
+}
+
+function formatScale(value) {
+  return value >= 100 ? Math.round(value).toString() : value.toFixed(2)
 }
 
 const micLabel = computed(() => {
@@ -331,6 +523,23 @@ async function onFile(event) {
   width: 100%;
   accent-color: var(--accent);
   cursor: pointer;
+}
+.filter-slider input:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.scene-glow-value {
+  color: var(--dim);
+  font-size: 0.62rem;
+}
+.scene-divider {
+  margin-top: 0.15rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  color: var(--accent);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .live-dot {
