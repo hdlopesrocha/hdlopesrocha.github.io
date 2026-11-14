@@ -86,10 +86,18 @@ function resize() {
   if (!el || !ctx) return
   const rect = el.getBoundingClientRect()
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+  const bitmapWidth = Math.floor(rect.width * dpr)
+  const bitmapHeight = Math.floor(rect.height * dpr)
   w = rect.width
   h = rect.height
-  el.width = Math.floor(w * dpr)
-  el.height = Math.floor(h * dpr)
+  // Mobile browsers fire resize when the address bar collapses. Avoid
+  // clearing the canvas bitmap when its pixel size did not actually change.
+  if (el.width === bitmapWidth && el.height === bitmapHeight) {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    return
+  }
+  el.width = bitmapWidth
+  el.height = bitmapHeight
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 }
 
@@ -684,8 +692,13 @@ function onVisibility() {
 
 function onResize() {
   resize()
-  seed()
-  seedFlow()
+  // Keep the existing scene when the viewport changes. Mobile browsers fire
+  // resize while scrolling (address bar), and re-seeding there makes the
+  // background look like it reloaded.
+  for (const point of points) {
+    point.x = ((point.x % w) + w) % w
+    point.y = ((point.y % h) + h) % h
+  }
   if (!running) drawStatic()
 }
 
@@ -723,6 +736,7 @@ onBeforeUnmount(() => {
   display: block;
   width: 100vw;
   height: 100vh;
+  height: 100lvh;
   z-index: -1;
   pointer-events: none;
 }
