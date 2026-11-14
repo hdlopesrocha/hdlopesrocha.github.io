@@ -1,4 +1,5 @@
 import { computed, reactive } from 'vue'
+import { hexToHsl } from '../lib/color'
 
 /**
  * Music-reactive audio engine.
@@ -47,14 +48,63 @@ export const isActive = computed(() => state.status === 'mic' || state.status ==
 export const isMic = computed(() => state.status === 'mic')
 export const isFile = computed(() => state.status === 'file')
 
+export const FILTER_PRESETS = [
+  { id: 'bass', label: 'BASS', frequency: 90, q: 0.9 },
+  { id: 'snare', label: 'SNARE', frequency: 3000, q: 1.1 },
+  { id: 'voice', label: 'VOICE', frequency: 1000, q: 1.0 },
+  { id: 'air', label: 'AIR', frequency: 8000, q: 0.8 }
+]
+
+export const filterState = reactive({
+  enabled: false,
+  preset: null,
+  frequency: 120,
+  q: 1
+})
+
+function applyFilter() {
+  if (!filterNode || !audioCtx) return
+  filterNode.type = filterState.enabled ? 'bandpass' : 'allpass'
+  const now = audioCtx.currentTime
+  filterNode.frequency.setTargetAtTime(filterState.frequency, now, 0.03)
+  filterNode.Q.setTargetAtTime(filterState.q, now, 0.03)
+}
+
+export function setFilterEnabled(enabled) {
+  filterState.enabled = enabled
+  applyFilter()
+}
+
+export function setFilterFrequency(frequency) {
+  filterState.frequency = Math.min(12000, Math.max(60, frequency))
+  filterState.preset = null
+  applyFilter()
+}
+
+export function setFilterQ(q) {
+  filterState.q = Math.min(12, Math.max(0.3, q))
+  filterState.preset = null
+  applyFilter()
+}
+
+export function applyFilterPreset(id) {
+  const preset = FILTER_PRESETS.find((item) => item.id === id)
+  if (!preset) return
+  filterState.enabled = true
+  filterState.preset = preset.id
+  filterState.frequency = preset.frequency
+  filterState.q = preset.q
+  applyFilter()
+}
+
 // Editable colours for the four meter bands. These are UI preferences rather
 // than analysis data, so they live outside the transient `state` object and
 // survive reloads in localStorage.
 export const DEFAULT_BAND_COLORS = Object.freeze({
   bass: '#04ff60',
   snare: '#fe6800',
-  voice: '#ffb005',
-  air: '#1a5eff'
+  voice: '#1a5eff',
+  air: '#ffd500'
 })
 export const bandColors = reactive({ ...DEFAULT_BAND_COLORS })
 
@@ -96,29 +146,6 @@ export function resetBandColors() {
   } catch {
     /* preference simply won't persist */
   }
-}
-
-function hexToHsl(hex) {
-  const value = hex.slice(1)
-  const r = parseInt(value.slice(0, 2), 16) / 255
-  const g = parseInt(value.slice(2, 4), 16) / 255
-  const b = parseInt(value.slice(4, 6), 16) / 255
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const lightness = (max + min) / 2
-  let hue = 0
-  let saturation = 0
-
-  if (max !== min) {
-    const delta = max - min
-    saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min)
-    if (max === r) hue = (g - b) / delta + (g < b ? 6 : 0)
-    else if (max === g) hue = (b - r) / delta + 2
-    else hue = (r - g) / delta + 4
-    hue *= 60
-  }
-
-  return { h: hue, s: saturation * 100, l: lightness * 100 }
 }
 
 /**
@@ -303,6 +330,8 @@ function syncDocumentPalette(force = false) {
 
 let audioCtx = null
 let analyser = null
+let filterNode = null
+let monitorGain = null
 let sourceNode = null
 let fileSource = null
 let audioEl = null
@@ -352,6 +381,17 @@ async function ensureContext() {
     analyser.smoothingTimeConstant = 0.35
     analyser.minDecibels = -95
     analyser.maxDecibels = -12
+
+    filterNode = audioCtx.createBiquadFilter()
+    filterNode.type = filterState.enabled ? 'bandpass' : 'allpass'
+    filterNode.frequency.value = filterState.frequency
+    filterNode.Q.value = filterState.q
+
+    monitorGain = audioCtx.createGain()
+    monitorGain.gain.value = 0
+    filterNode.connect(analyser)
+    filterNode.connect(monitorGain)
+    monitorGain.connect(audioCtx.destination)
 
     freqData = new Uint8Array(analyser.frequencyBinCount)
     timeData = new Uint8Array(analyser.fftSize)
@@ -531,6 +571,9 @@ function teardown() {
     try { sourceNode.disconnect() } catch { /* already disconnected */ }
     sourceNode = null
   }
+  if (monitorGain && audioCtx) {
+    monitorGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01)
+  }
   if (micStream) {
     micStream.getTracks().forEach((track) => track.stop())
     micStream = null
@@ -600,7 +643,8 @@ async function startMic() {
 
     micStream = stream
     sourceNode = audioCtx.createMediaStreamSource(stream)
-    sourceNode.connect(analyser)
+    sourceNode.connect(filterNode)
+    monitorGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01)
 
     resetLevels()
     state.status = 'mic'
@@ -651,9 +695,9 @@ export async function loadTrack(file) {
     })
 
     fileSource = audioCtx.createMediaElementSource(audioEl)
-    // Analyser first, then the speakers, so the FFT sees the raw track.
-    fileSource.connect(analyser)
-    fileSource.connect(audioCtx.destination)
+    // Source -> filter -> analyser -> monitor gain -> speakers.
+    fileSource.connect(filterNode)
+    monitorGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01)
 
     resetLevels()
     state.status = 'file'

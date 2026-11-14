@@ -1,74 +1,6 @@
 <template>
   <div class="audio-control">
-    <div class="audio-actions">
-      <button
-        type="button"
-        class="btn audio-btn"
-        :class="{ primary: isMic }"
-        :disabled="state.status === 'requesting'"
-        :aria-pressed="isMic ? 'true' : 'false'"
-        @click="toggleMic"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <rect x="9" y="2" width="6" height="11" rx="3" />
-          <path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8" />
-        </svg>
-        <span>{{ micLabel }}</span>
-        <span v-if="isMic" class="live-dot" aria-hidden="true"></span>
-      </button>
-
-      <label class="btn ghost audio-btn file-label" :class="{ active: isFile }">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />
-        </svg>
-        <span>{{ isFile ? 'Change audio' : 'Upload MP3' }}</span>
-        <input
-          class="sr-only"
-          type="file"
-          accept="audio/*,.mp3,.wav,.ogg,.oga,.m4a,.aac,.flac,.opus"
-          @change="onFile"
-        />
-      </label>
-
-      <button v-if="isActive" type="button" class="btn ghost audio-btn stop-btn" @click="stop">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <rect x="6" y="6" width="12" height="12" rx="2" />
-        </svg>
-        <span>Stop</span>
-      </button>
-    </div>
-
-    <div class="band-colors" role="group" aria-label="Theme colours">
-      <span class="band-colors-title mono" title="Whichever band is strongest becomes the main accent">theme</span>
-      <label
-        v-for="meter in meters"
-        :key="`color-${meter.colorKey}`"
-        class="band-color"
-        :style="{ '--band-color': bandColors[meter.colorKey] }"
-        :title="`Choose a colour for ${meter.label}`"
-      >
-        <input
-          class="meter-color"
-          type="color"
-          :value="bandColors[meter.colorKey]"
-          :aria-label="`${meter.label} colour`"
-          @input="setBandColor(meter.colorKey, $event.target.value)"
-        />
-        <span>{{ meter.shortLabel }}</span>
-      </label>
-      <button
-        v-if="hasCustomColors"
-        type="button"
-        class="mini-btn mono reset-btn"
-        title="Reset band colours"
-        aria-label="Reset band colours to defaults"
-        @click="resetBandColors"
-      >
-        reset
-      </button>
-    </div>
-
-    <div v-if="isActive" class="audio-panel glass">
+    <div class="audio-panel glass">
       <div class="panel-head">
         <span
           class="live-dot"
@@ -76,15 +8,132 @@
           :style="{ transform: `scale(${1 + state.kick * 0.55})`, opacity: 0.5 + state.energy * 0.5 }"
         ></span>
         <span class="source mono" :title="state.sourceName">{{ sourceLabel }}</span>
-        <button
-          v-if="isFile"
-          type="button"
-          class="mini-btn mono"
-          :aria-label="state.playing ? 'Pause audio' : 'Play audio'"
-          @click="togglePlayback"
-        >
-          {{ state.playing ? 'pause' : 'play' }}
-        </button>
+        <div class="transport">
+          <button
+            type="button"
+            class="icon-btn"
+            :class="{ active: isMic }"
+            :disabled="state.status === 'requesting'"
+            :aria-pressed="isMic ? 'true' : 'false'"
+            :aria-label="micLabel"
+            :title="micLabel"
+            @click="toggleMic"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <rect x="9" y="2" width="6" height="11" rx="3" />
+              <path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8" />
+            </svg>
+          </button>
+          <label
+            class="icon-btn file-icon"
+            :class="{ active: isFile }"
+            :title="isFile ? 'Change audio' : 'Upload audio'"
+            :aria-label="isFile ? 'Change audio' : 'Upload audio'"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />
+            </svg>
+            <input
+              class="sr-only"
+              type="file"
+              accept="audio/*,.mp3,.wav,.ogg,.oga,.m4a,.aac,.flac,.opus"
+              @change="onFile"
+            />
+          </label>
+          <button
+            v-if="isFile"
+            type="button"
+            class="icon-btn"
+            :aria-label="state.playing ? 'Pause audio' : 'Play audio'"
+            :title="state.playing ? 'Pause audio' : 'Play audio'"
+            @click="togglePlayback"
+          >
+            <svg v-if="state.playing" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="5" width="4" height="14" rx="1" />
+              <rect x="14" y="5" width="4" height="14" rx="1" />
+            </svg>
+            <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            :class="{ active: showFilters }"
+            :aria-pressed="showFilters ? 'true' : 'false'"
+            aria-label="Band-pass filter controls"
+            title="Band-pass filter controls"
+            @click="showFilters = !showFilters"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h13M21 17h-1" />
+              <circle cx="15" cy="7" r="2" />
+              <circle cx="9" cy="12" r="2" />
+              <circle cx="19" cy="17" r="2" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="icon-btn stop-btn"
+            :disabled="!isActive"
+            aria-label="Stop audio"
+            title="Stop audio"
+            @click="stop"
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="6" width="12" height="12" rx="2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div v-if="showFilters" class="filter-box">
+        <div class="filter-box-head">
+          <span class="mono filter-title">band-pass</span>
+          <button
+            type="button"
+            class="filter-power mono"
+            :class="{ on: filterState.enabled }"
+            :aria-pressed="filterState.enabled ? 'true' : 'false'"
+            @click="setFilterEnabled(!filterState.enabled)"
+          >
+            {{ filterState.enabled ? 'on' : 'off' }}
+          </button>
+        </div>
+        <div class="filter-presets">
+          <button
+            v-for="preset in FILTER_PRESETS"
+            :key="preset.id"
+            type="button"
+            class="filter-preset mono"
+            :class="{ active: filterState.preset === preset.id }"
+            @click="applyFilterPreset(preset.id)"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+        <label class="filter-slider">
+          <span class="mono">freq · {{ Math.round(filterState.frequency) }} Hz</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            :value="freqToSlider(filterState.frequency)"
+            @input="setFilterFrequency(sliderToFreq(Number($event.target.value)))"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">Q · {{ filterState.q.toFixed(1) }}</span>
+          <input
+            type="range"
+            min="0.3"
+            max="12"
+            step="0.1"
+            :value="filterState.q"
+            @input="setFilterQ(Number($event.target.value))"
+          />
+        </label>
       </div>
 
       <div class="meters">
@@ -94,7 +143,16 @@
           class="meter"
           :style="{ '--band-color': bandColors[meter.colorKey] }"
         >
-          <span class="meter-label mono">{{ meter.label }}</span>
+          <label class="meter-label mono" :title="`Choose a colour for ${meter.label}`">
+            <input
+              class="meter-dot"
+              type="color"
+              :value="bandColors[meter.colorKey]"
+              :aria-label="`${meter.label} colour`"
+              @input="setBandColor(meter.colorKey, $event.target.value)"
+            />
+            <span>{{ meter.label }}</span>
+          </label>
           <span
             class="meter-track"
             role="meter"
@@ -117,16 +175,20 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   state,
   bandColors,
-  DEFAULT_BAND_COLORS,
+  FILTER_PRESETS,
+  filterState,
   isActive,
   isMic,
   isFile,
   setBandColor,
-  resetBandColors,
+  setFilterEnabled,
+  setFilterFrequency,
+  setFilterQ,
+  applyFilterPreset,
   toggleMic,
   loadTrack,
   togglePlayback,
@@ -134,15 +196,24 @@ import {
 } from '../composables/useAudioReactive'
 
 const meters = [
-  { key: 'bass', colorKey: 'bass', label: 'bass / kick', shortLabel: 'bass' },
-  { key: 'highMid', colorKey: 'snare', label: 'snare', shortLabel: 'snare' },
-  { key: 'mid', colorKey: 'voice', label: 'voice', shortLabel: 'voice' },
-  { key: 'treble', colorKey: 'air', label: 'air', shortLabel: 'air' }
+  { key: 'bass', colorKey: 'bass', label: 'bass / kick' },
+  { key: 'highMid', colorKey: 'snare', label: 'snare' },
+  { key: 'mid', colorKey: 'voice', label: 'voice' },
+  { key: 'treble', colorKey: 'air', label: 'air' }
 ]
 
-const hasCustomColors = computed(() =>
-  Object.keys(DEFAULT_BAND_COLORS).some((key) => bandColors[key] !== DEFAULT_BAND_COLORS[key])
-)
+const showFilters = ref(false)
+
+const FILTER_MIN = 60
+const FILTER_MAX = 12000
+
+function freqToSlider(hz) {
+  return Math.round((100 * Math.log(hz / FILTER_MIN)) / Math.log(FILTER_MAX / FILTER_MIN))
+}
+
+function sliderToFreq(value) {
+  return Math.round(FILTER_MIN * Math.pow(FILTER_MAX / FILTER_MIN, value / 100))
+}
 
 const micLabel = computed(() => {
   if (state.status === 'requesting') return 'Requesting mic…'
@@ -152,7 +223,8 @@ const micLabel = computed(() => {
 
 const sourceLabel = computed(() => {
   if (isMic.value) return 'microphone · live'
-  return state.sourceName || 'audio file'
+  if (isFile.value) return state.sourceName || 'audio file'
+  return 'no audio source'
 })
 
 function percent(value) {
@@ -168,55 +240,98 @@ async function onFile(event) {
 
 <style scoped>
 .audio-control { margin-top: 1rem; }
-.audio-actions {
+.transport {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
   align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  flex: none;
 }
-.audio-btn {
-  background: rgba(167, 139, 250, 0.06);
-  border-color: rgba(167, 139, 250, 0.28);
-}
-.audio-btn:hover { border-color: var(--accent-3); }
-.audio-btn:disabled { opacity: 0.6; cursor: progress; transform: none; }
-.audio-btn.primary {
-  background: linear-gradient(135deg, var(--accent-bright), var(--accent-2-bright) 38%, var(--accent-3-bright) 70%, var(--accent-4-bright));
-  border-color: transparent;
-  color: #04211d;
-}
-.file-label { cursor: pointer; }
-.file-label.active { border-color: var(--accent-2); }
-.file-label:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+.file-icon { cursor: pointer; }
 .stop-btn { color: var(--muted); }
 
-.band-colors {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.95rem;
-  margin-top: 0.65rem;
-  max-width: 620px;
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(5, 7, 13, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
-.band-colors-title {
-  color: var(--dim);
-  font-size: 0.6rem;
+.icon-btn:hover,
+.icon-btn.active {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background: rgba(5, 7, 13, 0.72);
+}
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.icon-btn.stop-btn:hover { color: #fca5a5; border-color: #fca5a5; }
+
+.filter-box {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(5, 7, 13, 0.38);
+}
+.filter-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+.filter-title {
+  color: var(--accent);
+  font-size: 0.62rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.band-color {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.32rem;
-  color: color-mix(in srgb, var(--band-color) 72%, var(--text));
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.filter-power,
+.filter-preset {
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(148, 178, 255, 0.05);
+  color: var(--muted);
   cursor: pointer;
-  transition: color 0.15s ease;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.16rem 0.55rem;
+  transition: all 0.15s ease;
 }
-.band-color:hover { color: var(--text); }
+.filter-power.on,
+.filter-preset.active {
+  color: var(--text);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.filter-power:hover,
+.filter-preset:hover { color: var(--text); border-color: var(--accent); }
+.filter-presets { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.filter-slider {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--dim);
+  font-size: 0.62rem;
+}
+.filter-slider input {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
 
 .live-dot {
   width: 7px;
@@ -254,21 +369,6 @@ async function onFile(event) {
   text-overflow: ellipsis;
   color: var(--text);
 }
-.mini-btn {
-  flex: none;
-  padding: 0.18rem 0.55rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  background: rgba(148, 178, 255, 0.06);
-  color: var(--accent);
-  cursor: pointer;
-  font-size: 0.7rem;
-  line-height: 1.4;
-}
-.mini-btn:hover { border-color: var(--accent); }
-.reset-btn { color: var(--muted); }
-.reset-btn:hover { color: var(--text); }
-
 .meters {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -277,29 +377,33 @@ async function onFile(event) {
 }
 .meter { display: flex; flex-direction: column; gap: 0.3rem; }
 .meter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--band-color) 72%, var(--text));
   white-space: nowrap;
+  cursor: pointer;
 }
-.meter-color {
-  width: 13px;
-  height: 13px;
+.meter-dot {
+  width: 11px;
+  height: 11px;
   flex: none;
   padding: 0;
   border: 1px solid var(--line-strong);
-  border-radius: 4px;
+  border-radius: 50%;
   background: transparent;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
 }
-.meter-color::-webkit-color-swatch-wrapper { padding: 0; }
-.meter-color::-webkit-color-swatch { border: 0; border-radius: 3px; }
-.meter-color::-moz-color-swatch { border: 0; border-radius: 3px; }
-.meter-color:hover { border-color: var(--text); }
-.meter-color:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.meter-dot::-webkit-color-swatch-wrapper { padding: 0; }
+.meter-dot::-webkit-color-swatch { border: 0; border-radius: 50%; }
+.meter-dot::-moz-color-swatch { border: 0; border-radius: 50%; }
+.meter-dot:hover { border-color: var(--text); }
+.meter-dot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .meter-track {
   display: block;
   height: 4px;
@@ -326,6 +430,7 @@ async function onFile(event) {
 
 @media (max-width: 600px) {
   .meters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .audio-actions .audio-btn { flex: 1 1 auto; justify-content: center; }
+  .panel-head { flex-wrap: wrap; }
+  .transport { margin-left: 0; width: 100%; justify-content: flex-end; }
 }
 </style>
