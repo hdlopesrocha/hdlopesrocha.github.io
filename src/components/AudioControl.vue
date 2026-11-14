@@ -179,6 +179,55 @@
             {{ item.label }}
           </button>
         </div>
+        <div class="scene-divider mono">particles</div>
+        <label class="filter-slider">
+          <span class="mono">count · {{ sceneFx.particleCount }}</span>
+          <input
+            type="range"
+            min="100"
+            max="3000"
+            step="50"
+            :value="sceneFx.particleCount"
+            :disabled="!sceneFx.showParticles"
+            @input="sceneFx.particleCount = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">trail length · {{ sceneFx.trailLength }}</span>
+          <input
+            type="range"
+            min="8"
+            max="160"
+            step="4"
+            :value="sceneFx.trailLength"
+            :disabled="!sceneFx.showParticles"
+            @input="sceneFx.trailLength = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">particle speed · {{ sceneFx.particleSpeed.toFixed(2) }}×</span>
+          <input
+            type="range"
+            min="0"
+            max="3"
+            step="0.05"
+            :value="sceneFx.particleSpeed"
+            :disabled="!sceneFx.showParticles"
+            @input="sceneFx.particleSpeed = Number($event.target.value)"
+          />
+        </label>
+        <label class="filter-slider">
+          <span class="mono">symbol spacing · {{ sceneFx.glyphSpacing }} px</span>
+          <input
+            type="range"
+            min="4"
+            max="64"
+            step="1"
+            :value="sceneFx.glyphSpacing"
+            :disabled="!sceneFx.showParticles || !sceneFx.showMatrix"
+            @input="sceneFx.glyphSpacing = Number($event.target.value)"
+          />
+        </label>
         <div class="scene-divider mono">perlin noise</div>
         <label class="filter-slider">
           <span class="mono">octaves · {{ sceneFx.noiseOctaves }}</span>
@@ -364,7 +413,9 @@ const sceneToggles = [
   { key: 'showTriangles', label: 'triangles' },
   { key: 'showGlow', label: 'glow' },
   { key: 'showParticles', label: 'particles' },
+  { key: 'showTrails', label: 'trails' },
   { key: 'showDots', label: 'dots' },
+  { key: 'showMatrix', label: 'matrix' },
   { key: 'showSmoke', label: 'noise' }
 ]
 
@@ -380,6 +431,8 @@ function toggleScenePanel() {
 
 function toggleScene(key) {
   sceneFx[key] = !sceneFx[key]
+  if (key === 'showMatrix' && sceneFx.showMatrix) sceneFx.showDots = false
+  if (key === 'showDots' && sceneFx.showDots) sceneFx.showMatrix = false
 }
 
 const FILTER_MIN = 60

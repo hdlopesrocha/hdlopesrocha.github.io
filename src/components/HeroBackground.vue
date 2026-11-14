@@ -39,8 +39,6 @@ let lastSmokeRequestAt = -Infinity
 const SMOKE_W = 512
 const SMOKE_H = 288
 
-const FLOW_COUNT = 1200
-const FLOW_PATH_LENGTH = 72
 const FLOW_TRAIL_CHUNKS = 14
 const FLOW_ALPHA_LEVELS = 10
 const FLOW_FORCE_SCALE = 0.0024
@@ -49,6 +47,11 @@ const TRIANGLE_FADE = 0.12
 const TRIANGLE_MAX_ALPHA = 0.18
 const TRIANGLE_WEIGHT_SCALE = 0.02
 const CHANNEL_PALETTE_SIZE = 5
+const MATRIX_GLYPHS = ['0', '1', '7', 'ﾊ', 'ﾐ', 'ﾋ', 'ｰ', 'ｳ', 'ｼ', 'ﾅ', 'ﾓ', 'ﾂ', 'ﾃ', 'ｷ', 'ｸ', '4']
+const MATRIX_MAX_GLYPHS = 8
+const MATRIX_GLYPH_TICK_MS = 110
+const MATRIX_GLYPH_CELL = 32
+const matrixGlyphAtlases = new Map()
 
 function clamp100(value) {
   return Math.min(100, Math.max(0, value))
@@ -67,6 +70,30 @@ function buildChannelPalette(hex) {
     s: clamp100(s + ds),
     l: clamp100(l + dl)
   }))
+}
+
+function getMatrixGlyphAtlas(tone) {
+  const key = `${tone.h.toFixed(1)}|${tone.s.toFixed(1)}|${tone.l.toFixed(1)}`
+  const cached = matrixGlyphAtlases.get(key)
+  if (cached) return cached
+
+  const atlas = document.createElement('canvas')
+  atlas.width = MATRIX_GLYPHS.length * MATRIX_GLYPH_CELL
+  atlas.height = MATRIX_GLYPH_CELL
+  const atlasCtx = atlas.getContext('2d')
+  atlasCtx.font = `bold ${Math.round(MATRIX_GLYPH_CELL * 0.72)}px "JetBrains Mono", ui-monospace, monospace`
+  atlasCtx.textAlign = 'center'
+  atlasCtx.textBaseline = 'middle'
+  atlasCtx.fillStyle = `hsl(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.min(88, tone.l + 4).toFixed(1)}%)`
+  for (let i = 0; i < MATRIX_GLYPHS.length; i += 1) {
+    atlasCtx.fillText(
+      MATRIX_GLYPHS[i],
+      i * MATRIX_GLYPH_CELL + MATRIX_GLYPH_CELL / 2,
+      MATRIX_GLYPH_CELL / 2
+    )
+  }
+  matrixGlyphAtlases.set(key, atlas)
+  return atlas
 }
 
 let triangleFrame = 0
@@ -114,19 +141,40 @@ function seed() {
   }))
 }
 
-function seedFlow() {
-  const count = w < 640 ? 600 : FLOW_COUNT
-  flowParticles = Array.from({ length: count }, (_, i) => ({
+function createFlowParticle(index) {
+  return {
     x: Math.random() * w,
     y: Math.random() * h,
     speed: 0.55 + Math.random() * 1.1,
     life: 90 + Math.random() * 260,
-    channel: i % 4,
+    channel: index % 4,
     colorPhase: Math.random() * CHANNEL_PALETTE_SIZE,
     vx: 0,
     vy: 0,
     history: []
-  }))
+  }
+}
+
+function particleTargetCount() {
+  return Math.max(0, Math.round(sceneFx.particleCount))
+}
+
+function seedFlow() {
+  flowParticles = Array.from(
+    { length: particleTargetCount() },
+    (_, index) => createFlowParticle(index)
+  )
+}
+
+function syncFlowCount() {
+  const target = particleTargetCount()
+  if (flowParticles.length > target) {
+    flowParticles.length = target
+    return
+  }
+  for (let i = flowParticles.length; i < target; i += 1) {
+    flowParticles.push(createFlowParticle(i))
+  }
 }
 
 function respawnParticle(particle) {
@@ -175,6 +223,12 @@ function ensureSmokeWorker() {
 function drawFlowField(t) {
   if (!ctx) return
   if (!flowParticles.length) seedFlow()
+  const trailLength = Math.max(2, Math.round(sceneFx.trailLength))
+  const particleSpeed = Math.max(0, sceneFx.particleSpeed)
+  const matrixOn = sceneFx.showMatrix
+  const trailsOn = sceneFx.showTrails
+  const glyphSpacing = Math.max(4, sceneFx.glyphSpacing)
+  const glyphTick = Math.floor(t / MATRIX_GLYPH_TICK_MS)
 
   const tw = Math.max(1, Math.ceil(w))
   const th = Math.max(1, Math.ceil(h))
@@ -220,19 +274,20 @@ function drawFlowField(t) {
     const level = levels[channel]
     const pulse = pulses[channel]
     const speedScale = level * 2.8 + pulse * 1.5
+    const pace = speedScale * particleSpeed
     const palette = channelPalettes[channel]
 
     const palettePos = (particle.colorPhase + t * 0.00025) % palette.length
     const paletteBucket = Math.round(palettePos) % palette.length
 
-    if (speedScale > 0.02) particle.life -= 1
+    if (pace > 0.02) particle.life -= 1
     const angle = cloudNoise(
       particle.x * FLOW_FORCE_SCALE,
       particle.y * FLOW_FORCE_SCALE,
       noiseTime
     ) * Math.PI * 2
-    const targetVx = Math.cos(angle) * particle.speed * speedScale
-    const targetVy = Math.sin(angle) * particle.speed * speedScale
+    const targetVx = Math.cos(angle) * particle.speed * pace
+    const targetVy = Math.sin(angle) * particle.speed * pace
     particle.vx += (targetVx - particle.vx) * 0.25
     particle.vy += (targetVy - particle.vy) * 0.25
     let nx = particle.x + particle.vx
@@ -253,62 +308,114 @@ function drawFlowField(t) {
 
     particle.x = nx
     particle.y = ny
-    if (sceneFx.showDots) {
+    if (sceneFx.showDots && !matrixOn) {
       const dotTone = palette[paletteBucket % palette.length]
       flowLayerCtx.fillStyle = `hsla(${dotTone.h.toFixed(1)}, ${dotTone.s.toFixed(1)}%, ${Math.min(86, dotTone.l + 2).toFixed(1)}%, ${(0.42 + level * 0.35 + pulse * 0.2).toFixed(2)})`
       flowLayerCtx.beginPath()
       flowLayerCtx.arc(nx, ny, 1.2 + level * 1.2 + pulse * 0.7, 0, Math.PI * 2)
       flowLayerCtx.fill()
     }
-    particle.history.push({ x: nx, y: ny, bucket: paletteBucket })
-    if (particle.history.length > FLOW_PATH_LENGTH) particle.history.shift()
+    particle.history.push({
+      x: nx,
+      y: ny,
+      bucket: paletteBucket,
+      energy: Math.min(1, Math.max(0, level * 0.65 + pulse * 0.5))
+    })
+    if (particle.history.length > trailLength) {
+      particle.history.splice(0, particle.history.length - trailLength)
+    }
     if (particle.history.length < 2) continue
 
-    const headAlpha = Math.min(0.95, 0.3 + level * 0.5 + pulse * 0.25)
-    const history = particle.history
-    const width = 0.8 + level * 1.3 + pulse * 0.6
-    const widthLevel = Math.max(1, Math.min(3, Math.round(width)))
-    const chunkCount = Math.min(FLOW_TRAIL_CHUNKS, history.length - 1)
+    if (trailsOn) {
+      const headAlpha = Math.min(0.95, 0.3 + level * 0.5 + pulse * 0.25)
+      const history = particle.history
+      const width = 0.8 + level * 1.3 + pulse * 0.6
+      const widthLevel = Math.max(1, Math.min(3, Math.round(width)))
+      const chunkCount = Math.min(FLOW_TRAIL_CHUNKS, history.length - 1)
 
-    for (let chunk = 0; chunk < chunkCount; chunk += 1) {
-      const start = Math.floor((chunk * (history.length - 1)) / chunkCount)
-      const end = Math.floor(((chunk + 1) * (history.length - 1)) / chunkCount)
-      if (end <= start) continue
+      for (let chunk = 0; chunk < chunkCount; chunk += 1) {
+        const start = Math.floor((chunk * (history.length - 1)) / chunkCount)
+        const end = Math.floor(((chunk + 1) * (history.length - 1)) / chunkCount)
+        if (end <= start) continue
 
-      const at = (chunk + 0.5) / chunkCount
-      const alphaLevel = Math.round(headAlpha * Math.pow(at, 0.7) * FLOW_ALPHA_LEVELS)
-      if (alphaLevel <= 0) continue
+        const at = (chunk + 0.5) / chunkCount
+        const alphaLevel = Math.round(headAlpha * Math.pow(at, 0.7) * FLOW_ALPHA_LEVELS)
+        if (alphaLevel <= 0) continue
 
-      const mid = history[Math.floor((start + end) / 2)]
-      const bucketIndex = mid.bucket ?? 0
-      const key = `${channel}:${bucketIndex}:${alphaLevel}:${widthLevel}`
-      let bucket = trailBuckets.get(key)
+        const mid = history[Math.floor((start + end) / 2)]
+        const bucketIndex = mid.bucket ?? 0
+        const key = `${channel}:${bucketIndex}:${alphaLevel}:${widthLevel}`
+        let bucket = trailBuckets.get(key)
 
-      if (!bucket) {
-        const tone = palette[bucketIndex % palette.length]
-        bucket = {
-          path: new Path2D(),
-          color: `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.min(86, tone.l + 2).toFixed(1)}%, 1)`,
-          alpha: alphaLevel / FLOW_ALPHA_LEVELS,
-          width: [0.8, 1.5, 2.2][widthLevel - 1]
+        if (!bucket) {
+          const tone = palette[bucketIndex % palette.length]
+          bucket = {
+            path: new Path2D(),
+            color: `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.min(86, tone.l + 2).toFixed(1)}%, 1)`,
+            alpha: alphaLevel / FLOW_ALPHA_LEVELS,
+            width: [0.8, 1.5, 2.2][widthLevel - 1]
+          }
+          trailBuckets.set(key, bucket)
         }
-        trailBuckets.set(key, bucket)
-      }
 
-      bucket.path.moveTo(history[start].x, history[start].y)
-      for (let i = start + 1; i <= end; i += 1) {
-        bucket.path.lineTo(history[i].x, history[i].y)
+        bucket.path.moveTo(history[start].x, history[start].y)
+        for (let i = start + 1; i <= end; i += 1) {
+          bucket.path.lineTo(history[i].x, history[i].y)
+        }
       }
     }
   }
 
-  for (const bucket of trailBuckets.values()) {
-    flowLayerCtx.globalAlpha = bucket.alpha
-    flowLayerCtx.lineWidth = bucket.width
-    flowLayerCtx.strokeStyle = bucket.color
-    flowLayerCtx.stroke(bucket.path)
+  if (trailsOn) {
+    for (const bucket of trailBuckets.values()) {
+      flowLayerCtx.globalAlpha = bucket.alpha
+      flowLayerCtx.lineWidth = bucket.width
+      flowLayerCtx.strokeStyle = bucket.color
+      flowLayerCtx.stroke(bucket.path)
+    }
   }
   flowLayerCtx.globalAlpha = 1
+
+  if (matrixOn) {
+    for (const particle of flowParticles) {
+      const history = particle.history
+      if (history.length < 2) continue
+      const channel = particle.channel
+      const level = levels[channel]
+      let distance = glyphSpacing
+      let drawn = 0
+      for (let i = history.length - 1; i > 0 && drawn < MATRIX_MAX_GLYPHS; i -= 1) {
+        const head = history[i]
+        const tail = history[i - 1]
+        distance += Math.hypot(head.x - tail.x, head.y - tail.y)
+        if (distance < glyphSpacing) continue
+        distance = 0
+        const bucket = head.bucket ?? 0
+        const tone = channelPalettes[channel][bucket]
+        const along = i / (history.length - 1)
+        const alpha = Math.min(0.95, 0.18 + along * 0.7 + level * 0.1)
+        const atlas = getMatrixGlyphAtlas(tone)
+        const positionSeed = Math.round(head.x) * 73 + Math.round(head.y) * 151
+        const glyphIndex = (positionSeed + glyphTick) % MATRIX_GLYPHS.length
+        const glyphSize = Math.max(8, Math.min(24, Math.round(8 + (head.energy ?? 0) * 16)))
+        flowLayerCtx.globalAlpha = alpha
+        flowLayerCtx.drawImage(
+          atlas,
+          glyphIndex * MATRIX_GLYPH_CELL,
+          0,
+          MATRIX_GLYPH_CELL,
+          MATRIX_GLYPH_CELL,
+          head.x - glyphSize / 2,
+          head.y - glyphSize / 2,
+          glyphSize,
+          glyphSize
+        )
+        drawn += 1
+      }
+    }
+    flowLayerCtx.globalAlpha = 1
+  }
+
   flowLayerCtx.restore()
 
   // Blurred/smoke-modulated particle render becomes the background; the
@@ -706,6 +813,14 @@ const unwatchAudio = watch(isActive, () => {
   syncAnimation()
 })
 
+const unwatchParticleCount = watch(
+  () => sceneFx.particleCount,
+  () => {
+    syncFlowCount()
+    if (!running) drawStatic()
+  }
+)
+
 onMounted(() => {
   ctx = canvas.value.getContext('2d')
   resize()
@@ -719,6 +834,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stopAnimation()
   unwatchAudio()
+  unwatchParticleCount()
   if (smokeWorker) {
     smokeWorker.terminate()
     smokeWorker = null

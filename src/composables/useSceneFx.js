@@ -2,6 +2,10 @@ import { reactive } from 'vue'
 
 export const sceneFx = reactive({
   glow: 1,
+  particleCount: 1200,
+  particleSpeed: 1,
+  trailLength: 72,
+  glyphSpacing: 18,
   noiseOctaves: 8,
   noiseLacunarity: 2,
   noiseAmplitude: 0.5,
@@ -15,6 +19,8 @@ export const sceneFx = reactive({
   showTriangles: true,
   showGlow: true,
   showParticles: true,
+  showTrails: true,
   showDots: false,
+  showMatrix: false,
   showSmoke: true
 })
