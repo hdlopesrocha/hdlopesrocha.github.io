@@ -1,5 +1,5 @@
 <template>
-  <section id="home" class="hero" aria-labelledby="hero-title">
+  <section id="home" class="section" aria-labelledby="hero-title">
     <div class="hero-fade" aria-hidden="true"></div>
     <div class="wrap hero-inner">
       <p class="eyebrow mono hero-shade"><span class="dot" aria-hidden="true"></span> real-time · gpu · procedural · experimental</p>
