@@ -13,6 +13,7 @@ import {
 } from '../composables/useAudioReactive'
 import { cloudNoise } from '../lib/perlin'
 import { hexToHsl } from '../lib/color'
+import { sceneFx } from '../composables/useSceneFx'
 
 const canvas = ref(null)
 let raf = 0
@@ -22,15 +23,28 @@ let w = 0
 let h = 0
 let running = false
 let resizeHandler = null
-let resizeObserver = null
 let flowParticles = []
 let flowLayerCanvas = null
 let flowLayerCtx = null
+let glowCanvas = null
+let glowCtx = null
+let smokeMaskCanvas = null
+let smokeMaskCtx = null
+let smokeWorker = null
+let smokeWorkerBusy = false
+let smokeWorkerFailed = false
+let smokeMaskReady = false
+let lastSmokeRequestAt = -Infinity
+
+const SMOKE_W = 512
+const SMOKE_H = 288
 
 const FLOW_COUNT = 1200
 const FLOW_PATH_LENGTH = 72
-const FLOW_COLOR_STOPS = 8
+const FLOW_TRAIL_CHUNKS = 14
+const FLOW_ALPHA_LEVELS = 10
 const FLOW_FORCE_SCALE = 0.0024
+const FLOW_WALL_MARGIN = 4
 const TRIANGLE_FADE = 0.12
 const TRIANGLE_MAX_ALPHA = 0.18
 const TRIANGLE_WEIGHT_SCALE = 0.02
@@ -70,7 +84,7 @@ function shortestHueDelta(from, to) {
 function resize() {
   const el = canvas.value
   if (!el || !ctx) return
-  const rect = el.parentElement.getBoundingClientRect()
+  const rect = el.getBoundingClientRect()
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
   w = rect.width
   h = rect.height
@@ -101,8 +115,53 @@ function seedFlow() {
     life: 90 + Math.random() * 260,
     channel: i % 4,
     colorPhase: Math.random() * CHANNEL_PALETTE_SIZE,
+    vx: 0,
+    vy: 0,
     history: []
   }))
+}
+
+function respawnParticle(particle) {
+  particle.x = FLOW_WALL_MARGIN + Math.random() * (w - 2 * FLOW_WALL_MARGIN)
+  particle.y = FLOW_WALL_MARGIN + Math.random() * (h - 2 * FLOW_WALL_MARGIN)
+  particle.life = 90 + Math.random() * 260
+  particle.vx = 0
+  particle.vy = 0
+  particle.history.length = 0
+}
+
+function ensureSmokeMask() {
+  if (smokeMaskCanvas) return
+  smokeMaskCanvas = document.createElement('canvas')
+  smokeMaskCanvas.width = SMOKE_W
+  smokeMaskCanvas.height = SMOKE_H
+  smokeMaskCtx = smokeMaskCanvas.getContext('2d')
+  smokeMaskCtx.imageSmoothingEnabled = true
+  smokeMaskCtx.imageSmoothingQuality = 'high'
+}
+
+// The 8-octave fBm mask is too expensive for the main thread, so generate it
+// in a worker while the glow and particles keep animating at full speed.
+function ensureSmokeWorker() {
+  if (smokeWorker || smokeWorkerFailed) return
+  if (typeof Worker === 'undefined') {
+    smokeWorkerFailed = true
+    return
+  }
+  smokeWorker = new Worker(new URL('../workers/noiseMask.worker.js', import.meta.url), {
+    type: 'module'
+  })
+  smokeWorker.onmessage = (event) => {
+    const { data, width, height } = event.data
+    ensureSmokeMask()
+    smokeMaskCtx.putImageData(new ImageData(data, width, height), 0, 0)
+    smokeMaskReady = true
+    smokeWorkerBusy = false
+  }
+  smokeWorker.onerror = () => {
+    smokeWorkerFailed = true
+    smokeWorkerBusy = false
+  }
 }
 
 function drawFlowField(t) {
@@ -146,6 +205,7 @@ function drawFlowField(t) {
   flowLayerCtx.globalCompositeOperation = 'source-over'
   flowLayerCtx.lineCap = 'round'
   flowLayerCtx.lineJoin = 'round'
+  const trailBuckets = new Map()
 
   for (const particle of flowParticles) {
     const channel = particle.channel
@@ -155,15 +215,7 @@ function drawFlowField(t) {
     const palette = channelPalettes[channel]
 
     const palettePos = (particle.colorPhase + t * 0.00025) % palette.length
-    const paletteIndex = Math.floor(palettePos)
-    const paletteMix = palettePos - paletteIndex
-    const from = palette[paletteIndex]
-    const to = palette[(paletteIndex + 1) % palette.length]
-    const color = {
-      h: (from.h + shortestHueDelta(from.h, to.h) * paletteMix + 360) % 360,
-      s: from.s + (to.s - from.s) * paletteMix,
-      l: from.l + (to.l - from.l) * paletteMix
-    }
+    const paletteBucket = Math.round(palettePos) % palette.length
 
     if (speedScale > 0.02) particle.life -= 1
     const angle = cloudNoise(
@@ -171,72 +223,167 @@ function drawFlowField(t) {
       particle.y * FLOW_FORCE_SCALE,
       noiseTime
     ) * Math.PI * 2
-    const nx = particle.x + Math.cos(angle) * particle.speed * speedScale
-    const ny = particle.y + Math.sin(angle) * particle.speed * speedScale
+    const targetVx = Math.cos(angle) * particle.speed * speedScale
+    const targetVy = Math.sin(angle) * particle.speed * speedScale
+    particle.vx += (targetVx - particle.vx) * 0.25
+    particle.vy += (targetVy - particle.vy) * 0.25
+    let nx = particle.x + particle.vx
+    let ny = particle.y + particle.vy
 
-    if (
-      particle.life <= 0 ||
-      nx < -6 ||
-      nx > w + 6 ||
-      ny < -6 ||
-      ny > h + 6
-    ) {
-      particle.x = Math.random() * w
-      particle.y = Math.random() * h
-      particle.life = 90 + Math.random() * 260
-      particle.history.length = 0
+    if (particle.life <= 0) {
+      respawnParticle(particle)
       continue
     }
 
+    // Wrap across the viewport edges with modulo. Clear the trail when a
+    // wrap happens so it does not draw a streak across the whole screen.
+    const wrappedX = nx < 0 || nx >= w
+    const wrappedY = ny < 0 || ny >= h
+    nx = ((nx % w) + w) % w
+    ny = ((ny % h) + h) % h
+    if (wrappedX || wrappedY) particle.history.length = 0
+
     particle.x = nx
     particle.y = ny
-    particle.history.push({
-      x: nx,
-      y: ny,
-      h: color.h,
-      s: color.s,
-      l: Math.min(88, color.l + 2 + level * 4)
-    })
+    if (sceneFx.showDots) {
+      const dotTone = palette[paletteBucket % palette.length]
+      flowLayerCtx.fillStyle = `hsla(${dotTone.h.toFixed(1)}, ${dotTone.s.toFixed(1)}%, ${Math.min(86, dotTone.l + 2).toFixed(1)}%, ${(0.42 + level * 0.35 + pulse * 0.2).toFixed(2)})`
+      flowLayerCtx.beginPath()
+      flowLayerCtx.arc(nx, ny, 1.2 + level * 1.2 + pulse * 0.7, 0, Math.PI * 2)
+      flowLayerCtx.fill()
+    }
+    particle.history.push({ x: nx, y: ny, bucket: paletteBucket })
     if (particle.history.length > FLOW_PATH_LENGTH) particle.history.shift()
     if (particle.history.length < 2) continue
 
     const headAlpha = Math.min(0.95, 0.3 + level * 0.5 + pulse * 0.25)
     const history = particle.history
-    const tail = history[0]
-    const head = history[history.length - 1]
-    const gradient = flowLayerCtx.createLinearGradient(tail.x, tail.y, head.x, head.y)
-    for (let stop = 0; stop < FLOW_COLOR_STOPS; stop += 1) {
-      const at = stop / (FLOW_COLOR_STOPS - 1)
-      const point = history[Math.round(at * (history.length - 1))]
-      const alpha = headAlpha * Math.pow(at, 0.7)
-      gradient.addColorStop(
-        at,
-        `hsla(${point.h.toFixed(1)}, ${point.s.toFixed(1)}%, ${Math.min(86, point.l + 2).toFixed(1)}%, ${alpha.toFixed(3)})`
-      )
+    const width = 0.8 + level * 1.3 + pulse * 0.6
+    const widthLevel = Math.max(1, Math.min(3, Math.round(width)))
+    const chunkCount = Math.min(FLOW_TRAIL_CHUNKS, history.length - 1)
+
+    for (let chunk = 0; chunk < chunkCount; chunk += 1) {
+      const start = Math.floor((chunk * (history.length - 1)) / chunkCount)
+      const end = Math.floor(((chunk + 1) * (history.length - 1)) / chunkCount)
+      if (end <= start) continue
+
+      const at = (chunk + 0.5) / chunkCount
+      const alphaLevel = Math.round(headAlpha * Math.pow(at, 0.7) * FLOW_ALPHA_LEVELS)
+      if (alphaLevel <= 0) continue
+
+      const mid = history[Math.floor((start + end) / 2)]
+      const bucketIndex = mid.bucket ?? 0
+      const key = `${channel}:${bucketIndex}:${alphaLevel}:${widthLevel}`
+      let bucket = trailBuckets.get(key)
+
+      if (!bucket) {
+        const tone = palette[bucketIndex % palette.length]
+        bucket = {
+          path: new Path2D(),
+          color: `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.min(86, tone.l + 2).toFixed(1)}%, 1)`,
+          alpha: alphaLevel / FLOW_ALPHA_LEVELS,
+          width: [0.8, 1.5, 2.2][widthLevel - 1]
+        }
+        trailBuckets.set(key, bucket)
+      }
+
+      bucket.path.moveTo(history[start].x, history[start].y)
+      for (let i = start + 1; i <= end; i += 1) {
+        bucket.path.lineTo(history[i].x, history[i].y)
+      }
     }
-    flowLayerCtx.lineWidth = 0.8 + level * 1.3 + pulse * 0.6
-    flowLayerCtx.strokeStyle = gradient
-    flowLayerCtx.beginPath()
-    flowLayerCtx.moveTo(tail.x, tail.y)
-    for (let i = 1; i < history.length; i += 1) {
-      flowLayerCtx.lineTo(history[i].x, history[i].y)
-    }
-    flowLayerCtx.stroke()
   }
+
+  for (const bucket of trailBuckets.values()) {
+    flowLayerCtx.globalAlpha = bucket.alpha
+    flowLayerCtx.lineWidth = bucket.width
+    flowLayerCtx.strokeStyle = bucket.color
+    flowLayerCtx.stroke(bucket.path)
+  }
+  flowLayerCtx.globalAlpha = 1
   flowLayerCtx.restore()
 
-  // Blurred particle render becomes the background; the sharp pass and the
-  // graph are drawn on top of it.
-  ctx.save()
-  ctx.globalCompositeOperation = 'lighter'
-  ctx.filter = `blur(${(12 + (active ? audioState.energy : 0) * 10).toFixed(1)}px)`
-  ctx.globalAlpha = 0.85
-  ctx.drawImage(flowLayerCanvas, 0, 0, w, h)
-  ctx.filter = 'none'
-  ctx.globalAlpha = 1
-  ctx.globalCompositeOperation = 'source-over'
-  ctx.drawImage(flowLayerCanvas, 0, 0, w, h)
-  ctx.restore()
+  // Blurred/smoke-modulated particle render becomes the background; the
+  // sharp particle pass and graph are drawn on top.
+  if (sceneFx.showGlow && sceneFx.glow > 0.01) {
+    const glowWidth = Math.max(1, Math.ceil(w))
+    const glowHeight = Math.max(1, Math.ceil(h))
+    if (!glowCanvas) {
+      glowCanvas = document.createElement('canvas')
+      glowCtx = glowCanvas.getContext('2d')
+      glowCtx.imageSmoothingEnabled = true
+      glowCtx.imageSmoothingQuality = 'high'
+    }
+    if (glowCanvas.width !== glowWidth || glowCanvas.height !== glowHeight) {
+      glowCanvas.width = glowWidth
+      glowCanvas.height = glowHeight
+    }
+    glowCtx.clearRect(0, 0, glowWidth, glowHeight)
+    glowCtx.save()
+    glowCtx.filter = `blur(${(12 + (active ? audioState.energy : 0) * 10).toFixed(1)}px)`
+    glowCtx.globalCompositeOperation = 'lighter'
+    glowCtx.drawImage(flowLayerCanvas, 0, 0, w, h)
+    glowCtx.drawImage(flowLayerCanvas, 0, 0, w, h)
+    glowCtx.restore()
+
+    // Only cut the Perlin smoke mask into the blurred glow when enabled.
+    if (sceneFx.showSmoke && sceneFx.noiseBrightness > 0.01) {
+      ensureSmokeMask()
+      ensureSmokeWorker()
+
+      if (!smokeWorkerFailed) {
+        const motionTime = reducedMotion() ? 1200 : t
+        if (!smokeWorkerBusy && motionTime - lastSmokeRequestAt > 120) {
+          lastSmokeRequestAt = motionTime
+          smokeWorkerBusy = true
+          const period = Math.max(1, sceneFx.noisePeriod) * 1000
+          const speed = Math.max(0, sceneFx.noiseSpeed)
+          smokeWorker.postMessage({
+            width: SMOKE_W,
+            height: SMOKE_H,
+            scale: Math.max(0.1, sceneFx.noiseScale),
+            drift: (motionTime / (period * 3.5)) * speed,
+            noiseTime: (motionTime / period) * speed,
+            octaves: sceneFx.noiseOctaves,
+            amplitude: sceneFx.noiseAmplitude,
+            gain: sceneFx.noiseGain,
+            lacunarity: sceneFx.noiseLacunarity,
+            contrast: sceneFx.noiseContrast,
+            brightness: Math.max(0, sceneFx.noiseBrightness)
+          })
+        }
+      }
+
+      if (smokeMaskReady) {
+        glowCtx.save()
+        glowCtx.globalCompositeOperation = 'destination-in'
+        glowCtx.filter = 'blur(2px)'
+        glowCtx.drawImage(smokeMaskCanvas, 0, 0, w, h)
+        glowCtx.restore()
+      }
+    }
+
+    // sceneFx.glow can exceed 1 (up to 2): accumulate additive passes until
+    // the requested strength is consumed.
+    let remaining = Math.max(0, sceneFx.glow)
+    if (remaining > 0.001) {
+      ctx.save()
+      ctx.globalCompositeOperation = 'lighter'
+      while (remaining > 0.001) {
+        ctx.globalAlpha = Math.min(1, remaining)
+        ctx.drawImage(glowCanvas, 0, 0, w, h)
+        remaining -= 1
+      }
+      ctx.restore()
+    }
+  }
+
+  if (sceneFx.showParticles) {
+    ctx.save()
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.drawImage(flowLayerCanvas, 0, 0, w, h)
+    ctx.restore()
+  }
 }
 
 function drawParticles(t) {
@@ -380,68 +527,72 @@ function drawParticles(t) {
     }
   }
 
-  ctx.save()
-  const currentKeys = new Set()
-  for (const triangle of triangles) {
-    currentKeys.add(triangle.key)
-    const target = Math.min(
-      TRIANGLE_MAX_ALPHA,
-      (cachedTriangleTargets.get(triangle.key) || 0) * TRIANGLE_WEIGHT_SCALE
-    )
-    const current = triangleWeights.get(triangle.key) || 0
-    const next = current + (target - current) * TRIANGLE_FADE
-    if (next > 0.001) triangleWeights.set(triangle.key, next)
-    else triangleWeights.delete(triangle.key)
-    if (next <= 0.002) continue
+  if (sceneFx.showTriangles) {
+    ctx.save()
+    const currentKeys = new Set()
+    for (const triangle of triangles) {
+      currentKeys.add(triangle.key)
+      const target = Math.min(
+        TRIANGLE_MAX_ALPHA,
+        (cachedTriangleTargets.get(triangle.key) || 0) * TRIANGLE_WEIGHT_SCALE
+      )
+      const current = triangleWeights.get(triangle.key) || 0
+      const next = current + (target - current) * TRIANGLE_FADE
+      if (next > 0.001) triangleWeights.set(triangle.key, next)
+      else triangleWeights.delete(triangle.key)
+      if (next <= 0.002) continue
 
-    const a = points[triangle.i]
-    const b = points[triangle.j]
-    const c = points[triangle.k]
-    const tone = tones[(triangle.i + triangle.j + triangle.k) % tones.length]
-    ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(84, tone.l + 4)).toFixed(1)}%, ${next.toFixed(3)})`
-    ctx.beginPath()
-    ctx.moveTo(a.sx, a.sy)
-    ctx.lineTo(b.sx, b.sy)
-    ctx.lineTo(c.sx, c.sy)
-    ctx.closePath()
-    ctx.fill()
+      const a = points[triangle.i]
+      const b = points[triangle.j]
+      const c = points[triangle.k]
+      const tone = tones[(triangle.i + triangle.j + triangle.k) % tones.length]
+      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(84, tone.l + 4)).toFixed(1)}%, ${next.toFixed(3)})`
+      ctx.beginPath()
+      ctx.moveTo(a.sx, a.sy)
+      ctx.lineTo(b.sx, b.sy)
+      ctx.lineTo(c.sx, c.sy)
+      ctx.closePath()
+      ctx.fill()
+    }
+
+    // Fade out weights for triangles that no longer exist.
+    for (const [key, value] of triangleWeights) {
+      if (currentKeys.has(key)) continue
+      const next = value * (1 - TRIANGLE_FADE)
+      if (next > 0.001) triangleWeights.set(key, next)
+      else triangleWeights.delete(key)
+    }
+    ctx.restore()
   }
 
-  // Fade out weights for triangles that no longer exist.
-  for (const [key, value] of triangleWeights) {
-    if (currentKeys.has(key)) continue
-    const next = value * (1 - TRIANGLE_FADE)
-    if (next > 0.001) triangleWeights.set(key, next)
-    else triangleWeights.delete(key)
-  }
-  ctx.restore()
+  if (sceneFx.showGraph) {
+    // Simple connection lines on top.
+    ctx.save()
+    ctx.lineWidth = 1
+    for (const link of links) {
+      const tone = link.tone
+      ctx.strokeStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(78, tone.l)).toFixed(1)}%, ${link.alpha.toFixed(3)})`
+      ctx.beginPath()
+      ctx.moveTo(link.ax, link.ay)
+      ctx.lineTo(link.bx, link.by)
+      ctx.stroke()
+    }
+    ctx.restore()
 
-  // Simple connection lines on top.
-  ctx.save()
-  ctx.lineWidth = 1
-  for (const link of links) {
-    const tone = link.tone
-    ctx.strokeStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(78, tone.l)).toFixed(1)}%, ${link.alpha.toFixed(3)})`
-    ctx.beginPath()
-    ctx.moveTo(link.ax, link.ay)
-    ctx.lineTo(link.bx, link.by)
-    ctx.stroke()
+    // Solid nodes on top.
+    ctx.save()
+    for (let i = 0; i < points.length; i += 1) {
+      const point = points[i]
+      const radius = point.r * (1 + treble * 1.5 + kick * 0.8 + snare * 0.3)
+      const tone = tones[i % tones.length]
+      const light = Math.max(62, Math.min(90, tone.l + treble * 8))
+      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${light.toFixed(1)}%, ${(0.86 + energy * 0.14).toFixed(2)})`
+      ctx.beginPath()
+      ctx.arc(point.sx, point.sy, radius, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.restore()
   }
-  ctx.restore()
-
-  // Solid nodes on top.
-  ctx.save()
-  for (let i = 0; i < points.length; i += 1) {
-    const point = points[i]
-    const radius = point.r * (1 + treble * 1.5 + kick * 0.8 + snare * 0.3)
-    const tone = tones[i % tones.length]
-    const light = Math.max(62, Math.min(90, tone.l + treble * 8))
-    ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${light.toFixed(1)}%, ${(0.86 + energy * 0.14).toFixed(2)})`
-    ctx.beginPath()
-    ctx.arc(point.sx, point.sy, radius, 0, Math.PI * 2)
-    ctx.fill()
-  }
-  ctx.restore()
 }
 
 function drawSpectrum() {
@@ -538,14 +689,6 @@ function onResize() {
   if (!running) drawStatic()
 }
 
-function onContainerResize() {
-  // The hero grows/shrinks when the audio panel or errors appear. Resize the
-  // canvas bitmap too, otherwise the graph and spectrum stay anchored to the
-  // old hero height and visually drift out of the section.
-  resize()
-  if (!running) drawStatic()
-}
-
 const unwatchAudio = watch(isActive, () => {
   syncAnimation()
 })
@@ -556,10 +699,6 @@ onMounted(() => {
   seed()
   resizeHandler = onResize
   window.addEventListener('resize', resizeHandler)
-  if (typeof ResizeObserver !== 'undefined') {
-    resizeObserver = new ResizeObserver(onContainerResize)
-    resizeObserver.observe(canvas.value.parentElement)
-  }
   document.addEventListener('visibilitychange', onVisibility)
   syncAnimation()
 })
@@ -567,7 +706,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stopAnimation()
   unwatchAudio()
-  resizeObserver?.disconnect()
+  if (smokeWorker) {
+    smokeWorker.terminate()
+    smokeWorker = null
+  }
   if (resizeHandler) window.removeEventListener('resize', resizeHandler)
   document.removeEventListener('visibilitychange', onVisibility)
 })
@@ -575,10 +717,13 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .hero-canvas {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
 }
 </style>
