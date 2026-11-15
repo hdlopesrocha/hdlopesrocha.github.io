@@ -670,11 +670,12 @@ function drawParticles(t) {
   const edgeIndex = new Map()
   const links = []
   const maxDist2 = maxDist * maxDist
+  const edgeKey = (i, j) => `${Math.min(i, j)}:${Math.max(i, j)}`
 
   const edgeFor = (i, j) => {
     const a = Math.min(i, j)
     const b = Math.max(i, j)
-    const key = `${a}:${b}`
+    const key = edgeKey(i, j)
     const cached = edgeIndex.get(key)
     if (cached) return cached
 
@@ -702,11 +703,15 @@ function drawParticles(t) {
   }
 
   // Delaunay edges still define the planar graph connections.
+  const delaunayEdgeKeys = new Set()
   const delaunayTriangles = delaunay.triangles
   for (let i = 0; i < delaunayTriangles.length; i += 3) {
     const ia = delaunayTriangles[i]
     const ib = delaunayTriangles[i + 1]
     const ic = delaunayTriangles[i + 2]
+    delaunayEdgeKeys.add(edgeKey(ia, ib))
+    delaunayEdgeKeys.add(edgeKey(ib, ic))
+    delaunayEdgeKeys.add(edgeKey(ic, ia))
     edgeFor(ia, ib)
     edgeFor(ib, ic)
     edgeFor(ic, ia)
@@ -829,7 +834,17 @@ function drawParticles(t) {
     if (first < 0 || second < 0) continue
     const triangle = makeTriangle(i, first, second)
     if (!triangle || candidateKeys.has(triangle.key)) continue
+    // Accept only Delaunay faces: every side is a planar graph edge, so the
+    // triangle cannot cross other triangulation edges or faces.
+    if (
+      !delaunayEdgeKeys.has(edgeKey(triangle.i, triangle.j)) ||
+      !delaunayEdgeKeys.has(edgeKey(triangle.j, triangle.k)) ||
+      !delaunayEdgeKeys.has(edgeKey(triangle.k, triangle.i))
+    ) {
+      continue
+    }
     candidateKeys.add(triangle.key)
+    triangle.anchor = i
     candidateTriangles.push(triangle)
   }
 
