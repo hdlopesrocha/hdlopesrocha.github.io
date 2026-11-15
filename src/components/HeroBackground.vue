@@ -31,6 +31,13 @@ let glowCanvas = null
 let glowCtx = null
 let sceneSnapshotCanvas = null
 let sceneSnapshotCtx = null
+let sceneRedCanvas = null
+let sceneRedCtx = null
+let sceneGreenCanvas = null
+let sceneGreenCtx = null
+let sceneBlueCanvas = null
+let sceneBlueCtx = null
+let chromaticFrame = 0
 let smokeMaskCanvas = null
 let smokeMaskCtx = null
 let smokeWorker = null
@@ -63,6 +70,17 @@ const GRAPH_HALF = (() => {
   const length = Math.hypot(x, y, z) || 1
   return { x: x / length, y: y / length, z: z / length }
 })()
+
+// Glass material constants. The view ray travels into the surface along
+// (0, 0, -1); the face normal is always oriented towards the viewer.
+const GLASS_IOR = 1.5
+const GLASS_ETA = 1 / GLASS_IOR
+const GLASS_SPECULAR_POWER = 64
+const GLASS_SPECULAR_PACE = 48
+const GLASS_REFRACTION_SCALE = 150
+const GLASS_MAX_REFRACTION = 120
+const GLASS_DEPTH_REFERENCE = 140
+const GLASS_DEPTH_INFLUENCE = 0.65
 
 function clamp100(value) {
   return Math.min(100, Math.max(0, value))
@@ -517,8 +535,31 @@ function drawFlowField(t) {
   }
 }
 
+function updateSceneChannel(canvas, context, color, source) {
+  const width = Math.max(1, Math.floor(source.width / 3))
+  const height = Math.max(1, Math.floor(source.height / 3))
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width
+    canvas.height = height
+  }
+  context.setTransform(1, 0, 0, 1, 0, 0)
+  context.globalCompositeOperation = 'source-over'
+  context.clearRect(0, 0, width, height)
+  context.drawImage(source, 0, 0, width, height)
+  context.globalCompositeOperation = 'multiply'
+  context.fillStyle = color
+  context.fillRect(0, 0, width, height)
+  context.globalCompositeOperation = 'destination-in'
+  context.drawImage(source, 0, 0, width, height)
+  context.globalCompositeOperation = 'source-over'
+}
+
 function captureSceneSnapshot() {
   if (!ctx) return
+  chromaticFrame += 1
+  // RGB fringing can update at half rate; the normal-driven triangle
+  // refraction still runs every frame.
+  if (sceneGreenCanvas && chromaticFrame % 2 === 0) return
   const source = ctx.canvas
   if (!sceneSnapshotCanvas) {
     sceneSnapshotCanvas = document.createElement('canvas')
@@ -538,6 +579,22 @@ function captureSceneSnapshot() {
   sceneSnapshotCtx.filter = `blur(${blurPx.toFixed(1)}px)`
   sceneSnapshotCtx.drawImage(source, 0, 0)
   sceneSnapshotCtx.filter = 'none'
+
+  if (!sceneRedCanvas) {
+    sceneRedCanvas = document.createElement('canvas')
+    sceneRedCtx = sceneRedCanvas.getContext('2d')
+  }
+  if (!sceneGreenCanvas) {
+    sceneGreenCanvas = document.createElement('canvas')
+    sceneGreenCtx = sceneGreenCanvas.getContext('2d')
+  }
+  if (!sceneBlueCanvas) {
+    sceneBlueCanvas = document.createElement('canvas')
+    sceneBlueCtx = sceneBlueCanvas.getContext('2d')
+  }
+  updateSceneChannel(sceneRedCanvas, sceneRedCtx, '#ff0000', sceneSnapshotCanvas)
+  updateSceneChannel(sceneGreenCanvas, sceneGreenCtx, '#00ff00', sceneSnapshotCanvas)
+  updateSceneChannel(sceneBlueCanvas, sceneBlueCtx, '#0000ff', sceneSnapshotCanvas)
 }
 
 function drawParticles(t) {
@@ -664,14 +721,22 @@ function drawParticles(t) {
     let nx = uy * vz - uz * vy
     let ny = uz * vx - ux * vz
     let nz = ux * vy - uy * vx
-    const nlen = Math.hypot(nx, ny, nz) || 1
-    nx /= nlen
-    ny /= nlen
-    nz /= nlen
-    if (nz < 0) {
-      nx = -nx
-      ny = -ny
-      nz = -nz
+    const nlen = Math.hypot(nx, ny, nz)
+    if (nlen < 1e-6) {
+      // Degenerate face: fall back to a front-facing normal so shading and
+      // refraction stay finite.
+      nx = 0
+      ny = 0
+      nz = 1
+    } else {
+      nx /= nlen
+      ny /= nlen
+      nz /= nlen
+      if (nz < 0) {
+        nx = -nx
+        ny = -ny
+        nz = -nz
+      }
     }
     triangles.push({
       key: `${ids[0]}:${ids[1]}:${ids[2]}`,
@@ -681,6 +746,8 @@ function drawParticles(t) {
       nx,
       ny,
       nz,
+      // Average audio-driven node depth, used to scale the refraction.
+      avgZ: (a.z + b.z + c.z) / 3,
       cx: (a.sx + b.sx + c.sx) / 3,
       cy: (a.sy + b.sy + c.sy) / 3
     })
@@ -750,8 +817,9 @@ function drawParticles(t) {
       const ny = triangle.ny
       const nz = triangle.nz
 
-      // Phong shading from the triangle's 3D normal and the audio-reactive
-      // depth. The palette tone supplies the material colour.
+      // Flat-shaded glass: the single face normal drives both the sharp
+      // Blinn-Phong highlight and the refraction ray. The palette tone is the
+      // glass tint; shading only changes its brightness and opacity.
       const ndotl = Math.max(
         0,
         nx * GRAPH_LIGHT.x + ny * GRAPH_LIGHT.y + nz * GRAPH_LIGHT.z
@@ -760,24 +828,57 @@ function drawParticles(t) {
         0,
         nx * GRAPH_HALF.x + ny * GRAPH_HALF.y + nz * GRAPH_HALF.z
       )
-      const specular = Math.pow(ndoth, 20 + pace * 30)
-      const ambient = 0.22 + energy * 0.08
-      const diffuse = ndotl * (0.62 + energy * 0.18)
-      const intensity = ambient + diffuse + specular * (0.45 + bass * 0.35)
-      const shade = Math.min(1.25, 0.55 + intensity * 0.55)
+      const specular = Math.pow(
+        ndoth,
+        GLASS_SPECULAR_POWER + pace * GLASS_SPECULAR_PACE
+      )
+      const ambient = 0.16 + energy * 0.06
+      const diffuse = ndotl * (0.44 + energy * 0.16)
+      const intensity = ambient + diffuse + specular * (1.5 + bass * 0.9)
+      const shade = Math.min(1.3, 0.5 + intensity * 0.58)
       const lightL = Math.max(
         18,
-        Math.min(96, tone.l * (0.55 + intensity * 0.75) + specular * 18)
+        Math.min(96, tone.l * (0.58 + intensity * 0.72) + specular * 22)
       )
-      const tintAlpha = Math.min(0.34, 0.05 + next * 1.05 + specular * 0.12)
+      const tintAlpha = Math.min(0.3, 0.045 + next * 0.95 + specular * 0.1)
 
-      // Refract along the surface normal: steeper faces displace the sample
-      // further and also zoom it more.
-      const slope = Math.hypot(nx, ny)
-      const strength = 5 + slope * 28 + (1 - nz) * 18 + next * 18
-      const dx = nx * strength
-      const dy = ny * strength
-      const zoom = 1 + (1 - nz) * 0.08 + (strength * 1.8) / Math.min(w, h) + 0.01
+      // Snell refraction from the view ray (0, 0, -1) into glass (IOR 1.5).
+      // nz is oriented towards the viewer, so cosI is non-negative. Total
+      // internal reflection leaves the sample unbent instead of going NaN.
+      const cosI = Math.min(1, Math.max(0, nz))
+      const sin2T = GLASS_ETA * GLASS_ETA * (1 - cosI * cosI)
+      let sampleX = 0
+      let sampleY = 0
+      if (sin2T < 1 - 1e-4) {
+        const bend = GLASS_ETA * cosI - Math.sqrt(1 - sin2T)
+        sampleX = bend * nx
+        sampleY = bend * ny
+      }
+
+      // Deeper/closer triangles refract by a different amount. avgZ is the
+      // audio-reactive node depth; the fixed reference keeps the effect subtle
+      // at rest and pronounced with music.
+      const depthNorm = Math.max(
+        -1,
+        Math.min(1, triangle.avgZ / GLASS_DEPTH_REFERENCE)
+      )
+      const refractionScale =
+        GLASS_REFRACTION_SCALE * (1 + depthNorm * GLASS_DEPTH_INFLUENCE)
+      let dx = sampleX * refractionScale
+      let dy = sampleY * refractionScale
+      const rawOffset = Math.hypot(dx, dy)
+      if (rawOffset > GLASS_MAX_REFRACTION) {
+        const limit = GLASS_MAX_REFRACTION / rawOffset
+        dx *= limit
+        dy *= limit
+      }
+      // Keep the refracted sample inside the canvas, then size the zoom
+      // margin for the actual displacement so no transparent gaps appear.
+      const edgeX = Math.max(0, Math.min(triangle.cx, w - triangle.cx) * 0.9)
+      const edgeY = Math.max(0, Math.min(triangle.cy, h - triangle.cy) * 0.9)
+      dx = Math.max(-edgeX, Math.min(edgeX, dx))
+      dy = Math.max(-edgeY, Math.min(edgeY, dy))
+      const offset = Math.hypot(dx, dy)
 
       ctx.save()
       ctx.beginPath()
@@ -787,20 +888,53 @@ function drawParticles(t) {
       ctx.closePath()
       ctx.clip()
 
+      // Chromatic dispersion: sample the red, green and blue channel maps at
+      // different texture coordinates. Red and blue are split perpendicular
+      // to the refraction direction while green follows the centre ray.
+      const baseAlpha = Math.min(1, (0.68 + next * 1.5) * shade)
+      const channelAlpha = Math.min(0.55, baseAlpha * 0.42)
+      const directionLength = Math.hypot(dx, dy)
+      const dirX = directionLength > 0.001 ? dx / directionLength : 0.7071
+      const dirY = directionLength > 0.001 ? dy / directionLength : 0.7071
+      const perpX = -dirY
+      const perpY = dirX
+      const dispersion = 2.5 + Math.min(12, offset * 0.12)
+      const channels = [
+        [sceneRedCanvas, 1],
+        [sceneGreenCanvas, 0],
+        [sceneBlueCanvas, -1]
+      ]
+
       ctx.save()
-      ctx.translate(triangle.cx + dx, triangle.cy + dy)
-      ctx.scale(zoom, zoom)
-      ctx.translate(-triangle.cx, -triangle.cy)
-      ctx.globalAlpha = Math.min(1, (0.68 + next * 1.5) * shade)
-      ctx.drawImage(
-        sceneSnapshotCanvas,
-        0, 0, sceneSnapshotCanvas.width, sceneSnapshotCanvas.height,
-        0, 0, w, h
-      )
+      ctx.globalCompositeOperation = 'lighter'
+      for (const [canvas, shift] of channels) {
+        if (!canvas) continue
+        const channelScale = 1 + shift * 0.015
+        const sampleX = dx * channelScale + perpX * dispersion * shift
+        const sampleY = dy * channelScale + perpY * dispersion * shift
+        const boundedX = Math.max(-edgeX, Math.min(edgeX, sampleX))
+        const boundedY = Math.max(-edgeY, Math.min(edgeY, sampleY))
+        const channelOffset = Math.hypot(boundedX, boundedY)
+        const channelZoom =
+          1 +
+          (1 - nz) * 0.08 +
+          (channelOffset * 1.8) / Math.max(1, Math.min(w, h)) +
+          0.01 +
+          shift * 0.002
+
+        ctx.save()
+        ctx.translate(triangle.cx - boundedX, triangle.cy - boundedY)
+        ctx.scale(channelZoom, channelZoom)
+        ctx.translate(-triangle.cx, -triangle.cy)
+        ctx.globalAlpha = channelAlpha
+        ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, w, h)
+        ctx.restore()
+      }
       ctx.restore()
 
-      // Phong-shaded material tint; specular highlights desaturate slightly.
-      const saturation = Math.max(0, tone.s * (1 - specular * 0.35))
+      // Flat material tint; highlights desaturate towards white while the
+      // refracted scene remains visible underneath.
+      const saturation = Math.max(0, tone.s * (1 - specular * 0.7))
       ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${saturation.toFixed(1)}%, ${lightL.toFixed(1)}%, ${tintAlpha.toFixed(3)})`
       ctx.fill()
       ctx.restore()
