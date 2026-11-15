@@ -27,8 +27,8 @@
           <label
             class="icon-btn file-icon"
             :class="{ active: isFile, disabled: videoExporting }"
-            :title="isFile ? 'Change audio' : 'Upload audio'"
-            :aria-label="isFile ? 'Change audio' : 'Upload audio'"
+            :title="isFile ? t('audio.changeAudio') : t('audio.uploadAudio')"
+            :aria-label="isFile ? t('audio.changeAudio') : t('audio.uploadAudio')"
             :aria-disabled="videoExporting ? 'true' : undefined"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -47,8 +47,8 @@
             type="button"
             class="icon-btn"
             :disabled="videoExporting"
-            :aria-label="state.playing ? 'Pause audio' : 'Play audio'"
-            :title="state.playing ? 'Pause audio' : 'Play audio'"
+            :aria-label="state.playing ? t('audio.pauseAudio') : t('audio.playAudio')"
+            :title="state.playing ? t('audio.pauseAudio') : t('audio.playAudio')"
             @click="togglePlayback"
           >
             <svg v-if="state.playing" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -81,8 +81,8 @@
             class="icon-btn"
             :class="{ active: showScene }"
             :aria-pressed="showScene ? 'true' : 'false'"
-            aria-label="Background scene controls"
-            title="Background scene controls"
+            :aria-label="t('audio.sceneControls')"
+            :title="t('audio.sceneControls')"
             @click="toggleScenePanel"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
@@ -95,8 +95,8 @@
             class="icon-btn"
             :class="{ active: showFilters }"
             :aria-pressed="showFilters ? 'true' : 'false'"
-            aria-label="Band-pass filter controls"
-            title="Band-pass filter controls"
+            :aria-label="t('audio.filterControls')"
+            :title="t('audio.filterControls')"
             @click="toggleFilterPanel"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
@@ -110,8 +110,8 @@
             type="button"
             class="icon-btn stop-btn"
             :disabled="!isActive || videoExporting"
-            aria-label="Stop audio"
-            title="Stop audio"
+            :aria-label="t('audio.stopAudio')"
+            :title="t('audio.stopAudio')"
             @click="stop"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -121,9 +121,22 @@
         </div>
       </div>
 
+      <p v-if="!isActive" class="audio-cta">
+        <span>{{ t('audio.cta') }}</span>
+        <button
+          type="button"
+          class="demo-btn mono"
+          :disabled="demoLoading || videoExporting || state.status === 'requesting'"
+          @click="loadDemo"
+        >
+          <span v-if="!demoLoading" aria-hidden="true">▶</span>
+          {{ demoLoading ? t('audio.demoLoading') : t('audio.tryDemo') }}
+        </button>
+      </p>
+
       <div v-if="showFilters" class="filter-box blur-surface">
         <div class="filter-box-head">
-          <span class="mono filter-title">band-pass</span>
+          <span class="mono filter-title">{{ t('audio.bandPass') }}</span>
           <button
             type="button"
             class="filter-power mono"
@@ -131,7 +144,7 @@
             :aria-pressed="filterState.enabled ? 'true' : 'false'"
             @click="setFilterEnabled(!filterState.enabled)"
           >
-            {{ filterState.enabled ? 'on' : 'off' }}
+            {{ filterState.enabled ? t('audio.on') : t('audio.off') }}
           </button>
         </div>
         <div class="filter-presets">
@@ -143,11 +156,11 @@
             :class="{ active: filterState.preset === preset.id }"
             @click="applyFilterPreset(preset.id)"
           >
-            {{ preset.label }}
+            {{ t('audio.presets.' + preset.id) }}
           </button>
         </div>
         <label class="filter-slider">
-          <span class="mono">freq · {{ Math.round(filterState.frequency) }} Hz</span>
+          <span class="mono">{{ t('audio.freq', { hz: Math.round(filterState.frequency) }) }}</span>
           <input
             type="range"
             min="0"
@@ -158,7 +171,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">Q · {{ filterState.q.toFixed(1) }}</span>
+          <span class="mono">{{ t('audio.q', { value: filterState.q.toFixed(1) }) }}</span>
           <input
             type="range"
             min="0.3"
@@ -172,11 +185,11 @@
 
       <div v-if="showScene" class="filter-box scene-box blur-surface">
         <div class="filter-box-head">
-          <span class="mono filter-title">scene</span>
+          <span class="mono filter-title">{{ t('audio.scene.title') }}</span>
           <span class="mono scene-glow-value">{{ Math.round(sceneFx.glow * 100) }}%</span>
         </div>
         <label class="filter-slider">
-          <span class="mono">glow strength</span>
+          <span class="mono">{{ t('audio.scene.glowStrength') }}</span>
           <input
             type="range"
             min="0"
@@ -196,12 +209,12 @@
             :class="{ active: sceneFx[item.key] }"
             @click="toggleScene(item.key)"
           >
-            {{ item.label }}
+            {{ t(item.labelKey) }}
           </button>
         </div>
-        <div class="scene-divider mono">particles</div>
+        <div class="scene-divider mono">{{ t('audio.scene.particles') }}</div>
         <label class="filter-slider">
-          <span class="mono">count · {{ sceneFx.particleCount }}</span>
+          <span class="mono">{{ t('audio.scene.count', { count: sceneFx.particleCount }) }}</span>
           <input
             type="range"
             min="100"
@@ -213,7 +226,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">trail length · {{ sceneFx.trailLength }}</span>
+          <span class="mono">{{ t('audio.scene.trailLength', { length: sceneFx.trailLength }) }}</span>
           <input
             type="range"
             min="8"
@@ -225,7 +238,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">particle speed · {{ sceneFx.particleSpeed.toFixed(2) }}×</span>
+          <span class="mono">{{ t('audio.scene.particleSpeed', { speed: sceneFx.particleSpeed.toFixed(2) }) }}</span>
           <input
             type="range"
             min="0"
@@ -237,7 +250,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">symbol spacing · {{ sceneFx.glyphSpacing }} px</span>
+          <span class="mono">{{ t('audio.scene.symbolSpacing', { spacing: sceneFx.glyphSpacing }) }}</span>
           <input
             type="range"
             min="4"
@@ -248,9 +261,9 @@
             @input="sceneFx.glyphSpacing = Number($event.target.value)"
           />
         </label>
-        <div class="scene-divider mono">perlin noise</div>
+        <div class="scene-divider mono">{{ t('audio.scene.perlinNoise') }}</div>
         <label class="filter-slider">
-          <span class="mono">octaves · {{ sceneFx.noiseOctaves }}</span>
+          <span class="mono">{{ t('audio.scene.octaves', { count: sceneFx.noiseOctaves }) }}</span>
           <input
             type="range"
             min="1"
@@ -262,7 +275,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">lacunarity · {{ sceneFx.noiseLacunarity.toFixed(2) }}</span>
+          <span class="mono">{{ t('audio.scene.lacunarity', { value: sceneFx.noiseLacunarity.toFixed(2) }) }}</span>
           <input
             type="range"
             min="1.2"
@@ -274,7 +287,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">amplitude · {{ sceneFx.noiseAmplitude.toFixed(2) }}</span>
+          <span class="mono">{{ t('audio.scene.amplitude', { value: sceneFx.noiseAmplitude.toFixed(2) }) }}</span>
           <input
             type="range"
             min="0"
@@ -286,7 +299,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">gain · {{ sceneFx.noiseGain.toFixed(2) }}</span>
+          <span class="mono">{{ t('audio.scene.gain', { value: sceneFx.noiseGain.toFixed(2) }) }}</span>
           <input
             type="range"
             min="0"
@@ -298,7 +311,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">contrast · {{ sceneFx.noiseContrast.toFixed(2) }}</span>
+          <span class="mono">{{ t('audio.scene.contrast', { value: sceneFx.noiseContrast.toFixed(2) }) }}</span>
           <input
             type="range"
             min="0"
@@ -310,7 +323,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">brightness · {{ sceneFx.noiseBrightness.toFixed(2) }}</span>
+          <span class="mono">{{ t('audio.scene.brightness', { value: sceneFx.noiseBrightness.toFixed(2) }) }}</span>
           <input
             type="range"
             min="0"
@@ -322,7 +335,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">period · {{ sceneFx.noisePeriod.toFixed(1) }} s</span>
+          <span class="mono">{{ t('audio.scene.period', { value: sceneFx.noisePeriod.toFixed(1) }) }}</span>
           <input
             type="range"
             min="1"
@@ -334,7 +347,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">scale · {{ formatScale(sceneFx.noiseScale) }}</span>
+          <span class="mono">{{ t('audio.scene.scale', { value: formatScale(sceneFx.noiseScale) }) }}</span>
           <input
             type="range"
             min="0"
@@ -346,7 +359,7 @@
           />
         </label>
         <label class="filter-slider">
-          <span class="mono">speed · {{ sceneFx.noiseSpeed.toFixed(2) }}×</span>
+          <span class="mono">{{ t('audio.scene.speed', { value: sceneFx.noiseSpeed.toFixed(2) }) }}</span>
           <input
             type="range"
             min="0"
@@ -366,20 +379,20 @@
           class="meter"
           :style="{ '--band-color': bandColors[meter.colorKey] }"
         >
-          <label class="meter-label mono" :title="`Choose a colour for ${meter.label}`">
+          <label class="meter-label mono" :title="t('audio.chooseColor', { label: t(meter.labelKey) })">
             <input
               class="meter-dot"
               type="color"
               :value="bandColors[meter.colorKey]"
-              :aria-label="`${meter.label} colour`"
+              :aria-label="t('audio.colorAria', { label: t(meter.labelKey) })"
               @input="setBandColor(meter.colorKey, $event.target.value)"
             />
-            <span>{{ meter.label }}</span>
+            <span>{{ t(meter.labelKey) }}</span>
           </label>
           <span
             class="meter-track"
             role="meter"
-            :aria-label="meter.label"
+            :aria-label="t(meter.labelKey)"
             aria-valuemin="0"
             aria-valuemax="100"
             :aria-valuenow="percent(state[meter.key])"
@@ -396,7 +409,7 @@
     <p v-if="videoExporting" class="export-status mono">
       <span class="recording-line">
         <span class="record-dot" aria-hidden="true"></span>
-        recording {{ videoExportElapsed }} · keep this tab visible · click export to stop
+        {{ t('video.recording', { elapsed: videoExportElapsed }) }}
       </span>
       <span v-if="videoExportNotice" class="export-note">{{ videoExportNotice }}</span>
     </p>
@@ -428,6 +441,7 @@ import {
 } from '../composables/useAudioReactive'
 import { sceneFx } from '../composables/useSceneFx'
 import { useVideoExport } from '../composables/useVideoExport'
+import { t } from '../i18n'
 
 const {
   exporting: videoExporting,
@@ -438,24 +452,43 @@ const {
   toggleExport
 } = useVideoExport()
 
+const DEMO_TRACK_URL = `${import.meta.env.BASE_URL}audio.mp3`
+const demoLoading = ref(false)
+
+async function loadDemo() {
+  if (demoLoading.value || videoExporting.value || state.status === 'requesting') return
+  demoLoading.value = true
+  try {
+    const response = await fetch(DEMO_TRACK_URL)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const blob = await response.blob()
+    const file = new File([blob], 'demo.mp3', { type: blob.type || 'audio/mpeg' })
+    await loadTrack(file)
+  } catch {
+    state.error = t('audio.errors.demoFailed')
+  } finally {
+    demoLoading.value = false
+  }
+}
+
 const meters = [
-  { key: 'bass', colorKey: 'bass', label: 'bass / kick' },
-  { key: 'highMid', colorKey: 'snare', label: 'snare' },
-  { key: 'mid', colorKey: 'voice', label: 'voice' },
-  { key: 'treble', colorKey: 'air', label: 'melody' }
+  { key: 'bass', colorKey: 'bass', labelKey: 'audio.meters.bass' },
+  { key: 'highMid', colorKey: 'snare', labelKey: 'audio.meters.snare' },
+  { key: 'mid', colorKey: 'voice', labelKey: 'audio.meters.voice' },
+  { key: 'treble', colorKey: 'air', labelKey: 'audio.meters.melody' }
 ]
 
 const showFilters = ref(false)
 const showScene = ref(false)
 const sceneToggles = [
-  { key: 'showGraph', label: 'graph' },
-  { key: 'showTriangles', label: 'triangles' },
-  { key: 'showGlow', label: 'glow' },
-  { key: 'showParticles', label: 'particles' },
-  { key: 'showTrails', label: 'trails' },
-  { key: 'showDots', label: 'dots' },
-  { key: 'showMatrix', label: 'matrix' },
-  { key: 'showSmoke', label: 'noise' }
+  { key: 'showGraph', labelKey: 'audio.sceneToggles.showGraph' },
+  { key: 'showTriangles', labelKey: 'audio.sceneToggles.showTriangles' },
+  { key: 'showGlow', labelKey: 'audio.sceneToggles.showGlow' },
+  { key: 'showParticles', labelKey: 'audio.sceneToggles.showParticles' },
+  { key: 'showTrails', labelKey: 'audio.sceneToggles.showTrails' },
+  { key: 'showDots', labelKey: 'audio.sceneToggles.showDots' },
+  { key: 'showMatrix', labelKey: 'audio.sceneToggles.showMatrix' },
+  { key: 'showSmoke', labelKey: 'audio.sceneToggles.showSmoke' }
 ]
 
 function toggleFilterPanel() {
@@ -500,15 +533,15 @@ function formatScale(value) {
 }
 
 const micLabel = computed(() => {
-  if (state.status === 'requesting') return 'Requesting mic…'
-  if (isMic.value) return 'Mic live'
-  return 'Use microphone'
+  if (state.status === 'requesting') return t('audio.mic.requesting')
+  if (isMic.value) return t('audio.mic.live')
+  return t('audio.mic.use')
 })
 
 const sourceLabel = computed(() => {
-  if (isMic.value) return 'microphone · live'
-  if (isFile.value) return state.sourceName || 'audio file'
-  return 'no audio source'
+  if (isMic.value) return t('audio.source.mic')
+  if (isFile.value) return state.sourceName || t('audio.source.file')
+  return t('audio.source.none')
 })
 
 function percent(value) {
@@ -683,6 +716,39 @@ async function onFile(event) {
   text-overflow: ellipsis;
   color: var(--text);
 }
+.audio-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin: 0.65rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.audio-cta > span { flex: 1; min-width: 15rem; }
+.demo-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.demo-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent);
+}
+.demo-btn:disabled { opacity: 0.55; cursor: wait; }
 .meters {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

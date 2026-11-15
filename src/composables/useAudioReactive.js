@@ -1,5 +1,6 @@
 import { computed, reactive } from 'vue'
 import { hexToHsl } from '../lib/color'
+import { t } from '../i18n'
 
 /**
  * Music-reactive audio engine.
@@ -607,15 +608,15 @@ function describeMicError(error) {
   switch (error?.name) {
     case 'NotAllowedError':
     case 'SecurityError':
-      return 'Microphone permission was denied. Allow it in your browser settings and try again.'
+      return t('audio.errors.micDenied')
     case 'NotFoundError':
-      return 'No microphone was found on this device.'
+      return t('audio.errors.micNotFound')
     case 'NotReadableError':
-      return 'The microphone is already in use by another app.'
+      return t('audio.errors.micInUse')
     case 'OverconstrainedError':
-      return 'The selected microphone does not support the requested audio settings.'
+      return t('audio.errors.micSettings')
     default:
-      return error?.message || 'Could not start the microphone.'
+      return error?.message || t('audio.errors.micStart')
   }
 }
 
@@ -625,7 +626,7 @@ async function startMic() {
 
   if (!navigator.mediaDevices?.getUserMedia) {
     state.status = 'error'
-    state.error = 'Microphone access needs a secure origin (HTTPS or localhost) and a modern browser.'
+    state.error = t('audio.errors.secureOrigin')
     return
   }
 
@@ -678,7 +679,7 @@ export async function loadTrack(file) {
   if (!looksLikeAudio) {
     stop()
     state.status = 'error'
-    state.error = 'That file does not look like audio. Try MP3, WAV, OGG, M4A or FLAC.'
+    state.error = t('audio.errors.badFile')
     return
   }
 
@@ -712,13 +713,15 @@ export async function loadTrack(file) {
       await audioEl.play()
       state.playing = true
     } catch {
-      state.error = 'Audio loaded. Press play to start it.'
+      state.error = t('audio.errors.audioLoaded')
     }
   } catch (error) {
     teardown()
     resetLevels()
     state.status = 'error'
-    state.error = `Could not load that audio file${error?.message ? `: ${error.message}` : '.'}`
+    state.error = t('audio.errors.loadFailed', {
+      detail: error?.message ? `: ${error.message}` : '.'
+    })
   }
 }
 
@@ -732,7 +735,7 @@ export async function togglePlayback() {
       await audioEl.play()
       state.playing = true
     } catch {
-      state.error = 'The browser blocked playback. Press play again to resume.'
+      state.error = t('audio.errors.playbackBlocked')
     }
   } else {
     audioEl.pause()
@@ -1042,7 +1045,7 @@ export async function restartSelectedTrack() {
     state.error = ''
     return true
   } catch {
-    state.error = 'The browser blocked playback. Press play again to resume.'
+    state.error = t('audio.errors.playbackBlocked')
     return false
   }
 }

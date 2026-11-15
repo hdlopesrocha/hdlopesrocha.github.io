@@ -2,28 +2,24 @@
   <section id="about" class="section" aria-labelledby="about-title">
     <div class="wrap about-grid">
       <div>
-        <p class="eyebrow mono soft-shade">~/about — {{ RESUME.fullName }}</p>
-        <h2 id="about-title" class="soft-shade">{{ RESUME.title }}</h2>
+        <p class="eyebrow mono soft-shade">{{ t('about.eyebrow', { name: RESUME.fullName }) }}</p>
+        <h2 id="about-title" class="soft-shade">{{ localize(RESUME.title) }}</h2>
         <p class="lede soft-shade">
-          MSc in Telecommunications and Informatics Engineering (IST Lisbon).
-          Previously building recruitment, planning and warehouse software at
-          <strong>CERN</strong>, full-stack and mobile work at Bullray-CIT, and
-          real-time video-chat research at IST/INESC. Nowadays focused on Vulkan
-          engines, SDF rendering, AI tooling, VR music and creative computing.
+          {{ t('about.ledeBefore') }}<strong>{{ t('about.ledeStrong') }}</strong>{{ t('about.ledeAfter') }}
         </p>
-        <p class="muted soft-shade">Off-screen: {{ interests }}</p>
+        <p class="muted soft-shade">{{ t('about.offScreen', { interests: localize(interests) }) }}</p>
         <div class="actions">
-          <a class="btn primary" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">CV · English (PDF)</a>
-          <a class="btn" href="#resume">Full résumé</a>
-          <a class="btn ghost" href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a class="btn primary" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">{{ t('about.cvEn') }}</a>
+          <a class="btn" href="#resume">{{ t('about.fullResume') }}</a>
+          <a class="btn ghost" href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">{{ t('about.github') }}</a>
         </div>
       </div>
       <div class="about-side">
         <SectionVisual variant="about" />
         <div class="glass interests grid-overlay">
-          <p class="mono interests-title">$ interests --list</p>
+          <p class="mono interests-title">{{ t('about.interestsTitle') }}</p>
           <ul>
-            <li v-for="i in interestsList" :key="i">{{ i }}</li>
+            <li v-for="i in t('about.interests')" :key="i">{{ i }}</li>
           </ul>
           <p class="mono stack">c++ · vulkan · glsl · compute · vue · webaudio · lora</p>
         </div>
@@ -35,18 +31,7 @@
 <script setup>
 import SectionVisual from './SectionVisual.vue'
 import { RESUME, interests } from '../data/resume.js'
-
-const interestsList = [
-  'C++ & Vulkan',
-  'Real-time rendering',
-  'GPU programming',
-  'Signed Distance Fields',
-  'Procedural generation',
-  'AI tooling & agents',
-  'Virtual Reality',
-  'Web development',
-  'Experimental software'
-]
+import { t, localize } from '../i18n'
 </script>
 
 <style scoped>

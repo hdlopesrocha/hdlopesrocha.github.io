@@ -2,19 +2,16 @@
   <section id="contact" class="section" aria-labelledby="contact-title">
     <div class="wrap contact-grid">
       <div>
-        <p class="eyebrow mono soft-shade">~/contact — direct line</p>
-        <h2 id="contact-title" class="soft-shade">Chat over Nostr</h2>
+        <p class="eyebrow mono soft-shade">{{ t('contact.eyebrow') }}</p>
+        <h2 id="contact-title" class="soft-shade">{{ t('contact.title') }}</h2>
         <p class="lede soft-shade">
-          This is a live, <strong>end-to-end encrypted</strong> chat (NIP-04 DMs) running
-          straight from your browser to my relays — no account, no backend, no middleman.
-          Your chat identity is generated locally and kept only in this browser's storage.
-          Replies from the site owner appear in the thread automatically.
+          {{ t('contact.ledeBefore') }}<strong>{{ t('contact.ledeStrong') }}</strong>{{ t('contact.ledeAfter') }}
         </p>
         <div class="glass npub-box">
-          <p class="mono label">my npub — dm me from any client</p>
+          <p class="mono label">{{ t('contact.npubLabel') }}</p>
           <code class="mono npub">{{ NOSTR_RECIPIENT_NPUB }}</code>
           <button class="btn small ghost" type="button" @click="copyNpub">
-            {{ copied ? 'Copied ✓' : 'Copy npub' }}
+            {{ copied ? t('contact.copied') : t('contact.copyNpub') }}
           </button>
         </div>
         <SectionVisual variant="contact" class="contact-art" />
@@ -38,6 +35,7 @@ import Donate from './Donate.vue'
 import SectionVisual from './SectionVisual.vue'
 import VCard from './VCard.vue'
 import { NOSTR_RECIPIENT_NPUB } from '../data/contact.js'
+import { t } from '../i18n'
 
 const copied = ref(false)
 

@@ -1,5 +1,5 @@
 <template>
-  <a class="skip-link" href="#projects">Skip to projects</a>
+  <a class="skip-link" href="#projects">{{ t('skip') }}</a>
   <HeroBackground />
   <Navbar />
   <main>
@@ -14,6 +14,7 @@
 </template>
 
 <script setup>
+import { t } from './i18n'
 import Navbar from './components/Navbar.vue'
 import HeroBackground from './components/HeroBackground.vue'
 import Hero from './components/Hero.vue'

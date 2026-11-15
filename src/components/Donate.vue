@@ -1,19 +1,18 @@
 <template>
   <div id="donate" class="glass donate">
     <div class="donate-info">
-      <p class="eyebrow mono">~/donate — lightning</p>
-      <h3>Tip some sats</h3>
+      <p class="eyebrow mono">{{ t('donate.eyebrow') }}</p>
+      <h3>{{ t('donate.title') }}</h3>
       <p class="muted">
-        Pick an amount and an invoice is generated on the spot via Lightning Address
-        (LNURL-pay) — pay it from any Lightning wallet. No account, no backend.
+        {{ t('donate.intro') }}
       </p>
       <p class="mono addr-row">
         <code class="addr">{{ LIGHTNING_ADDRESS }}</code>
         <button class="btn small ghost" type="button" @click="copyAddr">
-          {{ addrCopied ? 'Copied ✓' : 'Copy' }}
+          {{ addrCopied ? t('donate.copied') : t('donate.copy') }}
         </button>
       </p>
-      <div class="amounts" role="group" aria-label="Donation amount in sats">
+      <div class="amounts" role="group" :aria-label="t('donate.amountLabel')">
         <button
           v-for="p in DONATE_PRESETS_SATS"
           :key="p"
@@ -23,7 +22,7 @@
           :aria-pressed="sats === p && !customActive ? 'true' : 'false'"
           @click="pickPreset(p)"
         >
-          {{ p.toLocaleString() }}
+          {{ p.toLocaleString(dateLocale) }}
         </button>
         <label class="custom mono">
           <input
@@ -33,37 +32,37 @@
             max="100000"
             step="1"
             inputmode="numeric"
-            aria-label="Custom amount in sats"
-            placeholder="custom"
+            :aria-label="t('donate.customAmount')"
+            :placeholder="t('donate.custom')"
             @input="customActive = true"
           />
-          <span>sats</span>
+          <span>{{ t('donate.sats') }}</span>
         </label>
       </div>
       <div class="field">
-        <label for="donate-comment">Comment <span class="muted">(optional, shown with payment)</span></label>
+        <label for="donate-comment">{{ t('donate.comment') }} <span class="muted">{{ t('donate.commentHint') }}</span></label>
         <input
           id="donate-comment"
           v-model="comment"
           type="text"
           maxlength="200"
-          placeholder="thanks for the pixels"
+          :placeholder="t('donate.commentPlaceholder')"
         />
       </div>
       <button class="btn primary" type="button" :disabled="loading" @click="generate">
-        {{ loading ? 'Talking to wallet…' : `Generate ${displaySats.toLocaleString()} sat invoice` }}
+        {{ loading ? t('donate.talkingToWallet') : t('donate.generate', { amount: displaySats.toLocaleString(dateLocale) }) }}
       </button>
-      <p class="status mono" role="status" aria-live="polite" :class="statusKind">{{ status }}</p>
+      <p class="status mono" role="status" aria-live="polite" :class="statusKind">{{ statusText }}</p>
     </div>
 
     <div v-if="invoice" class="invoice">
-      <canvas ref="qrCanvas" width="220" height="220" aria-label="Lightning invoice QR code"></canvas>
+      <canvas ref="qrCanvas" width="220" height="220" :aria-label="t('donate.qrLabel')"></canvas>
       <code class="mono bolt11">{{ invoice }}</code>
       <div class="inv-actions">
-        <button class="btn small" type="button" @click="copyInvoice">{{ invCopied ? 'Copied ✓' : 'Copy invoice' }}</button>
-        <a class="btn small primary" :href="`lightning:${invoice}`">Open in wallet</a>
+        <button class="btn small" type="button" @click="copyInvoice">{{ invCopied ? t('donate.copied') : t('donate.copyInvoice') }}</button>
+        <a class="btn small primary" :href="`lightning:${invoice}`">{{ t('donate.openWallet') }}</a>
       </div>
-      <p class="muted small">Invoices expire — pay promptly. Payment can't be detected from here; thank you either way.</p>
+      <p class="muted small">{{ t('donate.expires') }}</p>
     </div>
   </div>
 </template>
@@ -71,6 +70,7 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import { LIGHTNING_ADDRESS, LNURLP_ENDPOINT, DONATE_PRESETS_SATS, DONATE_DEFAULT_SATS } from '../data/donate.js'
+import { t, dateLocale } from '../i18n'
 
 const sats = ref(DONATE_DEFAULT_SATS)
 const customSats = ref('')
@@ -78,7 +78,9 @@ const customActive = ref(false)
 const comment = ref('')
 const invoice = ref('')
 const loading = ref(false)
-const status = ref('// pick an amount — invoice appears here')
+const statusKey = ref('donate.status.idle')
+const statusVars = ref({})
+const statusText = computed(() => t(statusKey.value, statusVars.value))
 const statusKind = ref('')
 const addrCopied = ref(false)
 const invCopied = ref(false)
@@ -118,13 +120,14 @@ async function generate() {
   statusKind.value = ''
   const amountSats = displaySats.value
   if (!Number.isFinite(amountSats) || amountSats < 1) {
-    status.value = '// enter at least 1 sat'
+    statusKey.value = 'donate.status.min'
     statusKind.value = 'err'
     return
   }
   loading.value = true
   invoice.value = ''
-  status.value = '// fetching lnurl params…'
+  statusKey.value = 'donate.status.fetching'
+  statusKind.value = ''
   try {
     const paramsRes = await fetch(LNURLP_ENDPOINT)
     if (!paramsRes.ok) throw new Error('lnurl params failed')
@@ -132,11 +135,15 @@ async function generate() {
     if (params.tag !== 'payRequest' || !params.callback) throw new Error('not payable')
     const msats = amountSats * 1000
     if (msats < params.minSendable || msats > params.maxSendable) {
-      status.value = `// wallet allows ${Math.ceil(params.minSendable / 1000)}–${Math.floor(params.maxSendable / 1000)} sats`
+      statusKey.value = 'donate.status.range'
+      statusVars.value = {
+        min: Math.ceil(params.minSendable / 1000),
+        max: Math.floor(params.maxSendable / 1000)
+      }
       statusKind.value = 'err'
       return
     }
-    status.value = '// generating invoice…'
+    statusKey.value = 'donate.status.generating'
     const cbUrl = new URL(params.callback)
     cbUrl.searchParams.set('amount', String(msats))
     const c = comment.value.trim().slice(0, 200)
@@ -146,7 +153,8 @@ async function generate() {
     const inv = await invRes.json()
     if (!inv.pr || !inv.pr.toLowerCase().startsWith('lnbc')) throw new Error('bad invoice')
     invoice.value = inv.pr
-    status.value = `// invoice for ${amountSats.toLocaleString()} sats — scan or open in wallet`
+    statusKey.value = 'donate.status.ready'
+    statusVars.value = { amount: amountSats.toLocaleString(dateLocale.value) }
     await nextTick()
     // Lazy-load QR rendering only when an invoice exists.
     const { default: QRCode } = await import('qrcode')
@@ -156,7 +164,7 @@ async function generate() {
       color: { dark: '#04181a', light: '#ffffff' }
     })
   } catch {
-    status.value = '// wallet unreachable — send to the address above from any Lightning wallet instead'
+    statusKey.value = 'donate.status.unreachable'
     statusKind.value = 'err'
   } finally {
     loading.value = false

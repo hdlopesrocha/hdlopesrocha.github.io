@@ -2,22 +2,22 @@
   <div id="chat" class="glass chat">
     <div class="chat-head">
       <div>
-        <p class="mono label">chatting as <span class="dim">(stored only in this browser)</span></p>
+        <p class="mono label">{{ t('chat.chattingAs') }} <span class="dim">{{ t('chat.storedOnly') }}</span></p>
         <code class="mono me" :title="meNpub">{{ shortId(meNpub) }}</code>
       </div>
       <div class="head-actions">
-        <button class="btn small ghost" type="button" @click="copyMine">{{ mineCopied ? 'Copied ✓' : 'Copy my npub' }}</button>
-        <button class="btn small ghost" type="button" @click="refresh" :disabled="refreshing">↻ {{ refreshing ? '…' : 'Check' }}</button>
+        <button class="btn small ghost" type="button" @click="copyMine">{{ mineCopied ? t('chat.copied') : t('chat.copyMine') }}</button>
+        <button class="btn small ghost" type="button" @click="refresh" :disabled="refreshing">↻ {{ refreshing ? '…' : t('chat.check') }}</button>
       </div>
     </div>
 
-    <div ref="msgsEl" class="msgs" role="log" aria-live="polite" aria-label="Conversation with site owner">
+    <div ref="msgsEl" class="msgs" role="log" aria-live="polite" :aria-label="t('chat.conversation')">
       <div v-if="!messages.length" class="empty">
-        No messages yet — say hello below. Replies from the site owner appear here automatically while this tab is open.
+        {{ t('chat.empty') }}
       </div>
       <div v-for="m in messages" :key="m.id" class="msg" :class="m.dir">
         <p v-if="m.dir === 'in' && m.from" class="mono sender" :class="{ owner: m.from === NOSTR_RECIPIENT_HEX }">
-          {{ m.from === NOSTR_RECIPIENT_HEX ? 'owner ✓' : shortNpub(m.from) }}
+          {{ m.from === NOSTR_RECIPIENT_HEX ? t('chat.owner') : shortNpub(m.from) }}
         </p>
         <p>{{ m.text }}</p>
         <time class="mono" :dateTime="new Date(m.at * 1000).toISOString()">{{ fmtTime(m.at) }}</time>
@@ -25,25 +25,25 @@
     </div>
 
     <form class="input-row" @submit.prevent="send">
-      <label class="sr-only" for="chat-input">Message to site owner</label>
+      <label class="sr-only" for="chat-input">{{ t('chat.messageLabel') }}</label>
       <input
         id="chat-input"
         v-model="draft"
         type="text"
         autocomplete="off"
         maxlength="1000"
-        placeholder="Type a message… (encrypted end-to-end)"
+        :placeholder="t('chat.placeholder')"
       />
       <button class="btn primary small" type="submit" :disabled="sending || !draft.trim()">
-        {{ sending ? '…' : 'Send' }}
+        {{ sending ? '…' : t('chat.send') }}
       </button>
     </form>
-    <p class="status mono" role="status" :class="statusKind">{{ status }}</p>
+    <p class="status mono" role="status" :class="statusKind">{{ statusText }}</p>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import {
   NOSTR_RECIPIENT_HEX,
   NOSTR_SEND_RELAYS,
@@ -55,6 +55,7 @@ import {
   CHAT_SEND_COOLDOWN_MS,
   CHAT_MESSAGE_MAX
 } from '../data/contact.js'
+import { t, dateLocale } from '../i18n'
 
 const hexToBytes = (h) => Uint8Array.from(h.match(/../g).map((b) => parseInt(b, 16)))
 const bytesToHex = (b) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
@@ -64,7 +65,9 @@ const messages = ref([])
 const draft = ref('')
 const sending = ref(false)
 const refreshing = ref(false)
-const status = ref('// starting…')
+const statusKey = ref('chat.status.starting')
+const statusVars = ref({})
+const statusText = computed(() => t(statusKey.value, statusVars.value))
 const statusKind = ref('')
 const meNpub = ref('')
 const mineCopied = ref(false)
@@ -89,7 +92,7 @@ function shortNpub(hex) {
   }
 }
 function fmtTime(ts) {
-  return new Date(ts * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(ts * 1000).toLocaleString(dateLocale.value, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 function scrollDown() {
   nextTick(() => {
@@ -110,7 +113,8 @@ function setLastSeen(ts) {
   } catch {}
 }
 function updateStatus() {
-  status.value = `// listening on ${liveCount.value}/${NOSTR_READ_RELAYS.length} relays (dm + gift-wrap)`
+  statusKey.value = 'chat.status.listening'
+  statusVars.value = { live: liveCount.value, total: NOSTR_READ_RELAYS.length }
 }
 
 async function copyMine() {
@@ -283,7 +287,7 @@ function disconnectAll() {
 async function refresh() {
   if (refreshing.value) return
   refreshing.value = true
-  status.value = '// re-checking relays…'
+  statusKey.value = 'chat.status.rechecking'
   disconnectAll()
   NOSTR_READ_RELAYS.forEach(connect)
   setTimeout(() => {
@@ -299,7 +303,8 @@ async function send() {
   const last = Number(localStorage.getItem('nostr-chat-lastsent') || 0)
   const wait = CHAT_SEND_COOLDOWN_MS - (Date.now() - last)
   if (wait > 0) {
-    status.value = `// slow down — try again in ${Math.ceil(wait / 1000)}s`
+    statusKey.value = 'chat.status.slowDown'
+    statusVars.value = { seconds: Math.ceil(wait / 1000) }
     statusKind.value = 'err'
     return
   }
@@ -325,14 +330,15 @@ async function send() {
       try {
         localStorage.setItem('nostr-chat-lastsent', String(Date.now()))
       } catch {}
-      status.value = `// ✓ sent via ${ok}/${NOSTR_SEND_RELAYS.length} relays — replies appear above`
+      statusKey.value = 'chat.status.sent'
+      statusVars.value = { ok, total: NOSTR_SEND_RELAYS.length }
       statusKind.value = ''
     } else {
-      status.value = '// ✗ no relay accepted it — check connection and retry'
+      statusKey.value = 'chat.status.noRelay'
       statusKind.value = 'err'
     }
   } catch {
-    status.value = '// ✗ send failed in this browser'
+    statusKey.value = 'chat.status.sendFailed'
     statusKind.value = 'err'
   } finally {
     sending.value = false
@@ -380,12 +386,12 @@ onMounted(async () => {
     unwrapEvent: nip59.unwrapEvent
   }
   initIdentity()
-  status.value = '// connecting to relays…'
+  statusKey.value = 'chat.status.connecting'
   NOSTR_READ_RELAYS.forEach(connect)
   scrollDown()
   setTimeout(() => {
     if (mounted && liveCount.value === 0) {
-      status.value = '// still connecting — messages you send still go through; press ↻ Check'
+      statusKey.value = 'chat.status.stillConnecting'
     }
   }, 12000)
 })

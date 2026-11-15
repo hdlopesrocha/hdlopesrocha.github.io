@@ -2,12 +2,12 @@
   <section id="home" class="section" aria-labelledby="hero-title">
     <div class="hero-fade" aria-hidden="true"></div>
     <div class="wrap hero-inner">
-      <p class="eyebrow mono hero-shade"><span class="dot" aria-hidden="true"></span> real-time · gpu · procedural · experimental</p>
+      <p class="eyebrow mono hero-shade"><span class="dot" aria-hidden="true"></span> {{ t('hero.eyebrow') }}</p>
       <div class="title-row hero-shade">
         <img
           class="avatar"
           src="https://avatars.githubusercontent.com/u/6792581?v=4&s=192"
-          alt="Portrait avatar of Henrique Lopes Rocha"
+          :alt="t('hero.avatarAlt')"
           width="96"
           height="96"
           loading="eager"
@@ -16,10 +16,9 @@
         />
         <h1 id="hero-title">Henrique Lopes Rocha</h1>
       </div>
-      <p class="subtitle hero-shade">Telecommunications &amp; Informatics Engineer · ex-CERN · Vulkan · AI · VR</p>
+      <p class="subtitle hero-shade">{{ t('hero.subtitle') }}</p>
       <p class="lede hero-shade">
-        A collection of projects exploring real-time graphics, GPU programming, signed
-        distance fields, procedural generation, AI, virtual reality and experimental software.
+        {{ t('hero.lede') }}
       </p>
       <AudioControl />
     </div>
@@ -29,6 +28,7 @@
 <script setup>
 import { ref } from 'vue'
 import AudioControl from './AudioControl.vue'
+import { t } from '../i18n'
 
 const avatarGone = ref(false)
 </script>

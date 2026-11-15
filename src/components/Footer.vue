@@ -3,26 +3,28 @@
     <div class="wrap foot-inner">
       <div>
         <p class="mono brand">hdlopesrocha<span class="caret">_</span></p>
-        <p class="muted">Graphics · Vulkan · AI · VR — experimental portfolio served from GitHub Pages.</p>
+        <p class="muted">{{ t('footer.tagline') }}</p>
       </div>
-      <nav aria-label="Footer">
-        <a href="#home">Home</a>
-        <a href="#projects">Projects</a>
-        <a href="#timeline">Evolution</a>
-        <a href="#about">About</a>
-        <a href="#resume">CV</a>
-        <a href="#contact">Contact</a>
-        <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      <nav :aria-label="t('nav.footer')">
+        <a href="#home">{{ t('nav.home') }}</a>
+        <a href="#projects">{{ t('nav.projects') }}</a>
+        <a href="#timeline">{{ t('nav.evolution') }}</a>
+        <a href="#about">{{ t('nav.about') }}</a>
+        <a href="#resume">{{ t('nav.cv') }}</a>
+        <a href="#contact">{{ t('nav.contact') }}</a>
+        <a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">{{ t('nav.github') }} ↗</a>
       </nav>
     </div>
     <div class="wrap base mono">
-      <span>// built with vue + vite · no backend · base: '/'</span>
-      <span>© {{ year }} Henrique Lopes Rocha</span>
+      <span>{{ t('footer.built') }}</span>
+      <span>{{ t('footer.rights', { year }) }}</span>
     </div>
   </footer>
 </template>
 
 <script setup>
+import { t } from '../i18n'
+
 const year = new Date().getFullYear()
 </script>
 

@@ -8,6 +8,7 @@ import {
   pausePlayback,
   restartSelectedTrack
 } from './useAudioReactive'
+import { t } from '../i18n'
 
 /**
  * Export the animated hero canvas plus the selected music track as an MP4.
@@ -299,9 +300,9 @@ export function useVideoExport() {
 
   const elapsedLabel = computed(() => formatDuration(elapsed.value))
   const exportLabel = computed(() => {
-    if (exporting.value) return 'Stop export and save video'
-    if (!isFile.value) return 'Export video (load a music file first)'
-    return 'Export animated background with music'
+    if (exporting.value) return t('video.stopExport')
+    if (!isFile.value) return t('video.noFile')
+    return t('video.ready')
   })
 
   function clearClock() {
@@ -535,7 +536,9 @@ export function useVideoExport() {
       if (rejected) {
         failed = true
         if (!error.value) {
-          error.value = `The encoder could not finish the video${rejected.reason?.message ? `: ${rejected.reason.message}` : '.'}`
+          error.value = t('video.errors.encoderFinish', {
+            detail: rejected.reason?.message ? `: ${rejected.reason.message}` : '.'
+          })
         }
       }
       // An output callback may have seen a muxing/encoding error while the
@@ -553,12 +556,14 @@ export function useVideoExport() {
         session.muxer.finalize()
         buffer = session.muxer.target.buffer
         if (!buffer || buffer.byteLength === 0) {
-          throw new Error('the muxer produced an empty file')
+          throw new Error(t('video.errors.emptyFile'))
         }
       } catch (caught) {
         failed = true
         if (!error.value) {
-          error.value = `The MP4 could not be finalized${caught?.message ? `: ${caught.message}` : '.'}`
+          error.value = t('video.errors.mp4Finalize', {
+            detail: caught?.message ? `: ${caught.message}` : '.'
+          })
         }
       }
     }
@@ -582,9 +587,18 @@ export function useVideoExport() {
         const colorLabel = color?.matrix === 'bt709' && color?.primaries === 'bt709'
           ? ', BT.709'
           : ''
-        notice.value = `Saved ${filename} (${formatDuration(elapsed.value)}) — H.264 ${width}×${height} + ${audioLabel} 48 kHz${colorLabel}.`
+        notice.value = t('video.notices.saved', {
+          filename,
+          duration: formatDuration(elapsed.value),
+          width,
+          height,
+          audio: audioLabel,
+          color: colorLabel
+        })
       } catch (caught) {
-        error.value = `The video was encoded but could not be saved${caught?.message ? `: ${caught.message}` : '.'}`
+        error.value = t('video.errors.saveFailed', {
+          detail: caught?.message ? `: ${caught.message}` : '.'
+        })
       }
     }
 
@@ -628,7 +642,9 @@ export function useVideoExport() {
           // Do not await the finalizer here: it waits for this pump to finish.
           void failWebCodecs(
             session,
-            `The audio track could not be encoded${caught?.message ? `: ${caught.message}` : '.'}`
+            t('video.errors.audioEncode', {
+              detail: caught?.message ? `: ${caught.message}` : '.'
+            })
           )
           break
         } finally {
@@ -651,7 +667,9 @@ export function useVideoExport() {
         // See above: finalization awaits this promise, so fire and forget.
         void failWebCodecs(
           session,
-          `Audio capture failed${caught?.message ? `: ${caught.message}` : '.'}`
+          t('video.errors.audioCapture', {
+            detail: caught?.message ? `: ${caught.message}` : '.'
+          })
         )
       }
     } finally {
@@ -684,7 +702,9 @@ export function useVideoExport() {
           // Do not await the finalizer here: it waits for this pump to finish.
           void failWebCodecs(
             session,
-            `The audio track could not be encoded${caught?.message ? `: ${caught.message}` : '.'}`
+            t('video.errors.audioEncode', {
+              detail: caught?.message ? `: ${caught.message}` : '.'
+            })
           )
           break
         } finally {
@@ -707,7 +727,9 @@ export function useVideoExport() {
         // See above: finalization awaits this promise, so fire and forget.
         void failWebCodecs(
           session,
-          `Audio capture failed${caught?.message ? `: ${caught.message}` : '.'}`
+          t('video.errors.audioCapture', {
+            detail: caught?.message ? `: ${caught.message}` : '.'
+          })
         )
       }
     } finally {
@@ -746,7 +768,9 @@ export function useVideoExport() {
     } catch (caught) {
       void failWebCodecs(
         session,
-        `The animated background could not be captured${caught?.message ? `: ${caught.message}` : '.'}`
+        t('video.errors.backgroundCapture', {
+          detail: caught?.message ? `: ${caught.message}` : '.'
+        })
       )
       return
     }
@@ -768,7 +792,9 @@ export function useVideoExport() {
     } catch (caught) {
       void failWebCodecs(
         session,
-        `The video frame could not be encoded${caught?.message ? `: ${caught.message}` : '.'}`
+        t('video.errors.frameEncode', {
+          detail: caught?.message ? `: ${caught.message}` : '.'
+        })
       )
     }
   }
@@ -777,14 +803,14 @@ export function useVideoExport() {
     const width = evenSize(canvas.width)
     const height = evenSize(canvas.height)
     if (width < 2 || height < 2) {
-      throw new Error('The animated background canvas has no drawable pixels.')
+      throw new Error(t('video.errors.noPixels'))
     }
 
     const exportCanvas = document.createElement('canvas')
     exportCanvas.width = width
     exportCanvas.height = height
     const exportCtx = exportCanvas.getContext('2d', { alpha: false })
-    if (!exportCtx) throw new Error('Could not create the export canvas.')
+    if (!exportCtx) throw new Error(t('video.errors.noExportCanvas'))
     exportCtx.fillStyle = PAGE_BACKGROUND
     exportCtx.fillRect(0, 0, width, height)
     exportCtx.imageSmoothingEnabled = true
@@ -792,7 +818,7 @@ export function useVideoExport() {
     const audioStream = await getRecordingAudioStream()
     const audioTrack = audioStream?.getAudioTracks?.()[0]
     if (!audioTrack) {
-      throw new Error('Could not capture the selected music track.')
+      throw new Error(t('video.errors.noTrack'))
     }
 
     const muxer = new Muxer({
@@ -847,14 +873,18 @@ export function useVideoExport() {
           } catch (caught) {
             void failWebCodecs(
               session,
-              `The video could not be muxed${caught?.message ? `: ${caught.message}` : '.'}`
+              t('video.errors.videoMux', {
+                detail: caught?.message ? `: ${caught.message}` : '.'
+              })
             )
           }
         },
         error(caught) {
           void failWebCodecs(
             session,
-            `Video encoding failed${caught?.message ? `: ${caught.message}` : '.'}`
+            t('video.errors.videoEncode', {
+              detail: caught?.message ? `: ${caught.message}` : '.'
+            })
           )
         }
       })
@@ -868,14 +898,18 @@ export function useVideoExport() {
           } catch (caught) {
             void failWebCodecs(
               session,
-              `The audio could not be muxed${caught?.message ? `: ${caught.message}` : '.'}`
+              t('video.errors.audioMux', {
+                detail: caught?.message ? `: ${caught.message}` : '.'
+              })
             )
           }
         },
         error(caught) {
           void failWebCodecs(
             session,
-            `Audio encoding failed${caught?.message ? `: ${caught.message}` : '.'}`
+            t('video.errors.audioEncodeFailed', {
+              detail: caught?.message ? `: ${caught.message}` : '.'
+            })
           )
         }
       })
@@ -912,7 +946,9 @@ export function useVideoExport() {
       try {
         processor = new MediaStreamTrackProcessor({ track: session.audioTrack })
       } catch (caught) {
-        throw new Error(`The audio track could not be processed${caught?.message ? `: ${caught.message}` : '.'}`)
+        throw new Error(t('video.errors.audioProcess', {
+          detail: caught?.message ? `: ${caught.message}` : '.'
+        }))
       }
 
       session.audioReader = processor.readable.getReader()
@@ -927,7 +963,7 @@ export function useVideoExport() {
 
     const started = await restartSelectedTrack()
     if (!started) {
-      throw new Error('The selected track could not start from the beginning.')
+      throw new Error(t('video.errors.trackStart'))
     }
     if (ending) pausePlayback()
   }
@@ -940,9 +976,7 @@ export function useVideoExport() {
 
     const candidates = WEBM_MIME_CANDIDATES.filter(supportsMime)
     if (candidates.length === 0) {
-      throw new Error(
-        'This browser supports neither WebCodecs MP4 export nor WebM recording, so video export is unavailable.'
-      )
+      throw new Error(t('video.errors.unsupported'))
     }
 
     let lastError = null
@@ -951,7 +985,9 @@ export function useVideoExport() {
         const recorder = new MediaRecorder(stream, { ...options, mimeType })
         const container = containerFor(recorder.mimeType)
         if (container !== 'webm') {
-          throw new Error(`the browser chose ${recorder.mimeType || 'an unknown container'}`)
+          throw new Error(t('video.errors.browserChose', {
+            mime: recorder.mimeType || t('video.errors.unknownContainer')
+          }))
         }
         return recorder
       } catch (caught) {
@@ -959,7 +995,7 @@ export function useVideoExport() {
       }
     }
 
-    throw lastError || new Error('The browser could not create a WebM recorder.')
+    throw lastError || new Error(t('video.errors.webmRecorder'))
   }
 
   function finalizeFallback() {
@@ -977,13 +1013,15 @@ export function useVideoExport() {
 
     if (wasAborted) return
     if (savedChunks.length === 0) {
-      error.value = 'The recorder produced no video data. Try exporting again.'
+      error.value = t('video.errors.noVideoData')
       return
     }
 
     const container = containerFor(mime)
     if (container !== 'webm') {
-      error.value = `The browser produced ${container || 'an unrecognised format'} instead of WebM, so nothing was saved.`
+      error.value = t('video.errors.badContainer', {
+        container: container || t('video.errors.unknownFormat')
+      })
       return
     }
 
@@ -991,9 +1029,14 @@ export function useVideoExport() {
       const blob = new Blob(savedChunks, { type: mime || 'video/webm' })
       const filename = `hero-background-${timestampName()}.webm`
       downloadBlob(blob, filename)
-      notice.value = `Saved ${filename} (${formatDuration(elapsed.value)}) — MP4 export was unavailable, so this is a WebM fallback.`
+      notice.value = t('video.notices.savedWebm', {
+        filename,
+        duration: formatDuration(elapsed.value)
+      })
     } catch (caught) {
-      error.value = `The video was recorded but could not be saved${caught?.message ? `: ${caught.message}` : '.'}`
+      error.value = t('video.errors.saveRecordedFailed', {
+        detail: caught?.message ? `: ${caught.message}` : '.'
+      })
     }
   }
 
@@ -1029,13 +1072,13 @@ export function useVideoExport() {
       const audioStream = await getRecordingAudioStream()
       const audioTrack = audioStream?.getAudioTracks?.()[0]
       if (!audioTrack) {
-        throw new Error('Could not capture the selected music track.')
+        throw new Error(t('video.errors.noTrack'))
       }
 
       localCanvasStream = canvas.captureStream(CAPTURE_FPS)
       const videoTrack = localCanvasStream.getVideoTracks()[0]
       if (!videoTrack) {
-        throw new Error('The animated background did not provide a video track.')
+        throw new Error(t('video.errors.noVideoTrack'))
       }
 
       const combinedStream = new MediaStream([videoTrack, audioTrack])
@@ -1059,18 +1102,20 @@ export function useVideoExport() {
       recorder.onstop = finalizeFallback
       recorder.onerror = (event) => {
         abortFallback(
-          `Video export failed${event?.error?.message ? `: ${event.error.message}` : '.'}`
+          t('video.errors.exportFailed', {
+            detail: event?.error?.message ? `: ${event.error.message}` : '.'
+          })
         )
       }
 
-      notice.value = 'WebCodecs MP4 export is not available in this browser — recording WebM instead.'
+      notice.value = t('video.notices.recordingWebm')
       unsubscribeEnded = onTrackEnded(requestStop)
       recorder.start(CHUNK_MS)
       startClock()
 
       const started = await restartSelectedTrack()
       if (!started) {
-        throw new Error('The selected track could not start from the beginning.')
+        throw new Error(t('video.errors.trackStart'))
       }
       if (ending) pausePlayback()
     } catch (caught) {
@@ -1111,13 +1156,13 @@ export function useVideoExport() {
     notice.value = ''
 
     if (!isFile.value) {
-      error.value = 'Load a music file first — microphone audio is not exported as a track.'
+      error.value = t('video.errors.loadMusicFirst')
       return
     }
 
     const canvas = document.querySelector(CANVAS_SELECTOR)
     if (!canvas || !canvas.width || !canvas.height) {
-      error.value = 'The animated background canvas is not available to capture.'
+      error.value = t('video.errors.noCanvas')
       return
     }
 
@@ -1157,7 +1202,7 @@ export function useVideoExport() {
           try {
             await beginWebCodecs(session)
           } catch (caught) {
-            const message = caught?.message || 'The MP4 export could not start.'
+            const message = caught?.message || t('video.errors.mp4Start')
             if (!error.value) error.value = message
             await failWebCodecs(session, message)
           }
@@ -1169,11 +1214,11 @@ export function useVideoExport() {
         try {
           await startWebmFallback(canvas)
         } catch (caught) {
-          const message = caught?.message || 'Video export could not start.'
+          const message = caught?.message || t('video.errors.exportStart')
           const supportHint = isWebCodecsAvailable()
             ? ''
-            : ' WebCodecs MP4 export is unavailable in this browser.'
-          error.value = /WebCodecs MP4 export/.test(message)
+            : ` ${t('video.errors.webcodecsUnavailable')}`
+          error.value = message === t('video.errors.unsupported')
             ? message
             : `${message}${supportHint}`
           cleanupFailedStart()
@@ -1181,7 +1226,7 @@ export function useVideoExport() {
       }
     } catch (caught) {
       if (exporting.value) {
-        error.value = caught?.message || 'Video export could not start.'
+        error.value = caught?.message || t('video.errors.exportStart')
         cleanupFailedStart()
       }
     } finally {
@@ -1224,7 +1269,9 @@ export function useVideoExport() {
         try {
           recorder.stop()
         } catch (caught) {
-          error.value = `Video export could not stop cleanly${caught?.message ? `: ${caught.message}` : '.'}`
+          error.value = t('video.errors.stopCleanly', {
+            detail: caught?.message ? `: ${caught.message}` : '.'
+          })
           abortFallback('')
         }
       }, TAIL_MS)

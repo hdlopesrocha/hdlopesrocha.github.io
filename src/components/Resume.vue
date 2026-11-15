@@ -3,87 +3,94 @@
     <div class="wrap">
       <div class="section-head split">
         <div class="section-head-copy">
-          <p class="eyebrow mono soft-shade">~/cv — experience &amp; education</p>
-          <h2 id="resume-title" class="soft-shade">Résumé</h2>
+          <p class="eyebrow mono soft-shade">{{ t('resume.eyebrow') }}</p>
+          <h2 id="resume-title" class="soft-shade">{{ t('resume.title') }}</h2>
           <p class="soft-shade">
-            Software engineer (MSc, IST Lisbon) — previously at CERN, Bullray-CIT and IST/INESC.
-            Full CV as PDF, in English and French:
+            {{ t('resume.intro') }}
           </p>
           <div class="cv-actions">
-            <a class="btn primary small" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">CV · English (PDF)</a>
-            <a class="btn small" :href="RESUME.cvFr" target="_blank" rel="noopener noreferrer">CV · Français (PDF)</a>
-            <a class="btn small ghost" href="https://github.com/hdlopesrocha/cv" target="_blank" rel="noopener noreferrer">LaTeX source</a>
+            <a class="btn primary small" :href="RESUME.cvEn" target="_blank" rel="noopener noreferrer">{{ t('resume.cvEn') }}</a>
+            <a class="btn small ghost" href="https://github.com/hdlopesrocha/cv" target="_blank" rel="noopener noreferrer">{{ t('resume.latex') }}</a>
           </div>
         </div>
         <SectionVisual variant="resume" class="section-art" />
       </div>
 
-      <h3 class="sub soft-shade">Experience</h3>
+      <h3 class="sub soft-shade">{{ t('resume.experience') }}</h3>
       <div class="orgs">
-        <article v-for="org in experience" :key="org.org" class="glass org">
+        <article v-for="org in experience" :key="localize(org.org)" class="glass org">
           <header>
-            <h4>{{ org.org }}</h4>
-            <p v-if="org.place" class="mono place">{{ org.place }}</p>
-            <a v-if="org.link" class="tag link mono" :href="org.link" target="_blank" rel="noopener noreferrer">↗ {{ org.linkLabel }}</a>
+            <h4>{{ localize(org.org) }}</h4>
+            <p v-if="org.place" class="mono place">{{ localize(org.place) }}</p>
+            <a v-if="org.link" class="tag link mono" :href="org.link" target="_blank" rel="noopener noreferrer">↗ {{ localize(org.linkLabel) }}</a>
           </header>
           <ol>
-            <li v-for="r in org.roles" :key="r.title + r.period">
+            <li v-for="r in org.roles" :key="localize(r.title) + '|' + localize(r.period)">
               <div class="role-head">
-                <span class="mono period">{{ r.period }}</span>
-                <strong>{{ r.title }}</strong>
+                <span class="mono period">{{ localize(r.period) }}</span>
+                <strong>{{ localize(r.title) }}</strong>
               </div>
-              <p>{{ r.detail }}</p>
+              <p>{{ localize(r.detail) }}</p>
               <div class="meta">
-                <span v-for="t in r.tags" :key="t" class="tag">{{ t }}</span>
-                <a v-if="r.link" class="tag link mono" :href="r.link" target="_blank" rel="noopener noreferrer">↗ {{ r.linkLabel }}</a>
+                <span v-for="tag in r.tags" :key="tag" class="tag">{{ tag }}</span>
+                <a v-if="r.link" class="tag link mono" :href="r.link" target="_blank" rel="noopener noreferrer">↗ {{ localize(r.linkLabel) }}</a>
               </div>
             </li>
           </ol>
         </article>
       </div>
 
-      <h3 class="sub soft-shade">Education</h3>
+      <h3 class="sub soft-shade">{{ t('resume.education') }}</h3>
       <div class="edu-grid">
-        <article v-for="e in education" :key="e.degree" class="glass edu">
+        <article v-for="e in education" :key="e.period + localize(e.degree)" class="glass edu">
           <p class="mono period">{{ e.period }}</p>
-          <h4>{{ e.degree }}</h4>
-          <p class="school">{{ e.school }}</p>
-          <p class="muted">{{ e.detail }}</p>
+          <h4>{{ localize(e.degree) }}</h4>
+          <p class="school">{{ localize(e.school) }}</p>
+          <p class="muted">{{ localize(e.detail) }}</p>
           <p v-if="e.link" class="links">
-            <a :href="e.link" target="_blank" rel="noopener noreferrer">↗ {{ e.linkLabel }}</a>
+            <a :href="e.link" target="_blank" rel="noopener noreferrer">↗ {{ localize(e.linkLabel) }}</a>
           </p>
         </article>
       </div>
 
-      <h3 class="sub soft-shade">Skills</h3>
+      <div class="thesis glass">
+        <p class="mono thesis-title">{{ t('resume.masterThesis') }}</p>
+        <p>
+          <a :href="thesis?.url" target="_blank" rel="noopener noreferrer" class="mono repo-link">{{ thesisName }}</a>
+          <span class="mono repo-id">(ist168621 · IST, 2015)</span>{{ t('resume.masterThesisNote') }}
+          <a :href="thesis?.video" target="_blank" rel="noopener noreferrer">{{ t('resume.watchDemo') }}</a>
+        </p>
+      </div>
+
+      <h3 class="sub soft-shade">{{ t('resume.skills') }}</h3>
       <div class="skills-grid">
         <div class="glass skill">
-          <p class="mono label">programming</p>
+          <p class="mono label">{{ t('resume.programming') }}</p>
           <ul><li v-for="s in skills.programming" :key="s">{{ s }}</li></ul>
         </div>
         <div class="glass skill">
-          <p class="mono label">databases</p>
+          <p class="mono label">{{ t('resume.databases') }}</p>
           <ul><li v-for="s in skills.databases" :key="s">{{ s }}</li></ul>
         </div>
         <div class="glass skill">
-          <p class="mono label">languages &amp; soft skills</p>
+          <p class="mono label">{{ t('resume.languagesSoft') }}</p>
           <ul>
-            <li v-for="l in languages" :key="l.name">{{ l.name }} — {{ l.level }}</li>
+            <li v-for="l in languages" :key="localize(l.name)">{{ localize(l.name) }} — {{ localize(l.level) }}</li>
           </ul>
-          <ul class="soft"><li v-for="s in skills.soft" :key="s">{{ s }}</li></ul>
+          <ul class="soft"><li v-for="s in skills.soft" :key="localize(s)">{{ localize(s) }}</li></ul>
         </div>
       </div>
 
-      <h3 class="sub soft-shade">Earlier applications <span class="muted small">(from the CV — pre-GitHub era)</span></h3>
+      <h3 class="sub soft-shade">{{ t('resume.earlierApps') }} <span class="muted small">{{ t('resume.earlierNote') }}</span></h3>
       <ol class="apps">
         <li v-for="a in earlyApps" :key="a.name" class="glass app">
           <span class="mono period">{{ a.year }}</span>
           <div>
             <strong>{{ a.name }}</strong>
-            <p>{{ a.detail }}</p>
+            <p>{{ localize(a.detail) }}</p>
             <p v-if="a.link || a.video" class="links">
-              <a v-if="a.link" :href="a.link" target="_blank" rel="noopener noreferrer">↗ {{ a.linkLabel }}</a>
-              <a v-if="a.video" :href="a.video" target="_blank" rel="noopener noreferrer">↗ Video</a>
+              <a v-if="a.link" :href="a.link" target="_blank" rel="noopener noreferrer">↗ {{ localize(a.linkLabel) }}</a>
+              <a v-if="a.video" :href="a.video" target="_blank" rel="noopener noreferrer">↗ {{ t('resume.video') }}</a>
             </p>
           </div>
         </li>
@@ -93,8 +100,14 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import SectionVisual from './SectionVisual.vue'
 import { RESUME, experience, education, skills, languages, earlyApps } from '../data/resume.js'
+import { projectByRepo } from '../data/projects.js'
+import { t, localize } from '../i18n'
+
+const thesis = computed(() => projectByRepo('ist168621'))
+const thesisName = computed(() => localize(thesis.value?.name))
 </script>
 
 <style scoped>
@@ -118,6 +131,14 @@ import { RESUME, experience, education, skills, languages, earlyApps } from '../
 .edu { padding: 1.2rem 1.4rem; }
 .school { margin: 0.2rem 0; font-weight: 600; }
 .edu .muted { margin: 0; font-size: 0.88rem; }
+.thesis { margin-top: 1rem; padding: 1.1rem 1.3rem; border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.thesis-title { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.8rem; }
+.thesis p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.repo-link { color: var(--text); font-size: 0.92rem; text-decoration: none; border-bottom: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent); }
+.repo-link:hover { color: var(--accent); }
+.repo-id { color: var(--dim); font-size: 0.78rem; margin-left: 0.5rem; }
+.thesis a:last-child { color: var(--accent); text-decoration: none; white-space: nowrap; }
+.thesis a:last-child:hover { text-decoration: underline; }
 .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
 .skill { padding: 1.2rem 1.4rem; }
 .label { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.78rem; }

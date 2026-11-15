@@ -3,9 +3,9 @@
     <div class="wrap">
       <div class="section-head split">
         <div class="section-head-copy">
-          <p class="eyebrow mono soft-shade">~/evolution — how the engines connect</p>
-          <h2 id="timeline-title" class="soft-shade">One lineage, many side quests</h2>
-          <p class="soft-shade">Core rendering lineage from 2019 experiments to the current Vulkan engine, plus parallel tracks in AI, VR, web and hardware.</p>
+          <p class="eyebrow mono soft-shade">{{ t('timeline.eyebrow') }}</p>
+          <h2 id="timeline-title" class="soft-shade">{{ t('timeline.title') }}</h2>
+          <p class="soft-shade">{{ t('timeline.intro') }}</p>
         </div>
         <SectionVisual variant="timeline" class="section-art" />
       </div>
@@ -15,29 +15,19 @@
           <span class="idx mono" aria-hidden="true">0{{ i + 1 }}</span>
           <div>
             <a :href="projectByRepo(step.repo)?.url" target="_blank" rel="noopener noreferrer" class="mono repo-link">{{ step.repo }}</a>
-            <p>{{ step.note }}</p>
+            <p>{{ localize(step.note) }}</p>
           </div>
           <span v-if="i < evolutionChain.length - 1" class="arrow" aria-hidden="true">→</span>
         </li>
       </ol>
 
       <div class="parallel glass">
-        <p class="mono parallel-title">// parallel experiments</p>
+        <p class="mono parallel-title">{{ t('timeline.parallel') }}</p>
         <ul>
           <li v-for="repo in parallelRepos" :key="repo">
             <a :href="`https://github.com/hdlopesrocha/${repo}`" target="_blank" rel="noopener noreferrer" class="mono">{{ repo }}</a>
           </li>
         </ul>
-      </div>
-
-      <div class="thesis glass">
-        <p class="mono thesis-title">// master thesis</p>
-        <p>
-          <a href="https://github.com/hdlopesrocha/ist168621" target="_blank" rel="noopener noreferrer" class="mono repo-link">Master Thesis — Interactive Multi-User Video Chat</a>
-          <span class="mono repo-id">(ist168621 · IST, 2015)</span>
-          — interactive multi-user video chat with recording, content overlay and collaborative text editor.
-          <a href="https://www.youtube.com/watch?v=TWfbcBKbseA" target="_blank" rel="noopener noreferrer">Watch demo</a>
-        </p>
       </div>
     </div>
   </section>
@@ -46,6 +36,8 @@
 <script setup>
 import SectionVisual from './SectionVisual.vue'
 import { evolutionChain, projectByRepo } from '../data/projects.js'
+import { t, localize } from '../i18n'
+
 const parallelRepos = ['web-gource', 'open-studio', 'vrMusic', 'music-ai', 'sdf-smoke', 'lora-control', 'card-generator', 'opencode-talk']
 </script>
 
@@ -79,12 +71,6 @@ const parallelRepos = ['web-gource', 'open-studio', 'vrMusic', 'music-ai', 'sdf-
   font-weight: 700;
 }
 .parallel { padding: 1.1rem 1.3rem; }
-.thesis { padding: 1.1rem 1.3rem; margin-top: 1rem; border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
-.thesis-title { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.8rem; }
-.thesis p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-.repo-id { color: var(--dim); font-size: 0.78rem; margin-left: 0.5rem; }
-.thesis a:last-child { color: var(--accent); text-decoration: none; white-space: nowrap; }
-.thesis a:last-child:hover { text-decoration: underline; }
 .parallel-title { margin: 0 0 0.6rem; color: var(--accent); font-size: 0.8rem; }
 .parallel ul {
   list-style: none; margin: 0; padding: 0;

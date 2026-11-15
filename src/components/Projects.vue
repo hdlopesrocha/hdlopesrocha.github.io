@@ -2,15 +2,11 @@
   <section id="projects" class="section" aria-labelledby="projects-title">
     <div class="wrap">
       <div class="section-head">
-        <p class="eyebrow mono soft-shade">~/projects — {{ projects.length }} repos</p>
-        <h2 id="projects-title" class="soft-shade">Projects in graphics, AI &amp; beyond</h2>
-        <p class="soft-shade">
-          Each card links to the live repository. Live star / language data loads
-          progressively when the GitHub API is reachable — the catalogue below always renders regardless.
-        </p>
+        <p class="eyebrow mono soft-shade">{{ t('projects.eyebrow', { count: projects.length }) }}</p>
+        <h2 id="projects-title" class="soft-shade">{{ t('projects.title') }}</h2>
       </div>
 
-      <div class="filters" role="group" aria-label="Filter projects by category">
+      <div class="filters" role="group" :aria-label="t('projects.filterLabel')">
         <button
           v-for="f in filters"
           :key="f.id"
@@ -32,9 +28,7 @@
         />
       </div>
 
-      <p v-if="!available" class="fallback mono soft-shade" role="status">
-        // github api unreachable — showing cached catalogue data
-      </p>
+
     </div>
   </section>
 </template>
@@ -42,19 +36,17 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ProjectCard from './ProjectCard.vue'
-import { projects } from '../data/projects.js'
+import { projects, CATEGORIES } from '../data/projects.js'
 import { useGithubStats } from '../composables/useGithubStats.js'
+import { t, localize } from '../i18n'
 
-const filters = [
-  { id: 'all', label: 'all' },
-  { id: 'graphics', label: 'graphics' },
-  { id: 'ai', label: 'ai' },
-  { id: 'vr', label: 'vr' },
-  { id: 'web', label: 'web' },
-  { id: 'hardware', label: 'hardware' },
-  { id: 'thesis', label: 'thesis' },
-  { id: 'experimental', label: 'experimental' }
-]
+const filters = computed(() => [
+  { id: 'all', label: t('projects.filterAll') },
+  ...Object.entries(CATEGORIES).map(([id, category]) => ({
+    id,
+    label: localize(category.label)
+  }))
+])
 const activeFilter = ref('all')
 const filtered = computed(() =>
   activeFilter.value === 'all' ? projects : projects.filter((p) => p.category === activeFilter.value)
@@ -84,5 +76,4 @@ const { stats, available } = useGithubStats(projects.map((p) => p.repo))
 @media (max-width: 420px) {
   .grid { grid-template-columns: 1fr; }
 }
-.fallback { color: var(--dim); font-size: 0.8rem; margin-top: 1.2rem; }
 </style>

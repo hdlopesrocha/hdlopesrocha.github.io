@@ -1,5 +1,6 @@
 import { ref, onMounted } from 'vue'
 import { GITHUB_USER } from '../data/projects.js'
+import { dateLocale } from '../i18n'
 
 // Lightweight runtime enrichment from the public GitHub API.
 // The portfolio renders fully from local data; this only adds
@@ -82,7 +83,7 @@ export function formatUpdated(iso) {
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return ''
     // UTC keeps date-only fallback stamps (YYYY-MM-DD) stable across timezones.
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', timeZone: 'UTC' })
+    return d.toLocaleDateString(dateLocale.value, { year: 'numeric', month: 'short', timeZone: 'UTC' })
   } catch {
     return ''
   }

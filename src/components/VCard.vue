@@ -1,12 +1,12 @@
 <template>
   <div class="glass vcard">
     <div class="vc-info">
-      <p class="eyebrow mono">~/vcard — save contact</p>
+      <p class="eyebrow mono">{{ t('vcard.eyebrow') }}</p>
       <h3>{{ RESUME.fullName }}</h3>
-      <p class="muted">{{ RESUME.title }}</p>
+      <p class="muted">{{ localize(RESUME.title) }}</p>
       <dl class="facts mono">
         <div>
-          <dt>based in</dt>
+          <dt>{{ t('vcard.basedIn') }}</dt>
           <dd class="copyable">
             <span>{{ RESUME.location }}</span>
             <button
@@ -14,13 +14,13 @@
               class="copy-btn"
               :class="{ ok: copiedKey === 'location' }"
               @click="copyText('location', RESUME.location)"
-              :aria-label="copiedKey === 'location' ? 'Location copied' : 'Copy location'"
-              title="Copy"
+              :aria-label="copiedKey === 'location' ? t('vcard.locationCopied') : t('vcard.copyLocation')"
+              :title="t('vcard.copy')"
             >{{ copiedKey === 'location' ? '✓' : '⧉' }}</button>
           </dd>
         </div>
         <div>
-          <dt>phone</dt>
+          <dt>{{ t('vcard.phone') }}</dt>
           <dd class="copyable">
             <a :href="RESUME.phoneHref">{{ RESUME.phone }}</a>
             <button
@@ -28,14 +28,14 @@
               class="copy-btn"
               :class="{ ok: copiedKey === 'phone' }"
               @click="copyText('phone', RESUME.phone)"
-              :aria-label="copiedKey === 'phone' ? 'Phone copied' : 'Copy phone'"
-              title="Copy"
+              :aria-label="copiedKey === 'phone' ? t('vcard.phoneCopied') : t('vcard.copyPhone')"
+              :title="t('vcard.copy')"
             >{{ copiedKey === 'phone' ? '✓' : '⧉' }}</button>
           </dd>
         </div>
-        <div><dt>email</dt><dd><a :href="`mailto:${RESUME.email}`">{{ RESUME.email }}</a></dd></div>
+        <div><dt>{{ t('vcard.email') }}</dt><dd><a :href="`mailto:${RESUME.email}`">{{ RESUME.email }}</a></dd></div>
         <div>
-          <dt>site</dt>
+          <dt>{{ t('vcard.site') }}</dt>
           <dd class="copyable">
             <a :href="RESUME.site" target="_blank" rel="noopener noreferrer">{{ RESUME.site }}</a>
             <button
@@ -43,16 +43,16 @@
               class="copy-btn"
               :class="{ ok: copiedKey === 'site' }"
               @click="copyText('site', RESUME.site)"
-              :aria-label="copiedKey === 'site' ? 'Site copied' : 'Copy site URL'"
-              title="Copy"
+              :aria-label="copiedKey === 'site' ? t('vcard.siteCopied') : t('vcard.copySite')"
+              :title="t('vcard.copy')"
             >{{ copiedKey === 'site' ? '✓' : '⧉' }}</button>
           </dd>
         </div>
-        <div><dt>github</dt><dd><a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
-        <div><dt>youtube</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
-        <div><dt>soundcloud</dt><dd><a :href="RESUME.soundcloud" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
+        <div><dt>{{ t('vcard.github') }}</dt><dd><a href="https://github.com/hdlopesrocha" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
+        <div><dt>{{ t('vcard.youtube') }}</dt><dd><a :href="RESUME.youtube" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
+        <div><dt>{{ t('vcard.soundcloud') }}</dt><dd><a :href="RESUME.soundcloud" target="_blank" rel="noopener noreferrer">hdlopesrocha ↗</a></dd></div>
         <div>
-          <dt>nostr</dt>
+          <dt>{{ t('vcard.nostr') }}</dt>
           <dd class="copyable">
             <span class="break">{{ NOSTR_RECIPIENT_NPUB }}</span>
             <button
@@ -60,14 +60,14 @@
               class="copy-btn"
               :class="{ ok: copiedKey === 'nostr' }"
               @click="copyText('nostr', NOSTR_RECIPIENT_NPUB)"
-              :aria-label="copiedKey === 'nostr' ? 'npub copied' : 'Copy npub'"
-              title="Copy npub"
+              :aria-label="copiedKey === 'nostr' ? t('vcard.npubCopied') : t('vcard.copyNpub')"
+              :title="t('vcard.copy')"
             >{{ copiedKey === 'nostr' ? '✓' : '⧉' }}</button>
           </dd>
         </div>
-        <div><dt>telegram</dt><dd><a :href="RESUME.telegramUrl" target="_blank" rel="noopener noreferrer">{{ RESUME.telegram }} ↗</a></dd></div>
+        <div><dt>{{ t('vcard.telegram') }}</dt><dd><a :href="RESUME.telegramUrl" target="_blank" rel="noopener noreferrer">{{ RESUME.telegram }} ↗</a></dd></div>
         <div>
-          <dt>lnurl</dt>
+          <dt>{{ t('vcard.lnurl') }}</dt>
           <dd class="copyable">
             <span>{{ LIGHTNING_ADDRESS }}</span>
             <button
@@ -75,31 +75,32 @@
               class="copy-btn"
               :class="{ ok: copiedKey === 'lnurl' }"
               @click="copyText('lnurl', LIGHTNING_ADDRESS)"
-              :aria-label="copiedKey === 'lnurl' ? 'Lightning address copied' : 'Copy lightning address'"
-              title="Copy"
+              :aria-label="copiedKey === 'lnurl' ? t('vcard.lightningCopied') : t('vcard.copyLightning')"
+              :title="t('vcard.copy')"
             >{{ copiedKey === 'lnurl' ? '✓' : '⧉' }}</button>
           </dd>
         </div>
       </dl>
       <div class="vc-actions">
-        <button class="btn small primary" type="button" @click="download">Download .vcf</button>
-        <button class="btn small ghost" type="button" @click="copyVCard">{{ vcopied ? 'Copied ✓' : 'Copy vCard text' }}</button>
+        <button class="btn small primary" type="button" @click="download">{{ t('vcard.download') }}</button>
+        <button class="btn small ghost" type="button" @click="copyVCard">{{ vcopied ? t('vcard.copied') : t('vcard.copyText') }}</button>
       </div>
     </div>
     <div class="vc-qr">
-      <button type="button" class="qr-btn" @click="download" aria-label="Download contact as .vcf file" title="Click to download .vcf">
+      <button type="button" class="qr-btn" @click="download" :aria-label="t('vcard.downloadAria')" :title="t('vcard.downloadTitle')">
         <canvas ref="qrCanvas" width="280" height="280" aria-hidden="true"></canvas>
       </button>
-      <p class="mono hint">scan to save · click to download</p>
+      <p class="mono hint">{{ t('vcard.hint') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { RESUME } from '../data/resume.js'
 import { NOSTR_RECIPIENT_NPUB } from '../data/contact.js'
 import { LIGHTNING_ADDRESS } from '../data/donate.js'
+import { t, localize, locale } from '../i18n'
 
 const qrCanvas = ref(null)
 const vcopied = ref(false)
@@ -112,7 +113,7 @@ function vcardText() {
     'VERSION:3.0',
     'N:Rocha;Henrique;;;',
     `FN:${RESUME.fullName}`,
-    `TITLE:${RESUME.title}`,
+    `TITLE:${localize(RESUME.title)}`,
     `TEL;TYPE=CELL,VOICE:${RESUME.phoneHref.replace('tel:', '')}`,
     `EMAIL:${RESUME.email}`,
     `URL:${RESUME.site}`,
@@ -167,10 +168,11 @@ async function copyVCard() {
   } catch {}
 }
 
-onMounted(async () => {
+async function renderQr() {
   // Lazy-load QR rendering; panel text works without it.
   try {
     const { default: QRCode } = await import('qrcode')
+    if (!qrCanvas.value) return
     await QRCode.toCanvas(qrCanvas.value, vcardText(), {
       width: 280,
       margin: 1,
@@ -178,7 +180,12 @@ onMounted(async () => {
       color: { dark: '#04181a', light: '#ffffff' }
     })
   } catch {}
-})
+}
+
+onMounted(renderQr)
+// The vCard payload contains the localized job title, so refresh the QR when
+// the language changes (downloads always rebuild the text at click time).
+watch(locale, renderQr)
 </script>
 
 <style scoped>
