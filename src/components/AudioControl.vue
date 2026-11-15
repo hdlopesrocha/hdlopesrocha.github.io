@@ -13,7 +13,7 @@
             type="button"
             class="icon-btn"
             :class="{ active: isMic }"
-            :disabled="state.status === 'requesting'"
+            :disabled="state.status === 'requesting' || videoExporting"
             :aria-pressed="isMic ? 'true' : 'false'"
             :aria-label="micLabel"
             :title="micLabel"
@@ -26,9 +26,10 @@
           </button>
           <label
             class="icon-btn file-icon"
-            :class="{ active: isFile }"
+            :class="{ active: isFile, disabled: videoExporting }"
             :title="isFile ? 'Change audio' : 'Upload audio'"
             :aria-label="isFile ? 'Change audio' : 'Upload audio'"
+            :aria-disabled="videoExporting ? 'true' : undefined"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />
@@ -37,6 +38,7 @@
               class="sr-only"
               type="file"
               accept="audio/*,.mp3,.wav,.ogg,.oga,.m4a,.aac,.flac,.opus"
+              :disabled="videoExporting"
               @change="onFile"
             />
           </label>
@@ -44,6 +46,7 @@
             v-if="isFile"
             type="button"
             class="icon-btn"
+            :disabled="videoExporting"
             :aria-label="state.playing ? 'Pause audio' : 'Play audio'"
             :title="state.playing ? 'Pause audio' : 'Play audio'"
             @click="togglePlayback"
@@ -54,6 +57,23 @@
             </svg>
             <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="icon-btn export-btn"
+            :class="{ recording: videoExporting }"
+            :disabled="!isFile"
+            :aria-label="videoExportLabel"
+            :title="videoExportLabel"
+            @click="toggleExport"
+          >
+            <svg v-if="videoExporting" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="6" width="12" height="12" rx="2" />
+            </svg>
+            <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="6" width="12" height="12" rx="2.5" />
+              <path d="M15 10.5 21 7v10l-6-3.5" />
             </svg>
           </button>
           <button
@@ -89,7 +109,7 @@
           <button
             type="button"
             class="icon-btn stop-btn"
-            :disabled="!isActive"
+            :disabled="!isActive || videoExporting"
             aria-label="Stop audio"
             title="Stop audio"
             @click="stop"
@@ -373,6 +393,15 @@
       </div>
     </div>
 
+    <p v-if="videoExporting" class="export-status mono">
+      <span class="recording-line">
+        <span class="record-dot" aria-hidden="true"></span>
+        recording {{ videoExportElapsed }} · keep this tab visible · click export to stop
+      </span>
+      <span v-if="videoExportNotice" class="export-note">{{ videoExportNotice }}</span>
+    </p>
+    <p v-else-if="videoExportError" class="audio-error" role="alert">{{ videoExportError }}</p>
+    <p v-else-if="videoExportNotice" class="export-status mono" role="status">{{ videoExportNotice }}</p>
     <p v-if="state.error" class="audio-error" role="alert">{{ state.error }}</p>
   </div>
 </template>
@@ -398,6 +427,16 @@ import {
   stop
 } from '../composables/useAudioReactive'
 import { sceneFx } from '../composables/useSceneFx'
+import { useVideoExport } from '../composables/useVideoExport'
+
+const {
+  exporting: videoExporting,
+  elapsedLabel: videoExportElapsed,
+  notice: videoExportNotice,
+  error: videoExportError,
+  exportLabel: videoExportLabel,
+  toggleExport
+} = useVideoExport()
 
 const meters = [
   { key: 'bass', colorKey: 'bass', label: 'bass / kick' },
@@ -519,6 +558,23 @@ async function onFile(event) {
   cursor: not-allowed;
 }
 .icon-btn.stop-btn:hover { color: #fca5a5; border-color: #fca5a5; }
+.file-icon.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.export-btn.recording,
+.export-btn.recording:hover {
+  color: #f87171;
+  border-color: color-mix(in srgb, #f87171 70%, transparent);
+  background: rgba(248, 113, 113, 0.12);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .export-btn.recording { animation: export-recording 1.15s ease-in-out infinite; }
+  @keyframes export-recording {
+    0%, 100% { box-shadow: 0 0 0 rgba(248, 113, 113, 0); }
+    50% { box-shadow: 0 0 12px rgba(248, 113, 113, 0.45); }
+  }
+}
 
 .filter-box {
   display: grid;
@@ -685,6 +741,37 @@ async function onFile(event) {
   color: #fca5a5;
   font-size: 0.84rem;
 }
+.export-status {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.65rem 0 0;
+  max-width: 620px;
+  color: var(--dim);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+.recording-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: color-mix(in srgb, #f87171 75%, var(--text));
+}
+.record-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow: 0 0 8px #f87171;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .record-dot { animation: export-dot 1.15s ease-in-out infinite; }
+  @keyframes export-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+}
+.export-note { color: var(--muted); }
 
 @media (max-width: 600px) {
   .meters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
