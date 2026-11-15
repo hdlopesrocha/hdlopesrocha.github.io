@@ -183,7 +183,10 @@ function syncFlowCount() {
 function respawnParticle(particle) {
   particle.x = FLOW_WALL_MARGIN + Math.random() * (w - 2 * FLOW_WALL_MARGIN)
   particle.y = FLOW_WALL_MARGIN + Math.random() * (h - 2 * FLOW_WALL_MARGIN)
+  particle.speed = 0.55 + Math.random() * 1.1
   particle.life = 90 + Math.random() * 260
+  particle.channel = Math.floor(Math.random() * 4)
+  particle.colorPhase = Math.random() * CHANNEL_PALETTE_SIZE
   particle.vx = 0
   particle.vy = 0
   particle.history.length = 0
@@ -301,14 +304,6 @@ function drawFlowField(t) {
       continue
     }
 
-    // Wrap across the viewport edges with modulo. Clear the trail when a
-    // wrap happens so it does not draw a streak across the whole screen.
-    const wrappedX = nx < 0 || nx >= w
-    const wrappedY = ny < 0 || ny >= h
-    nx = ((nx % w) + w) % w
-    ny = ((ny % h) + h) % h
-    if (wrappedX || wrappedY) particle.history.length = 0
-
     particle.x = nx
     particle.y = ny
     if (sceneFx.showDots && !matrixOn) {
@@ -326,6 +321,16 @@ function drawFlowField(t) {
     })
     if (particle.history.length > trailLength) {
       particle.history.splice(0, particle.history.length - trailLength)
+    }
+
+    // Let particles leave the viewport. Once the whole remaining trail is
+    // outside, recycle the particle at a new random position.
+    const trailOutside = particle.history.every(
+      (point) => point.x < 0 || point.x > w || point.y < 0 || point.y > h
+    )
+    if (trailOutside) {
+      respawnParticle(particle)
+      continue
     }
     if (particle.history.length < 2) continue
 
