@@ -55,6 +55,14 @@ const MATRIX_MAX_GLYPHS = 8
 const MATRIX_GLYPH_TICK_MS = 110
 const MATRIX_GLYPH_CELL = 32
 const matrixGlyphAtlases = new Map()
+const GRAPH_LIGHT = { x: -0.381, y: -0.552, z: 0.742 }
+const GRAPH_HALF = (() => {
+  const x = GRAPH_LIGHT.x
+  const y = GRAPH_LIGHT.y
+  const z = GRAPH_LIGHT.z + 1
+  const length = Math.hypot(x, y, z) || 1
+  return { x: x / length, y: y / length, z: z / length }
+})()
 
 function clamp100(value) {
   return Math.min(100, Math.max(0, value))
@@ -547,6 +555,9 @@ function drawParticles(t) {
   const maxDist = 150 + mid * 70 + bass * 30 + pace * 45
   const movement = 1 + energy * 1.8 + bass * 1.1 + pace * 1.7 + kick * 1.2 + snare * 0.15
   const wobbleRate = 1 + pace * 1.4 + energy * 0.6
+  const depthScale = 50 + energy * 120 + bass * 70 + kick * 40
+  const depthWave = 8 + energy * 24 + snare * 10
+  const depthRate = 2200 / (1 + pace)
   const linkAlpha = 0.13 + mid * 0.24 + energy * 0.12 + pace * 0.12
   // Stable per-pair thresholds make links appear/disappear as this density
   // changes, instead of flickering randomly from frame to frame.
@@ -576,10 +587,15 @@ function drawParticles(t) {
       point.sx += (dx / len) * kick * 2.4
       point.sy += (dy / len) * kick * 2.4
     }
+
+    // Depth is audio-reactive but does not change the projected x/y position.
+    point.z =
+      (point.seed - 0.5) * depthScale +
+      Math.sin(t / depthRate + point.phase) * depthWave
   }
 
   const nodeScale = 1 + treble * 1.5 + kick * 0.8 + snare * 0.3
-  const nodeSizes = points.map((point) => point.r * nodeScale)
+  const nodeSizes = points.map((point) => point.r * nodeScale * (1 + point.z / 1400))
 
   // Delaunay keeps the graph planar: edges never cross and its faces are
   // non-overlapping. Filtering only removes edges/faces, so planarity holds.
@@ -639,11 +655,32 @@ function drawParticles(t) {
     const a = points[ids[0]]
     const b = points[ids[1]]
     const c = points[ids[2]]
+    const ux = b.sx - a.sx
+    const uy = b.sy - a.sy
+    const uz = b.z - a.z
+    const vx = c.sx - a.sx
+    const vy = c.sy - a.sy
+    const vz = c.z - a.z
+    let nx = uy * vz - uz * vy
+    let ny = uz * vx - ux * vz
+    let nz = ux * vy - uy * vx
+    const nlen = Math.hypot(nx, ny, nz) || 1
+    nx /= nlen
+    ny /= nlen
+    nz /= nlen
+    if (nz < 0) {
+      nx = -nx
+      ny = -ny
+      nz = -nz
+    }
     triangles.push({
       key: `${ids[0]}:${ids[1]}:${ids[2]}`,
       i: ids[0],
       j: ids[1],
       k: ids[2],
+      nx,
+      ny,
+      nz,
       cx: (a.sx + b.sx + c.sx) / 3,
       cy: (a.sy + b.sy + c.sy) / 3
     })
@@ -709,14 +746,38 @@ function drawParticles(t) {
       const b = points[triangle.j]
       const c = points[triangle.k]
       const tone = tones[(triangle.i + triangle.j + triangle.k) % tones.length]
+      const nx = triangle.nx
+      const ny = triangle.ny
+      const nz = triangle.nz
 
-      // Refract a snapshot of the scene from before the graph layer. The
-      // triangle's hue chooses the sample direction and strength.
-      const strength = 6 + (tone.l / 100) * 8 + next * 26
-      const angle = (tone.h / 360) * Math.PI * 2
-      const dx = Math.cos(angle) * strength
-      const dy = Math.sin(angle) * strength
-      const zoom = 1 + (strength * 2.2) / Math.min(w, h) + 0.015
+      // Phong shading from the triangle's 3D normal and the audio-reactive
+      // depth. The palette tone supplies the material colour.
+      const ndotl = Math.max(
+        0,
+        nx * GRAPH_LIGHT.x + ny * GRAPH_LIGHT.y + nz * GRAPH_LIGHT.z
+      )
+      const ndoth = Math.max(
+        0,
+        nx * GRAPH_HALF.x + ny * GRAPH_HALF.y + nz * GRAPH_HALF.z
+      )
+      const specular = Math.pow(ndoth, 20 + pace * 30)
+      const ambient = 0.22 + energy * 0.08
+      const diffuse = ndotl * (0.62 + energy * 0.18)
+      const intensity = ambient + diffuse + specular * (0.45 + bass * 0.35)
+      const shade = Math.min(1.25, 0.55 + intensity * 0.55)
+      const lightL = Math.max(
+        18,
+        Math.min(96, tone.l * (0.55 + intensity * 0.75) + specular * 18)
+      )
+      const tintAlpha = Math.min(0.34, 0.05 + next * 1.05 + specular * 0.12)
+
+      // Refract along the surface normal: steeper faces displace the sample
+      // further and also zoom it more.
+      const slope = Math.hypot(nx, ny)
+      const strength = 5 + slope * 28 + (1 - nz) * 18 + next * 18
+      const dx = nx * strength
+      const dy = ny * strength
+      const zoom = 1 + (1 - nz) * 0.08 + (strength * 1.8) / Math.min(w, h) + 0.01
 
       ctx.save()
       ctx.beginPath()
@@ -730,7 +791,7 @@ function drawParticles(t) {
       ctx.translate(triangle.cx + dx, triangle.cy + dy)
       ctx.scale(zoom, zoom)
       ctx.translate(-triangle.cx, -triangle.cy)
-      ctx.globalAlpha = Math.min(1, 0.72 + next * 1.6)
+      ctx.globalAlpha = Math.min(1, (0.68 + next * 1.5) * shade)
       ctx.drawImage(
         sceneSnapshotCanvas,
         0, 0, sceneSnapshotCanvas.width, sceneSnapshotCanvas.height,
@@ -738,8 +799,9 @@ function drawParticles(t) {
       )
       ctx.restore()
 
-      // Preserve the triangle's palette colour as a glass tint.
-      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${Math.max(62, Math.min(84, tone.l + 4)).toFixed(1)}%, ${Math.min(0.2, 0.04 + next * 0.9).toFixed(3)})`
+      // Phong-shaded material tint; specular highlights desaturate slightly.
+      const saturation = Math.max(0, tone.s * (1 - specular * 0.35))
+      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${saturation.toFixed(1)}%, ${lightL.toFixed(1)}%, ${tintAlpha.toFixed(3)})`
       ctx.fill()
       ctx.restore()
     }
