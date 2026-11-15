@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "delaunator": "^5.1.0",
+    "mp4-muxer": "^5.2.2",
     "nostr-tools": "^2.25.2",
     "qrcode": "^1.5.4",
     "vue": "^3.5.43"
