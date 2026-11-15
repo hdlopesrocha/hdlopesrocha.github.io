@@ -38,6 +38,8 @@ let sceneGreenCtx = null
 let sceneBlueCanvas = null
 let sceneBlueCtx = null
 let chromaticFrame = 0
+let triangleLayerCanvas = null
+let triangleLayerCtx = null
 let smokeMaskCanvas = null
 let smokeMaskCtx = null
 let smokeWorker = null
@@ -558,6 +560,27 @@ function updateSceneChannel(canvas, context, color, source) {
   context.globalCompositeOperation = 'source-over'
 }
 
+function ensureTriangleLayer() {
+  const source = ctx.canvas
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+  if (!triangleLayerCanvas) {
+    triangleLayerCanvas = document.createElement('canvas')
+    triangleLayerCtx = triangleLayerCanvas.getContext('2d')
+  }
+  if (
+    triangleLayerCanvas.width !== source.width ||
+    triangleLayerCanvas.height !== source.height
+  ) {
+    triangleLayerCanvas.width = source.width
+    triangleLayerCanvas.height = source.height
+  }
+  triangleLayerCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
+  triangleLayerCtx.globalAlpha = 1
+  triangleLayerCtx.globalCompositeOperation = 'source-over'
+  triangleLayerCtx.clearRect(0, 0, w, h)
+  return triangleLayerCtx
+}
+
 function captureSceneSnapshot() {
   if (!ctx) return
   chromaticFrame += 1
@@ -657,6 +680,10 @@ function drawParticles(t) {
 
   const nodeScale = 1 + treble * 1.5 + kick * 0.8 + snare * 0.3
   const nodeSizes = points.map((point) => point.r * nodeScale * (1 + point.z / 1400))
+  const maxNodeSize = nodeSizes.reduce((max, size) => Math.max(max, size), 0.0001)
+  const nodeColorWeights = nodeSizes.map(
+    (size) => 0.25 + 0.75 * Math.min(1, size / maxNodeSize)
+  )
 
   // Delaunay keeps the graph planar: edges never cross and its faces are
   // non-overlapping. Filtering only removes edges/faces, so planarity holds.
@@ -799,6 +826,13 @@ function drawParticles(t) {
       ny,
       nz,
       score: ab + bc + ca,
+      // Last screen geometry, frozen for the fade-out tail.
+      ax: a.sx,
+      ay: a.sy,
+      bx: b.sx,
+      by: b.sy,
+      vx: c.sx,
+      vy: c.sy,
       // Average audio-driven node depth, used to scale the refraction.
       avgZ: (a.z + b.z + c.z) / 3,
       cx: (a.sx + b.sx + c.sx) / 3,
@@ -930,7 +964,7 @@ function drawParticles(t) {
 
   if (sceneFx.showTriangles) {
     if (selectedTriangles.length || triangleWeights.size) captureSceneSnapshot()
-    ctx.save()
+    const layer = ensureTriangleLayer()
     const currentKeys = selectedKeys
     const renderKeys = new Set([...currentKeys, ...triangleWeights.keys()])
     for (const key of renderKeys) {
@@ -956,17 +990,16 @@ function drawParticles(t) {
       }
       if (next <= 0.002) continue
 
-      const a = points[triangle.i]
-      const b = points[triangle.j]
-      const c = points[triangle.k]
-      const tone = tones[(triangle.i + triangle.j + triangle.k) % tones.length]
+      const a = { sx: triangle.ax, sy: triangle.ay }
+      const b = { sx: triangle.bx, sy: triangle.by }
+      const c = { sx: triangle.vx, sy: triangle.vy }
       const nx = triangle.nx
       const ny = triangle.ny
       const nz = triangle.nz
 
       // Flat-shaded glass: the single face normal drives both the sharp
-      // Blinn-Phong highlight and the refraction ray. The palette tone is the
-      // glass tint; shading only changes its brightness and opacity.
+      // Blinn-Phong highlight and the refraction ray. Vertex colours are
+      // supplied by the three node tones below.
       const ndotl = Math.max(
         0,
         nx * GRAPH_LIGHT.x + ny * GRAPH_LIGHT.y + nz * GRAPH_LIGHT.z
@@ -979,14 +1012,8 @@ function drawParticles(t) {
         ndoth,
         GLASS_SPECULAR_POWER + pace * GLASS_SPECULAR_PACE
       )
-      const ambient = 0.16 + energy * 0.06
-      const diffuse = ndotl * (0.44 + energy * 0.16)
-      const intensity = ambient + diffuse + specular * (1.5 + bass * 0.9)
-      const lightL = Math.max(
-        18,
-        Math.min(96, tone.l * (0.58 + intensity * 0.72) + specular * 22)
-      )
-      const tintAlpha = Math.min(0.3, 0.045 + next * 0.95 + specular * 0.1)
+      const faceLight = 0.55 + ndotl * 0.45
+      const opacity = Math.min(1, next / TRIANGLE_MAX_ALPHA)
 
       // Snell refraction from the view ray (0, 0, -1) into glass (IOR 1.5).
       // nz is oriented towards the viewer, so cosI is non-negative. Total
@@ -1026,13 +1053,13 @@ function drawParticles(t) {
       dy = Math.max(-edgeY, Math.min(edgeY, dy))
       const offset = Math.hypot(dx, dy)
 
-      ctx.save()
-      ctx.beginPath()
-      ctx.moveTo(a.sx, a.sy)
-      ctx.lineTo(b.sx, b.sy)
-      ctx.lineTo(c.sx, c.sy)
-      ctx.closePath()
-      ctx.clip()
+      layer.save()
+      layer.beginPath()
+      layer.moveTo(a.sx, a.sy)
+      layer.lineTo(b.sx, b.sy)
+      layer.lineTo(c.sx, c.sy)
+      layer.closePath()
+      layer.clip()
 
       // Chromatic dispersion: sample the red, green and blue channel maps at
       // different texture coordinates. Red and blue are split perpendicular
@@ -1049,7 +1076,7 @@ function drawParticles(t) {
         [sceneBlueCanvas, -1]
       ]
 
-      ctx.save()
+      layer.save()
       for (const [canvas, shift] of channels) {
         if (!canvas) continue
         const channelScale = 1 + shift * 0.015
@@ -1065,27 +1092,64 @@ function drawParticles(t) {
           0.01 +
           shift * 0.002
 
-        ctx.save()
+        layer.save()
         // Green replaces the sharp scene inside the triangle; red and blue
         // add the dispersed fringes on top.
-        ctx.globalCompositeOperation = shift === 0 ? 'copy' : 'lighter'
-        ctx.translate(triangle.cx - boundedX, triangle.cy - boundedY)
-        ctx.scale(channelZoom, channelZoom)
-        ctx.translate(-triangle.cx, -triangle.cy)
-        ctx.globalAlpha = 1
-        ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, w, h)
-        ctx.restore()
+        layer.globalCompositeOperation = shift === 0 ? 'copy' : 'lighter'
+        layer.translate(triangle.cx - boundedX, triangle.cy - boundedY)
+        layer.scale(channelZoom, channelZoom)
+        layer.translate(-triangle.cx, -triangle.cy)
+        layer.globalAlpha = opacity
+        layer.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, w, h)
+        layer.restore()
       }
-      ctx.restore()
+      layer.restore()
 
-      // Flat material tint; highlights desaturate towards white while the
-      // refracted scene remains visible underneath.
-      const saturation = Math.max(0, tone.s * (1 - specular * 0.7))
-      ctx.fillStyle = `hsla(${tone.h.toFixed(1)}, ${saturation.toFixed(1)}%, ${lightL.toFixed(1)}%, ${tintAlpha.toFixed(3)})`
-      ctx.fill()
-      ctx.restore()
+      // Per-vertex node colours blended across the triangle. Each vertex
+      // contributes a linear gradient toward the opposite edge midpoint;
+      // higher audio-valued nodes get a stronger contribution.
+      const vertexIds = [triangle.i, triangle.j, triangle.k]
+      const vertexPoints = [a, b, c]
+      layer.save()
+      layer.globalCompositeOperation = 'lighter'
+      for (let v = 0; v < 3; v += 1) {
+        const index = vertexIds[v]
+        const tone = tones[index % tones.length]
+        const nodeLight = Math.max(
+          62,
+          Math.min(96, tone.l + treble * 8 + specular * 22)
+        )
+        const nodeWeight = nodeColorWeights[index] || 1
+        const vertex = vertexPoints[v]
+        const oppositeA = vertexPoints[(v + 1) % 3]
+        const oppositeB = vertexPoints[(v + 2) % 3]
+        const midX = (oppositeA.sx + oppositeB.sx) / 2
+        const midY = (oppositeA.sy + oppositeB.sy) / 2
+        const gradient = layer.createLinearGradient(
+          vertex.sx,
+          vertex.sy,
+          midX,
+          midY
+        )
+        const color = `hsla(${tone.h.toFixed(1)}, ${tone.s.toFixed(1)}%, ${nodeLight.toFixed(1)}%, `
+        gradient.addColorStop(0, `${color}1)`)
+        gradient.addColorStop(1, `${color}0)`)
+        layer.fillStyle = gradient
+        layer.globalAlpha = Math.min(1, opacity * nodeWeight * faceLight)
+        layer.fill()
+      }
+      layer.restore()
+      layer.restore()
     }
 
+    ctx.save()
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.globalAlpha = 1
+    ctx.drawImage(
+      triangleLayerCanvas,
+      0, 0, triangleLayerCanvas.width, triangleLayerCanvas.height,
+      0, 0, w, h
+    )
     ctx.restore()
   }
 
