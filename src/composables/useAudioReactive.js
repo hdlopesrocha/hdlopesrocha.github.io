@@ -332,6 +332,7 @@ let audioCtx = null
 let analyser = null
 let filterNode = null
 let monitorGain = null
+let recordingDestination = null
 let sourceNode = null
 let fileSource = null
 let audioEl = null
@@ -737,6 +738,332 @@ export async function togglePlayback() {
     audioEl.pause()
     state.playing = false
   }
+}
+
+/**
+ * Audio-only MediaStream for the selected source, tapped after the band-pass
+ * filter but before the monitor gain. Recording is therefore independent of
+ * the speaker volume (and still works while the page is muted).
+ *
+ * The destination node is reused across exports; callers must not stop the
+ * returned audio track or future recordings will be silent.
+ */
+export async function getRecordingAudioStream() {
+  if (!audioCtx || !filterNode) return null
+  if (audioCtx.state !== 'running') {
+    try {
+      await audioCtx.resume()
+    } catch {
+      return null
+    }
+  }
+  if (!recordingDestination) {
+    recordingDestination = audioCtx.createMediaStreamDestination()
+    filterNode.connect(recordingDestination)
+  }
+  return recordingDestination.stream
+}
+
+const RECORDING_TAP_NAME = 'hdlr-recording-pcm-tap'
+let recordingTapModulePromise = null
+
+// AudioWorklet processors run on the audio rendering thread. Unlike a main
+// thread MediaStreamTrackProcessor reader, this keeps capturing every sample
+// while the page is busy drawing/encoding video. The processor batches input
+// into ~20 ms planar stereo chunks and posts them to the main thread.
+const RECORDING_TAP_PROCESSOR = `
+class HdlrRecordingTap extends AudioWorkletProcessor {
+  constructor(options) {
+    super()
+    const settings = options.processorOptions || {}
+    this.chunkFrames = settings.chunkFrames || 960
+    this.staging = [
+      new Float32Array(this.chunkFrames),
+      new Float32Array(this.chunkFrames)
+    ]
+    this.staged = 0
+    this.chunkStartFrame = -1
+    this.port.onmessage = (event) => {
+      if (event.data === 'flush') {
+        this.flush()
+        this.port.postMessage({ type: 'flushed' })
+      }
+    }
+  }
+
+  flush() {
+    if (!this.staged) return
+    const frames = this.staged
+    const planar = new Float32Array(frames * 2)
+    planar.set(this.staging[0].subarray(0, frames), 0)
+    planar.set(this.staging[1].subarray(0, frames), frames)
+    const timestampUs = Math.round((this.chunkStartFrame / sampleRate) * 1000000)
+    this.port.postMessage(
+      { type: 'audio', timestampUs, frames, sampleRate, data: planar.buffer },
+      [planar.buffer]
+    )
+    this.staged = 0
+    this.chunkStartFrame = -1
+  }
+
+  process(inputs) {
+    const input = inputs[0]
+    if (!input || input.length === 0) return true
+    const frames = input[0].length
+    let offset = 0
+    while (offset < frames) {
+      if (this.chunkStartFrame < 0) this.chunkStartFrame = currentFrame + offset
+      const take = Math.min(this.chunkFrames - this.staged, frames - offset)
+      for (let channel = 0; channel < 2; channel += 1) {
+        const source = input[Math.min(channel, input.length - 1)] || input[0]
+        this.staging[channel].set(source.subarray(offset, offset + take), this.staged)
+      }
+      this.staged += take
+      offset += take
+      if (this.staged >= this.chunkFrames) {
+        this.flush()
+        if (offset < frames) this.chunkStartFrame = currentFrame + offset
+      }
+    }
+    return true
+  }
+}
+
+registerProcessor('${RECORDING_TAP_NAME}', HdlrRecordingTap)
+`
+
+async function ensureRecordingTapModule() {
+  if (!audioCtx?.audioWorklet) return false
+  if (!recordingTapModulePromise) {
+    recordingTapModulePromise = (async () => {
+      const url = URL.createObjectURL(
+        new Blob([RECORDING_TAP_PROCESSOR], { type: 'application/javascript' })
+      )
+      try {
+        await audioCtx.audioWorklet.addModule(url)
+        return true
+      } catch {
+        recordingTapModulePromise = null
+        return false
+      } finally {
+        URL.revokeObjectURL(url)
+      }
+    })()
+  }
+  return recordingTapModulePromise
+}
+
+/**
+ * Sample-accurate PCM tap for video export, taken after the band-pass filter
+ * and before the monitor gain. Returns null when AudioWorklet is unavailable;
+ * callers can then fall back to a MediaStreamTrackProcessor on
+ * `getRecordingAudioStream()`.
+ *
+ * `read()` resolves to `{ timestampUs, sampleRate, frames, data }` where data
+ * is a planar stereo Float32Array, or null once `stop()` has flushed and the
+ * queued chunks have been consumed. Timestamps are mapped onto the
+ * performance.now() clock so they can be muxed with canvas VideoFrames.
+ */
+export async function createRecordingPcmTap({ chunkFrames = 960 } = {}) {
+  if (!audioCtx || !filterNode) return null
+  if (audioCtx.state !== 'running') {
+    try {
+      await audioCtx.resume()
+    } catch {
+      return null
+    }
+  }
+  if (!(await ensureRecordingTapModule())) return null
+
+  const framesPerChunk = Math.max(128, Math.min(4096, Math.round(chunkFrames) || 960))
+  let node = null
+  let sink = null
+  try {
+    node = new AudioWorkletNode(audioCtx, RECORDING_TAP_NAME, {
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      outputChannelCount: [2],
+      channelCount: 2,
+      channelCountMode: 'explicit',
+      channelInterpretation: 'speakers',
+      processorOptions: { chunkFrames: framesPerChunk }
+    })
+    // A silent connection to the destination keeps the worklet pulling.
+    sink = audioCtx.createGain()
+    sink.gain.value = 0
+    filterNode.connect(node)
+    node.connect(sink)
+    sink.connect(audioCtx.destination)
+  } catch {
+    try {
+      if (node) filterNode.disconnect(node)
+    } catch {
+      /* not connected */
+    }
+    try {
+      node?.disconnect()
+    } catch {
+      /* not connected */
+    }
+    try {
+      sink?.disconnect()
+    } catch {
+      /* not connected */
+    }
+    return null
+  }
+
+  // Map AudioContext time onto performance.now() using the output timestamp
+  // pair when Chrome provides it. That keeps audio and canvas frame
+  // timestamps on the same clock, which mp4-muxer's cross-track offset uses.
+  const anchor = (() => {
+    try {
+      const timestamp = audioCtx.getOutputTimestamp?.()
+      if (
+        timestamp &&
+        Number.isFinite(timestamp.contextTime) &&
+        Number.isFinite(timestamp.performanceTime) &&
+        timestamp.performanceTime > 0
+      ) {
+        return {
+          contextUs: timestamp.contextTime * 1_000_000,
+          performanceUs: timestamp.performanceTime * 1000
+        }
+      }
+    } catch {
+      /* fall back to currentTime/performance.now() */
+    }
+    return {
+      contextUs: audioCtx.currentTime * 1_000_000,
+      performanceUs: performance.now() * 1000
+    }
+  })()
+
+  const queue = []
+  const waiters = []
+  let ended = false
+  let stopped = false
+  let flushResolve = null
+
+  function enqueue(chunk) {
+    if (waiters.length > 0) {
+      waiters.shift()(chunk)
+    } else {
+      queue.push(chunk)
+    }
+  }
+
+  function end() {
+    ended = true
+    while (waiters.length > 0) waiters.shift()(null)
+  }
+
+  node.port.onmessage = (event) => {
+    const message = event.data
+    if (message?.type === 'audio') {
+      enqueue({
+        timestampUs: Math.round(
+          anchor.performanceUs + (message.timestampUs - anchor.contextUs)
+        ),
+        sampleRate: message.sampleRate || audioCtx.sampleRate,
+        frames: message.frames,
+        data: new Float32Array(message.data)
+      })
+    } else if (message?.type === 'flushed' && flushResolve) {
+      flushResolve()
+      flushResolve = null
+    }
+  }
+
+  async function stop() {
+    if (stopped) return
+    stopped = true
+    try {
+      filterNode.disconnect(node)
+    } catch {
+      /* already disconnected */
+    }
+
+    const flushed = new Promise((resolve) => {
+      flushResolve = resolve
+      try {
+        node.port.postMessage('flush')
+      } catch {
+        resolve()
+      }
+    })
+    // If audio rendering has already stopped there is nothing to flush.
+    await Promise.race([
+      flushed,
+      new Promise((resolve) => setTimeout(resolve, 750))
+    ])
+    flushResolve = null
+    end()
+    try {
+      node.disconnect()
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      sink.disconnect()
+    } catch {
+      /* already disconnected */
+    }
+    try {
+      node.port.close()
+    } catch {
+      /* already closed */
+    }
+  }
+
+  return {
+    sampleRate: audioCtx.sampleRate,
+    chunkFrames: framesPerChunk,
+    read() {
+      if (queue.length > 0) return Promise.resolve(queue.shift())
+      if (ended) return Promise.resolve(null)
+      return new Promise((resolve) => waiters.push(resolve))
+    },
+    stop
+  }
+}
+
+/**
+ * Restart the loaded file track from the beginning and resume playback.
+ * Resolves true when playback started.
+ */
+export async function restartSelectedTrack() {
+  if (!audioEl || !audioCtx || state.status !== 'file') return false
+  try {
+    if (audioCtx.state !== 'running') await audioCtx.resume()
+    audioEl.currentTime = 0
+    await audioEl.play()
+    state.playing = true
+    state.error = ''
+    return true
+  } catch {
+    state.error = 'The browser blocked playback. Press play again to resume.'
+    return false
+  }
+}
+
+/** Pause the file track without tearing down the audio graph. */
+export function pausePlayback() {
+  if (!audioEl) return
+  if (!audioEl.paused) audioEl.pause()
+  state.playing = false
+}
+
+/**
+ * Subscribe to the current file track finishing. Returns an unsubscribe
+ * function. Fires once; stops firing if the source is replaced.
+ */
+export function onTrackEnded(handler) {
+  if (!audioEl || typeof handler !== 'function') return () => {}
+  const element = audioEl
+  const listener = () => handler()
+  element.addEventListener('ended', listener, { once: true })
+  return () => element.removeEventListener('ended', listener)
 }
 
 /** Latest FFT magnitudes (0-255 per bin), or null when the engine is idle. */
