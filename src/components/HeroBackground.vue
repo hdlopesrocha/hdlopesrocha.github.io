@@ -835,7 +835,6 @@ function drawParticles(t) {
       const ambient = 0.16 + energy * 0.06
       const diffuse = ndotl * (0.44 + energy * 0.16)
       const intensity = ambient + diffuse + specular * (1.5 + bass * 0.9)
-      const shade = Math.min(1.3, 0.5 + intensity * 0.58)
       const lightL = Math.max(
         18,
         Math.min(96, tone.l * (0.58 + intensity * 0.72) + specular * 22)
@@ -891,8 +890,6 @@ function drawParticles(t) {
       // Chromatic dispersion: sample the red, green and blue channel maps at
       // different texture coordinates. Red and blue are split perpendicular
       // to the refraction direction while green follows the centre ray.
-      const baseAlpha = Math.min(1, (0.68 + next * 1.5) * shade)
-      const channelAlpha = Math.min(0.55, baseAlpha * 0.42)
       const directionLength = Math.hypot(dx, dy)
       const dirX = directionLength > 0.001 ? dx / directionLength : 0.7071
       const dirY = directionLength > 0.001 ? dy / directionLength : 0.7071
@@ -900,13 +897,12 @@ function drawParticles(t) {
       const perpY = dirX
       const dispersion = 2.5 + Math.min(12, offset * 0.12)
       const channels = [
-        [sceneRedCanvas, 1],
         [sceneGreenCanvas, 0],
+        [sceneRedCanvas, 1],
         [sceneBlueCanvas, -1]
       ]
 
       ctx.save()
-      ctx.globalCompositeOperation = 'lighter'
       for (const [canvas, shift] of channels) {
         if (!canvas) continue
         const channelScale = 1 + shift * 0.015
@@ -923,10 +919,13 @@ function drawParticles(t) {
           shift * 0.002
 
         ctx.save()
+        // Green replaces the sharp scene inside the triangle; red and blue
+        // add the dispersed fringes on top.
+        ctx.globalCompositeOperation = shift === 0 ? 'copy' : 'lighter'
         ctx.translate(triangle.cx - boundedX, triangle.cy - boundedY)
         ctx.scale(channelZoom, channelZoom)
         ctx.translate(-triangle.cx, -triangle.cy)
-        ctx.globalAlpha = channelAlpha
+        ctx.globalAlpha = 1
         ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, w, h)
         ctx.restore()
       }
