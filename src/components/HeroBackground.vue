@@ -128,6 +128,7 @@ function getMatrixGlyphAtlas(tone) {
 let triangleFrame = 0
 let cachedTriangleTargets = null
 const triangleWeights = new Map()
+const triangleShapes = new Map()
 
 function reducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -158,6 +159,9 @@ function resize() {
 }
 
 function seed() {
+  triangleWeights.clear()
+  triangleShapes.clear()
+  cachedTriangleTargets = null
   const count = w < 640 ? 60 : w < 1100 ? 95 : 130
   points = Array.from({ length: count }, () => ({
     x: Math.random() * w,
@@ -697,18 +701,57 @@ function drawParticles(t) {
     return edge
   }
 
-  const triangles = []
+  // Delaunay edges still define the planar graph connections.
   const delaunayTriangles = delaunay.triangles
   for (let i = 0; i < delaunayTriangles.length; i += 3) {
     const ia = delaunayTriangles[i]
     const ib = delaunayTriangles[i + 1]
     const ic = delaunayTriangles[i + 2]
-    const e1 = edgeFor(ia, ib)
-    const e2 = edgeFor(ib, ic)
-    const e3 = edgeFor(ic, ia)
-    if (!e1.included || !e2.included || !e3.included) continue
+    edgeFor(ia, ib)
+    edgeFor(ib, ic)
+    edgeFor(ic, ia)
+  }
 
-    const ids = [ia, ib, ic].sort((a, b) => a - b)
+  const orient2 = (ax, ay, bx, by, cx, cy) =>
+    (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+  const segmentsCross = (a, b, c, d) => {
+    const d1 = orient2(a.sx, a.sy, b.sx, b.sy, c.sx, c.sy)
+    const d2 = orient2(a.sx, a.sy, b.sx, b.sy, d.sx, d.sy)
+    const d3 = orient2(c.sx, c.sy, d.sx, d.sy, a.sx, a.sy)
+    const d4 = orient2(c.sx, c.sy, d.sx, d.sy, b.sx, b.sy)
+    return (
+      ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+      ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+    )
+  }
+  const pointStrictlyInTriangle = (p, a, b, c) => {
+    const d1 = orient2(a.sx, a.sy, b.sx, b.sy, p.sx, p.sy)
+    const d2 = orient2(b.sx, b.sy, c.sx, c.sy, p.sx, p.sy)
+    const d3 = orient2(c.sx, c.sy, a.sx, a.sy, p.sx, p.sy)
+    return (d1 > 0 && d2 > 0 && d3 > 0) || (d1 < 0 && d2 < 0 && d3 < 0)
+  }
+  const trianglesOverlap = (t1, t2) => {
+    const t1p = [points[t1.i], points[t1.j], points[t1.k]]
+    const t2p = [points[t2.i], points[t2.j], points[t2.k]]
+    for (let i = 0; i < 3; i += 1) {
+      for (let j = 0; j < 3; j += 1) {
+        if (segmentsCross(t1p[i], t1p[(i + 1) % 3], t2p[j], t2p[(j + 1) % 3])) {
+          return true
+        }
+      }
+    }
+    for (const point of t2p) {
+      if (pointStrictlyInTriangle(point, ...t1p)) return true
+    }
+    for (const point of t1p) {
+      if (pointStrictlyInTriangle(point, ...t2p)) return true
+    }
+    return false
+  }
+
+  const makeTriangle = (i, j, k) => {
+    const ids = [i, j, k].sort((a, b) => a - b)
+    const key = `${ids[0]}:${ids[1]}:${ids[2]}`
     const a = points[ids[0]]
     const b = points[ids[1]]
     const c = points[ids[2]]
@@ -718,13 +761,13 @@ function drawParticles(t) {
     const vx = c.sx - a.sx
     const vy = c.sy - a.sy
     const vz = c.z - a.z
+    if (Math.abs(ux * vy - uy * vx) < 1e-6) return null
+
     let nx = uy * vz - uz * vy
     let ny = uz * vx - ux * vz
     let nz = ux * vy - uy * vx
     const nlen = Math.hypot(nx, ny, nz)
     if (nlen < 1e-6) {
-      // Degenerate face: fall back to a front-facing normal so shading and
-      // refraction stay finite.
       nx = 0
       ny = 0
       nz = 1
@@ -738,19 +781,96 @@ function drawParticles(t) {
         nz = -nz
       }
     }
-    triangles.push({
-      key: `${ids[0]}:${ids[1]}:${ids[2]}`,
+
+    const ab = Math.hypot(b.sx - a.sx, b.sy - a.sy)
+    const bc = Math.hypot(c.sx - b.sx, c.sy - b.sy)
+    const ca = Math.hypot(a.sx - c.sx, a.sy - c.sy)
+    return {
+      key,
       i: ids[0],
       j: ids[1],
       k: ids[2],
       nx,
       ny,
       nz,
+      score: ab + bc + ca,
       // Average audio-driven node depth, used to scale the refraction.
       avgZ: (a.z + b.z + c.z) / 3,
       cx: (a.sx + b.sx + c.sx) / 3,
       cy: (a.sy + b.sy + c.sy) / 3
-    })
+    }
+  }
+
+  // One triangle per node, built from each node and its two closest points.
+  const candidateTriangles = []
+  const candidateKeys = new Set()
+  for (let i = 0; i < points.length; i += 1) {
+    const source = points[i]
+    let first = -1
+    let second = -1
+    let firstD = Infinity
+    let secondD = Infinity
+    for (let j = 0; j < points.length; j += 1) {
+      if (j === i) continue
+      const other = points[j]
+      const dx = source.sx - other.sx
+      const dy = source.sy - other.sy
+      const d2 = dx * dx + dy * dy
+      if (d2 < firstD) {
+        second = first
+        secondD = firstD
+        first = j
+        firstD = d2
+      } else if (d2 < secondD) {
+        second = j
+        secondD = d2
+      }
+    }
+    if (first < 0 || second < 0) continue
+    const triangle = makeTriangle(i, first, second)
+    if (!triangle || candidateKeys.has(triangle.key)) continue
+    candidateKeys.add(triangle.key)
+    candidateTriangles.push(triangle)
+  }
+
+  const selectedTriangles = []
+  const selectedKeys = new Set()
+  const usedNodes = new Set()
+  const rankedTriangles = [...candidateTriangles].sort((a, b) => {
+    const weightA = triangleWeights.get(a.key) || 0
+    const weightB = triangleWeights.get(b.key) || 0
+    if (weightA !== weightB) return weightB - weightA
+    if (a.score !== b.score) return a.score - b.score
+    return a.key.localeCompare(b.key)
+  })
+  for (const triangle of rankedTriangles) {
+    if (
+      usedNodes.has(triangle.i) ||
+      usedNodes.has(triangle.j) ||
+      usedNodes.has(triangle.k)
+    ) {
+      continue
+    }
+    let overlaps = false
+    for (const selected of selectedTriangles) {
+      if (trianglesOverlap(triangle, selected)) {
+        overlaps = true
+        break
+      }
+    }
+    if (overlaps) continue
+    usedNodes.add(triangle.i)
+    usedNodes.add(triangle.j)
+    usedNodes.add(triangle.k)
+    selectedTriangles.push(triangle)
+    selectedKeys.add(triangle.key)
+    triangleShapes.set(triangle.key, triangle)
+  }
+  // Drop shapes that are neither selected nor still fading out.
+  for (const key of triangleShapes.keys()) {
+    if (!selectedKeys.has(key) && !triangleWeights.has(key)) {
+      triangleShapes.delete(key)
+    }
   }
 
   // Every particle chooses its two closest triangles. Distance weights blend
@@ -765,7 +885,7 @@ function drawParticles(t) {
       let bestD = Infinity
       let secondD = Infinity
 
-      for (const triangle of triangles) {
+      for (const triangle of selectedTriangles) {
         const dx = particle.x - triangle.cx
         const dy = particle.y - triangle.cy
         const d = dx * dx + dy * dy
@@ -794,19 +914,31 @@ function drawParticles(t) {
   }
 
   if (sceneFx.showTriangles) {
-    if (triangles.length) captureSceneSnapshot()
+    if (selectedTriangles.length || triangleWeights.size) captureSceneSnapshot()
     ctx.save()
-    const currentKeys = new Set()
-    for (const triangle of triangles) {
-      currentKeys.add(triangle.key)
-      const target = Math.min(
-        TRIANGLE_MAX_ALPHA,
-        (cachedTriangleTargets.get(triangle.key) || 0) * TRIANGLE_WEIGHT_SCALE
-      )
-      const current = triangleWeights.get(triangle.key) || 0
+    const currentKeys = selectedKeys
+    const renderKeys = new Set([...currentKeys, ...triangleWeights.keys()])
+    for (const key of renderKeys) {
+      const triangle = triangleShapes.get(key)
+      if (!triangle) {
+        triangleWeights.delete(key)
+        continue
+      }
+      const isCurrent = currentKeys.has(key)
+      const target = isCurrent
+        ? Math.min(
+            TRIANGLE_MAX_ALPHA,
+            (cachedTriangleTargets.get(key) || 0) * TRIANGLE_WEIGHT_SCALE
+          )
+        : 0
+      const current = triangleWeights.get(key) || 0
       const next = current + (target - current) * TRIANGLE_FADE
-      if (next > 0.001) triangleWeights.set(triangle.key, next)
-      else triangleWeights.delete(triangle.key)
+      if (next > 0.001) triangleWeights.set(key, next)
+      else {
+        triangleWeights.delete(key)
+        triangleShapes.delete(key)
+        continue
+      }
       if (next <= 0.002) continue
 
       const a = points[triangle.i]
@@ -939,13 +1071,6 @@ function drawParticles(t) {
       ctx.restore()
     }
 
-    // Fade out weights for triangles that no longer exist.
-    for (const [key, value] of triangleWeights) {
-      if (currentKeys.has(key)) continue
-      const next = value * (1 - TRIANGLE_FADE)
-      if (next > 0.001) triangleWeights.set(key, next)
-      else triangleWeights.delete(key)
-    }
     ctx.restore()
   }
 
