@@ -1,11 +1,11 @@
-// Strings da interface em português de Angola, com ortografia pré-AO90
-// (Angola não ratificou o Acordo Ortográfico de 1990). O conteúdo
-// (projectos, CV, …) está em src/data e é localizado lá com objectos { en, pt }.
+// Strings da interface em português de Portugal, com ortografia pré-AO90.
+// O conteúdo (projectos, CV, …) está em src/data e é localizado lá com
+// objectos { en, pt }.
 export default {
   meta: {
     title: 'Henrique Lopes Rocha — Gráficos, Vulkan, IA e VR',
     description:
-      'Portfólio e currículo de Henrique Lopes Rocha, engenheiro de Telecomunicações e Informática (ex-CERN): gráficos em tempo real, Vulkan e programação de GPU, renderização SDF, experiências de IA, VR e computação criativa.'
+      'Portefólio e currículo de Henrique Lopes Rocha, engenheiro de Telecomunicações e Informática (ex-CERN): gráficos em tempo real, Vulkan e programação de GPU, renderização SDF, experiências de IA, VR e computação criativa.'
   },
   language: {
     label: 'Idioma',
@@ -185,7 +185,7 @@ export default {
     eyebrow: '~/vcard — guardar contacto',
     basedIn: 'localização',
     phone: 'telefone',
-    email: 'email',
+    email: 'e-mail',
     site: 'site',
     github: 'github',
     youtube: 'youtube',
@@ -212,7 +212,7 @@ export default {
     downloadTitle: 'Clique para descarregar .vcf'
   },
   footer: {
-    tagline: 'Gráficos · Vulkan · IA · VR — portfólio experimental servido a partir do GitHub Pages.',
+    tagline: 'Gráficos · Vulkan · IA · VR — portefólio experimental servido a partir do GitHub Pages.',
     built: "// feito com vue + vite · sem backend · base: '/'",
     rights: '© {year} Henrique Lopes Rocha'
   },
@@ -310,7 +310,7 @@ export default {
     notices: {
       saved: 'Guardado {filename} ({duration}) — H.264 {width}×{height} + {audio} 48 kHz{color}.',
       savedWebm:
-        'Guardado {filename} ({duration}) — a exportação MP4 não estava disponível, pelo que este é um fallback WebM.',
+        'Guardado {filename} ({duration}) — a exportação MP4 não estava disponível, pelo que este é um ficheiro WebM alternativo.',
       recordingWebm:
         'A exportação MP4 via WebCodecs não está disponível neste navegador — a gravar em WebM.'
     },

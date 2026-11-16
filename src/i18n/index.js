@@ -4,15 +4,30 @@ import pt from './pt.js'
 
 // Tiny dependency-free i18n layer. Content stays in src/data with { en, pt }
 // objects and is resolved through localize(); UI labels live in the message
-// dictionaries and are resolved through t().
+// dictionaries and are resolved through t(). The URL hash (#en / #pt) can
+// force a locale and stays in sync with the language switch.
 const STORAGE_KEY = 'hdlopesrocha.locale'
 const SUPPORTED = ['en', 'pt']
 const DICTS = { en, pt }
 
 export const LOCALES = [
   { id: 'en', label: 'English', flag: '/flags/gb.svg', htmlLang: 'en' },
-  { id: 'pt', label: 'Português', flag: '/flags/pt.svg', htmlLang: 'pt-AO' }
+  { id: 'pt', label: 'Português (Portugal)', flag: '/flags/pt.svg', htmlLang: 'pt-PT' }
 ]
+
+function localeFromHash() {
+  if (typeof window === 'undefined') return null
+  const hash = window.location.hash.replace(/^#/, '').toLowerCase()
+  return SUPPORTED.includes(hash) ? hash : null
+}
+
+function rememberLocale(id) {
+  try {
+    localStorage.setItem(STORAGE_KEY, id)
+  } catch {
+    /* non-fatal: the switch still works for this session */
+  }
+}
 
 function detectLocale() {
   try {
@@ -30,20 +45,42 @@ function detectLocale() {
   return 'en'
 }
 
-export const locale = ref(detectLocale())
+// A language hash (`/#pt` or `/#en`) wins over storage and browser language.
+const initialHashLocale = localeFromHash()
+
+export const locale = ref(initialHashLocale ?? detectLocale())
+if (initialHashLocale) rememberLocale(initialHashLocale)
+
 export const localeInfo = computed(
   () => LOCALES.find((item) => item.id === locale.value) ?? LOCALES[0]
 )
-export const dateLocale = computed(() => (locale.value === 'pt' ? 'pt-AO' : 'en-GB'))
+export const dateLocale = computed(() => (locale.value === 'pt' ? 'pt-PT' : 'en-GB'))
 
-export function setLocale(id) {
+function updateLocaleHash(id) {
+  if (typeof window === 'undefined') return
+  const hash = `#${id}`
+  if (window.location.hash === hash) return
+  const url = `${window.location.pathname}${window.location.search}${hash}`
+  try {
+    // Keep the current scroll position: replaceState does not jump to an anchor.
+    window.history.replaceState(null, '', url)
+  } catch {
+    window.location.hash = hash
+  }
+}
+
+export function setLocale(id, { updateHash = true } = {}) {
   if (!SUPPORTED.includes(id)) return
   locale.value = id
-  try {
-    localStorage.setItem(STORAGE_KEY, id)
-  } catch {
-    /* non-fatal: the switch still works for this session */
-  }
+  rememberLocale(id)
+  if (updateHash) updateLocaleHash(id)
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('hashchange', () => {
+    const fromHash = localeFromHash()
+    if (fromHash) setLocale(fromHash, { updateHash: false })
+  })
 }
 
 function read(dict, key) {

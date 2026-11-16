@@ -208,7 +208,7 @@ export const experience = [
         },
         detail: {
           en: 'Frontend development for the Bimk project.',
-          pt: 'Desenvolvimento frontend para o projecto Bimk.'
+          pt: 'Desenvolvimento front-end para o projecto Bimk.'
         },
         tags: ['PlayFramework', 'Revit API', 'Git']
       },
@@ -235,7 +235,7 @@ export const experience = [
         title: { en: 'Summer Work — LCG', pt: 'Trabalho de Verão — LCG' },
         detail: {
           en: 'Frontend for decision-analysis software.',
-          pt: 'Frontend para software de análise de decisão.'
+          pt: 'Front-end para software de análise de decisão.'
         },
         tags: ['ASP.NET']
       },

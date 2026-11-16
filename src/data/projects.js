@@ -26,7 +26,7 @@ export const projects = [
     pages: 'https://hdlopesrocha.github.io/opencode-talk/',
     description: {
       en: 'Two-way voice for OpenCode: talk to the agent (speech-to-text) and let it talk back (text-to-speech) — plus remote session control from Telegram, XMPP and Nostr.',
-      pt: 'Voz bidirecional para o OpenCode: fale com o agente (fala-para-texto) e deixe-o responder (texto-para-fala) — além de controlo remoto de sessões via Telegram, XMPP e Nostr.'
+      pt: 'Voz bidireccional para o OpenCode: fale com o agente (fala-para-texto) e deixe-o responder (texto-para-fala) — além de controlo remoto de sessões via Telegram, XMPP e Nostr.'
     },
     category: 'ai',
     technologies: ['OpenCode Plugin', 'Two-way Voice', 'Whisper STT', 'Neural TTS', 'TypeScript', 'Telegram', 'XMPP', 'Nostr DMs', 'Session API'],
@@ -65,11 +65,11 @@ export const projects = [
     video: 'https://www.youtube.com/watch?v=qsaNWbTsbjA',
     description: {
       en: 'Browser-based, WebGL-powered reimplementation of Gource: paste a public Git repository URL and watch its history grow into an animated 2D map — directories branching like trees, files as size-scaled circles and authors flying between the files they touch.',
-      pt: 'Reimplementação do Gource no navegador com WebGL: cole o URL de um repositório Git público e veja o histórico crescer num mapa 2D animado — diretórios a ramificar como árvores, ficheiros como círculos dimensionados e autores a voar entre os ficheiros que tocam.'
+      pt: 'Reimplementação do Gource no navegador com WebGL: cole o URL de um repositório Git público e veja o histórico crescer num mapa 2D animado — pastas a ramificar como árvores, ficheiros como círculos dimensionados e autores a voar entre os ficheiros que tocam.'
     },
     longDescription: {
       en: 'Commit history is read straight from the provider’s REST API in the browser — nothing is cloned, uploaded or built on a server — then rendered by an independently written Three.js renderer with add / modify / delete / rename activity bursts.',
-      pt: 'O histórico de commits é lido directamente da API REST do fornecedor no navegador — nada é clonado, enviado ou compilado num servidor — e depois renderizado por um renderer Three.js escrito de raiz, com surtos de actividade de adição / modificação / eliminação / renomeação.'
+      pt: 'O histórico de commits é lido directamente da API REST do fornecedor no navegador — nada é clonado, enviado ou compilado num servidor — e depois renderizado por um renderizador Three.js escrito de raiz, com surtos de actividade de adição / modificação / eliminação / renomeação.'
     },
     technologies: ['Three.js', 'WebGL', 'TypeScript', 'Vue 3', 'Vite', 'GitHub API'],
     category: 'vr',
@@ -85,11 +85,11 @@ export const projects = [
     url: 'https://github.com/hdlopesrocha/open-studio',
     description: {
       en: 'Private, password-protected AI studio running entirely on your own machine: chat, music, video, voice, subtitles, images, documents and media tools — every model in Docker, behind one gateway, one shared file tree and one global job system.',
-      pt: 'Estúdio de IA privado e protegido por palavra-passe, a correr inteiramente na sua máquina: chat, música, vídeo, voz, legendas, imagens, documentos e ferramentas de media — todos os modelos em Docker, atrás de um gateway, uma árvore de ficheiros partilhada e um sistema global de tarefas.'
+      pt: 'Estúdio de IA privado e protegido por palavra-passe, a correr inteiramente na sua máquina: chat, música, vídeo, voz, legendas, imagens, documentos e ferramentas multimédia — todos os modelos em Docker, atrás de um gateway, uma árvore de ficheiros partilhada e um sistema global de tarefas.'
     },
     longDescription: {
       en: 'A single Vue 3 app sits behind an authentication gateway that routes requests to containerised services for chat, ACE-Step music and DJ mixing, video pipelines, OmniVoice / Piper speech, Whisper subtitles, Diffusers images, PDF and document tools, translation, summaries, FFmpeg and yt-dlp. Every long task runs through a persistent job hub with per-component queues, live SSE progress and cancellation, while all services share one file tree.',
-      pt: 'Uma única app Vue 3 fica atrás de um gateway de autenticação que encaminha pedidos para serviços contentorizados de chat, música ACE-Step e mistura DJ, pipelines de vídeo, voz OmniVoice / Piper, legendas Whisper, imagens Diffusers, ferramentas de PDF e documentos, tradução, resumos, FFmpeg e yt-dlp. Cada tarefa longa passa por um hub de tarefas persistente com filas por componente, progresso SSE em directo e cancelamento, enquanto todos os serviços partilham uma árvore de ficheiros.'
+      pt: 'Uma única app Vue 3 fica atrás de um gateway de autenticação que encaminha pedidos para serviços contentorizados de chat, música ACE-Step e mistura DJ, pipelines de vídeo, voz OmniVoice / Piper, legendas Whisper, imagens Diffusers, ferramentas de PDF e documentos, tradução, resumos, FFmpeg e yt-dlp. Cada tarefa longa passa por um centro de tarefas persistente com filas por componente, progresso SSE em directo e cancelamento, enquanto todos os serviços partilham uma árvore de ficheiros.'
     },
     category: 'ai',
     technologies: ['Docker', 'Vue 3', 'Python', 'Local LLMs', 'Ollama', 'ACE-Step', 'Whisper', 'Piper TTS', 'Diffusers', 'FFmpeg', 'yt-dlp', 'QVAC'],
@@ -106,11 +106,11 @@ export const projects = [
     pages: 'https://hdlopesrocha.github.io/infinity-edge-web/',
     description: {
       en: 'AI-assisted XNA → web migration of Infinity Edge (2013): the original XNA 4.0 game — C# simulation, 13 AIs, CTF / time-trial rules, compiled XNB models, textures and sounds — running in the browser on Vue 3 + TypeScript + raw WebGL2, now with WebXR VR, a six-stage WebGL2 pipeline, zoom blur and a full GL HUD.',
-      pt: 'Migração assistida por IA de XNA → web do Infinity Edge (2013): o jogo original em XNA 4.0 — simulação em C#, 13 IAs, regras de CTF / contra-relógio, modelos XNB compilados, texturas e sons — a correr no navegador com Vue 3 + TypeScript + WebGL2 puro, agora com VR WebXR, um pipeline WebGL2 de seis fases, zoom blur e um HUD GL completo.'
+      pt: 'Migração assistida por IA de XNA → web do Infinity Edge (2013): o jogo original em XNA 4.0 — simulação em C#, 13 IAs, regras de CTF / contra-relógio, modelos XNB compilados, texturas e sons — a correr no navegador com Vue 3 + TypeScript + WebGL2 puro, agora com VR WebXR, um pipeline WebGL2 de seis fases, desfoque de zoom e um HUD GL completo.'
     },
     longDescription: {
       en: 'The 2013 Windows Phone XNA sources and the compiled content-pipeline output were ported piece by piece: an XNB model converter, BasicEffect-exact GLSL shaders, the level / menu XML data and the original physics and AI — rendered by a hand-written WebGL2 engine (no Three.js, no game framework). Now includes WebXR immersive VR (with a split-screen fallback, gyro + drag-look, tap-to-recenter, gaze-dwell menu clicks), a six-stage framebuffer pipeline (sky / models / billboards / blur / UI / final) with zoom blur and deferred depth test, a per-eye WebGL HUD, missile-lock warnings, 16 px UI padding, and HTTPS dev serving.',
-      pt: 'Os fontes XNA de 2013 para Windows Phone e a saída compilada do content pipeline foram portados peça a peça: um conversor de modelos XNB, shaders GLSL fiéis ao BasicEffect, os dados XML de níveis / menus e a física e IA originais — renderizados por um motor WebGL2 escrito à mão (sem Three.js, sem framework de jogos). Inclui agora VR imersivo WebXR (com fallback de ecrã dividido, giroscópio + arrasto, toque para recentrar, cliques de menu por fixação do olhar), um pipeline de framebuffer de seis fases (céu / modelos / billboards / blur / UI / final) com zoom blur e depth test diferido, um HUD WebGL por olho, avisos de bloqueio de mísseis, 16 px de margem na UI e servidor de desenvolvimento HTTPS.'
+      pt: 'Os fontes XNA de 2013 para Windows Phone e a saída compilada do pipeline de conteúdos foram portados peça a peça: um conversor de modelos XNB, shaders GLSL fiéis ao BasicEffect, os dados XML de níveis / menus e a física e IA originais — renderizados por um motor WebGL2 escrito à mão (sem Three.js, sem framework de jogos). Inclui agora VR imersivo WebXR (com uma alternativa de ecrã dividido, giroscópio + arrasto, toque para recentrar, cliques de menu por fixação do olhar), um pipeline de framebuffer de seis fases (céu / modelos / billboards / desfoque / interface / final) com desfoque de zoom e teste de profundidade diferido, um HUD WebGL por olho, avisos de bloqueio de mísseis, 16 px de margem na interface e servidor de desenvolvimento HTTPS.'
     },
     category: 'vr',
     technologies: ['XNA → Web', 'AI-assisted port', 'WebGL2', 'GLSL', 'TypeScript', 'Vue 3', 'Vite', 'XNB Conversion', 'Game AI', 'WebXR VR'],
@@ -127,7 +127,7 @@ export const projects = [
     pages: 'https://hdlopesrocha.github.io/lora-control/',
     description: {
       en: 'ESP32 LoRa relay control: server node schedules remote relays over 868 MHz with .ics calendar uploads, web dashboard, OLED status and SHA-256 authenticated packets — docs site in Vue 3 + Vite.',
-      pt: 'Controlo de relés LoRa com ESP32: o nó servidor agenda relés remotos a 868 MHz com carregamento de calendários .ics, dashboard web, estado em OLED e pacotes autenticados com SHA-256 — site de documentação em Vue 3 + Vite.'
+      pt: 'Controlo de relés LoRa com ESP32: o nó servidor agenda relés remotos a 868 MHz com carregamento de calendários .ics, painel web, estado em OLED e pacotes autenticados com SHA-256 — site de documentação em Vue 3 + Vite.'
     },
     category: 'hardware',
     technologies: ['ESP32', 'LoRa', 'Arduino', 'Relays', '.ics Scheduling', 'SHA-256', 'OLED', 'Vue 3'],
@@ -398,7 +398,7 @@ export const projects = [
     pages: 'https://hdlopesrocha.github.io/matrix-face/',
     description: {
       en: 'WebGL experiment rendering a face formed by Matrix-style digital rain, lit through a normal map with custom GLSL shaders.',
-      pt: 'Experiência WebGL que renderiza um rosto formado por chuva digital ao estilo Matrix, iluminado através de um normal map com shaders GLSL personalizados.'
+      pt: 'Experiência WebGL que renderiza um rosto formado por chuva digital ao estilo Matrix, iluminado através de um mapa de normais com shaders GLSL personalizados.'
     },
     category: 'graphics',
     technologies: ['WebGL', 'GLSL', 'JavaScript', 'Normal Maps'],
